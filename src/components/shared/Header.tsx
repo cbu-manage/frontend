@@ -19,48 +19,62 @@ export default function Header() {
     window.location.href = "/";
   };
 
-  const utilItems = [
-    { name: "로그인", path: "/login" },
-    { name: "회원가입", path: "/join" },
+  const navItems = [
+    { name: "스터디 모집", path: "/study" },
+    { name: "프로젝트 모집", path: "/project" },
+    { name: "코딩테스트 준비", path: "/coding-test" },
+    { name: "보고서 업로드", path: "/report" },
+    { name: "자료방", path: "/archive" },
   ];
 
   return (
     <header className={isBlockHeader ? "" : "absolute w-full"}>
-      <div className="flex items-center justify-between px-[9.375%] py-6">
-        <Link href="/">
+      <div className="flex bg-gray-0 items-center gap-8 px-[9.375%] py-6">
+        <Link href="/" className="shrink-0">
           <img src="/assets/logo.png" alt="로고이미지" className="h-8 w-auto" />
         </Link>
-        <div>
+        <nav className="flex flex-1 justify-center">
+          <ul className="flex items-center gap-8 text-base font-medium text-gray-700">
+            {navItems.map((item) => (
+              <li key={item.path}>
+                <Link
+                  href={item.path}
+                  className="transition-colors hover:text-brand"
+                >
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className="flex min-w-[120px] justify-end">
           {!isLoggedIn ? (
-            <ul className="flex gap-6">
-              {utilItems.map((item) => (
-                <li key={item.path}>
-                  <Link href={item.path} className="block text-base text-[#333]">
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <Link
+              href="/login"
+              className="text-base font-medium text-gray-700 transition-colors hover:text-brand"
+            >
+              로그인
+            </Link>
           ) : (
             <div className="relative flex items-center">
-              <p className="text-sm text-[#333] mr-2">{name}님, 환영합니다!</p>
+              <p className="mr-2 text-sm text-[#333]">{name}님, 환영합니다!</p>
               <button
                 onClick={() => setIsDropdownOpen((v) => !v)}
-                className="text-sm text-[#333]"
+                className="text-sm text-gray-700"
               >
                 {isDropdownOpen ? "▲" : "▼"}
               </button>
               {isDropdownOpen && (
-                <div className="absolute right-0 top-full mt-3 w-[180px] bg-white border border-zinc-200 rounded-lg shadow-lg p-3 z-[999]">
+                <div className="absolute right-0 top-full z-[999] mt-3 w-[180px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
                   <Link
                     href="/change-password"
-                    className="block text-sm py-3 px-3.5 hover:bg-zinc-50 rounded"
+                    className="block rounded py-3 px-3.5 text-sm hover:bg-gray-100"
                   >
                     비밀번호 변경
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="block w-full text-left text-sm py-3 px-3.5 hover:bg-zinc-50 rounded"
+                    className="block w-full rounded py-3 px-3.5 text-left text-sm hover:bg-gray-100"
                   >
                     로그아웃
                   </button>
