@@ -9,9 +9,10 @@ export default function LoginPage() {
   const { handleLogin } = useLogin();
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
+      <main className="flex items-center justify-center p-6" style={{ background: "var(--color-gray-100)" }}>
+      <div className="flex min-h-screen w-full max-w-2xl flex-col items-center justify-center">
       <div className="w-full max-w-md bg-white rounded-xl p-8 shadow">
-        <h2 className="text-2xl font-semibold text-center mb-6">로그인</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">로그인</h2>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -55,8 +56,9 @@ export default function LoginPage() {
         </form>
         <p className="mt-4 text-center text-sm text-zinc-600">
           씨부엉 입부를 축하합니다! 첫 로그인이라면?&nbsp;
-          <a href="/join" className="font-semibold text-zinc-900">회원가입</a>
-        </p>
+            <a href="/join" className="font-semibold text-zinc-900">회원가입</a>
+          </p>
+        </div>
       </div>
     </main>
   );
