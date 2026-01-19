@@ -28,7 +28,7 @@ export default function Footer() {
       </div>
       <div className="flex flex-col gap-1">
         {footerInfo.map((info, idx) => (
-          <p key={idx} className="text-center text-sm text-gray-600">
+          <p key={idx} className="text-center text-sm text-gray-800">
             {info.title} ㅣ {info.name}
           </p>
         ))}
