@@ -14,10 +14,10 @@ export default function LoginPage() {
 
   return (
     <main
-      className="flex items-center justify-center min-h-screen"
+      className="flex items-center justify-center"
       style={{ background: "var(--color-gray-50)" }}
     >
-      <div className="w-full max-w-xl bg-white rounded-4xl px-20 py-24">
+      <div className="flex-col w-full max-w-xl bg-white rounded-4xl p-24 mt-32 mb-20">
         <div className="flex justify-center mb-12">
           <Image
             src="/assets/logo.png"
