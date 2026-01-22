@@ -173,7 +173,7 @@ export default function Home() {
           {activities.map((activity, idx) => (
             <div
               key={idx}
-              className="w-full aspect-[710/448] bg-white rounded-xl p-6 md:p-8 shadow-sm border border-zinc-100 hover:shadow-md transition-shadow flex flex-col"
+              className="w-full aspect-[5/3] bg-white rounded-xl p-6 md:p-8 shadow-sm border border-zinc-100 hover:shadow-md transition-shadow flex flex-col"
             >
               <div className="text-4xl mb-4">{activity.icon}</div>
               <h3 className="text-xl font-bold text-zinc-900 mb-3">
