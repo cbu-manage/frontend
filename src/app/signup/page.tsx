@@ -10,11 +10,8 @@ export default function JoinPage() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <main
-      className="flex items-center justify-center min-h-screen"
-      style={{ background: "var(--color-gray-0)" }}
-    >
-      <div className="w-full max-w-xl">
+    <main className="flex items-center justify-center min-h-screen bg-gray-0">
+      <div className="w-full max-w-xl px-4">
         <div className="flex justify-center gap-2 mb-10">
           <div className={`h-2.5 w-2.5 rounded-full ${currentStep === 1 ? 'bg-brand' : 'bg-gray-200'}`} />
           <div className={`h-2.5 w-2.5 rounded-full ${currentStep === 2 ? 'bg-brand' : 'bg-gray-200'}`} />
