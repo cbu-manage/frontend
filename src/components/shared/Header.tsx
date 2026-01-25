@@ -28,18 +28,24 @@ export default function Header() {
   ];
 
   return (
-    <header className={isBlockHeader ? "" : "absolute w-full"}>
+    <header
+      className={isBlockHeader ? "" : "sticky top-0 w-full z-40 bg-gray-0"}
+    >
       <div className="flex bg-gray-0 items-center gap-8 px-[9.375%] py-6">
         <Link href="/" className="shrink-0">
           <img src="/assets/logo.png" alt="로고이미지" className="h-8 w-auto" />
         </Link>
-        <nav className="flex flex-1 justify-center">
+        <nav className="hidden md:flex flex-1 justify-center">
           <ul className="flex items-center gap-8 text-base font-medium text-gray-700">
             {navItems.map((item) => (
               <li key={item.path}>
                 <Link
                   href={item.path}
-                  className="transition-colors hover:text-brand"
+                  className={`transition-colors hover:text-brand ${
+                    pathname === item.path
+                      ? "text-brand font-semibold"
+                      : "text-gray-700"
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -47,20 +53,22 @@ export default function Header() {
             ))}
           </ul>
         </nav>
-        <div className="flex min-w-[120px] justify-end">
+        <div className="flex min-w-[120px] justify-end flex-1 md:flex-none">
           {!isLoggedIn ? (
             <Link
               href="/login"
-              className="text-base font-medium text-gray-700 transition-colors hover:text-brand"
+              className="text-base font-medium text-gray-700 transition-colors hover:text-brand truncate"
             >
               로그인
             </Link>
           ) : (
-            <div className="relative flex items-center">
-              <p className="mr-2 text-sm text-[#333]">{name}님, 환영합니다!</p>
+            <div className="relative flex items-center gap-2 min-w-0">
+              <p className="text-sm text-[#333] truncate">
+                {name}님, 환영합니다!
+              </p>
               <button
                 onClick={() => setIsDropdownOpen((v) => !v)}
-                className="text-sm text-gray-700"
+                className="text-sm text-gray-700 flex-shrink-0"
               >
                 {isDropdownOpen ? "▲" : "▼"}
               </button>
@@ -87,4 +95,3 @@ export default function Header() {
     </header>
   );
 }
-
