@@ -11,6 +11,8 @@ interface InputBoxProps
   label?: string;
   /** 우측에 표시할 커스텀 요소 (예: 비밀번호 표시/숨김 버튼) */
   rightElement?: React.ReactNode;
+  /** inset label 스타일 (Material Design) */
+  insetLabel?: string;
 }
 
 /**
@@ -31,10 +33,69 @@ export default function InputBox({
   disabled,
   className = "",
   rightElement,
+  insetLabel,
   ...props
 }: InputBoxProps) {
   const hasError = errorMessage !== undefined && errorMessage !== null;
   const hasRightElement = !!rightElement;
+  const isInset = !!insetLabel;
+
+  // inset label 모드
+  if (isInset) {
+    return (
+      <div className="relative w-full">
+        <input
+          {...props}
+          disabled={disabled}
+          placeholder=" "
+          className={`
+            w-full rounded-lg p-4 pt-6 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
+            ${
+              disabled
+                ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
+                : hasError
+                ? "bg-gray-0 border-notice text-gray-600 placeholder:text-gray-600"
+                : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-transparent focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
+            }
+            ${hasRightElement ? "pr-12" : ""}
+            ${className}
+          `.trim()}
+        />
+        
+        {/* Inset Label */}
+        <label className="absolute left-4 top-2 text-xs font-medium text-gray-500 pointer-events-none transition-all duration-150 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-600 peer-focus:top-2 peer-focus:text-xs peer-focus:text-gray-500">
+          {insetLabel}
+        </label>
+
+        {/* 우측 커스텀 요소 */}
+        {rightElement && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {rightElement}
+          </div>
+        )}
+
+        {/* 성공 체크 아이콘 */}
+        {!disabled && success && !hasError && !hasRightElement && (
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-brand">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="h-4 w-4"
+            >
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 0 1 0 1.414l-7.25 7.25a1 1 0 0 1-1.414 0l-3.25-3.25a1 1 0 1 1 1.414-1.414L8.5 11.836l6.543-6.543a1 1 0 0 1 1.414 0Z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // 기존 label 모드
   return (
     <div className="w-full space-y-1.5">
       {label && (
