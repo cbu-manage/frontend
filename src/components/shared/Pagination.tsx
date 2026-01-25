@@ -1,6 +1,8 @@
 // src/components/shared/Pagination.tsx
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number[];
@@ -8,14 +10,22 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === totalPages[totalPages.length - 1];
+
   return (
-    <div className="flex justify-center items-center gap-2 mt-12">
-      {/* [자바스크립트 문법] 이전 페이지 이동 로직 */}
+    <div className="flex justify-center items-center gap-1 mt-16 pb-8">
+      {/* 이전 페이지 버튼 */}
       <button 
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-        className="p-2 text-gray-400 hover:text-gray-600" 
+        disabled={isFirstPage}
+        className={`p-2 rounded-lg transition-all ${
+          isFirstPage
+            ? 'text-gray-300 cursor-not-allowed'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
       >
-        {"<"}
+        <ChevronLeft size={20} />
       </button>
       
       {/* 페이지 번호 목록 */}
@@ -23,22 +33,27 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <button
           key={num}
           onClick={() => onPageChange(num)}
-          className={`w-8 h-8 flex items-center justify-center rounded-md text-sm font-medium transition-all ${
+          className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
             currentPage === num
-              ? 'bg-gray-200 text-gray-700 shadow-sm'
-              : 'text-gray-400 hover:bg-gray-50'
+              ? 'bg-brand text-white shadow-md'
+              : 'text-gray-700 hover:bg-gray-100'
           }`}
         >
           {num}
         </button>
       ))}
 
-      {/* 다음 페이지 이동 로직 */}
+      {/* 다음 페이지 버튼 */}
       <button 
-        onClick={() => onPageChange(Math.min(totalPages.length, currentPage + 1))}
-        className="p-2 text-gray-400 hover:text-gray-600"
+        onClick={() => onPageChange(Math.min(totalPages[totalPages.length - 1], currentPage + 1))}
+        disabled={isLastPage}
+        className={`p-2 rounded-lg transition-all ${
+          isLastPage
+            ? 'text-gray-300 cursor-not-allowed'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        }`}
       >
-        {">"}
+        <ChevronRight size={20} />
       </button>
     </div>
   );

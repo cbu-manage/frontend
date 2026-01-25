@@ -19,7 +19,6 @@ export function useLogin() {
   const handleLogin = async ({ studentId, password }: LoginParams) => {
     if (!studentId || !password) {
       setErrorMessage("아이디와 비밀번호를 입력하세요.");
-      alert("아이디와 비밀번호를 입력하세요.");
       return;
     }
 
@@ -66,12 +65,10 @@ export function useLogin() {
           }
         } catch {}
         setErrorMessage(message);
-        alert(message);
         setIsLoggedIn(false);
       }
     } catch (e) {
       setErrorMessage("로그인 중 네트워크 오류가 발생했습니다. 다시 시도해주세요.");
-      alert("로그인 중 네트워크 오류가 발생했습니다. 다시 시도해주세요.");
       setIsLoggedIn(false);
     }
   };
