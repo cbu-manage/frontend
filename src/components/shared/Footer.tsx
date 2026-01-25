@@ -14,7 +14,8 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full px-[9.375%] py-9 bg-gray-0 flex flex-col gap-6">
+    <footer className="w-full py-9 bg-gray-0">
+      <div className="px-[9.375%] flex flex-col gap-6">
       <div className="flex justify-center">
         <Link href="/">
           <Image 
@@ -28,7 +29,7 @@ export default function Footer() {
       </div>
       <div className="flex flex-col gap-1">
         {footerInfo.map((info, idx) => (
-          <p key={idx} className="text-center text-sm text-gray-600">
+          <p key={idx} className="text-center text-sm text-gray-800">
             {info.title} ㅣ {info.name}
           </p>
         ))}
@@ -43,6 +44,7 @@ export default function Footer() {
         </div>
         <hr className="w-full border-none h-px bg-gray-0" />
         <p className="text-xs text-[#CCC]">Copyright ⓒ 2025 씨부엉 All rights reserved.</p>
+      </div>
       </div>
     </footer>
   );
