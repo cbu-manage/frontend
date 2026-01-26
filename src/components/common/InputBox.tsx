@@ -49,7 +49,7 @@ export default function InputBox({
           disabled={disabled}
           placeholder=" "
           className={`
-            w-full rounded-lg p-4 pt-6 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
+            peer w-full rounded-lg p-4 pt-6 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
             ${
               disabled
                 ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
@@ -63,7 +63,7 @@ export default function InputBox({
         />
         
         {/* Inset Label */}
-        <label className="absolute left-4 top-2 text-xs font-medium text-gray-500 pointer-events-none transition-all duration-150 peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-600 peer-focus:top-2 peer-focus:text-xs peer-focus:text-gray-500">
+        <label className="absolute left-4 top-2 text-xs font-medium text-gray-500 pointer-events-none transition-all duration-150 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-600 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-gray-500 has-[:not(:placeholder-shown)]:top-2 has-[:not(:placeholder-shown)]:text-xs">
           {insetLabel}
         </label>
 
