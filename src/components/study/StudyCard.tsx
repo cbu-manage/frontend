@@ -35,8 +35,8 @@ export type StudyStatus = '모집 중' | '모집 완료';
  * StudyCard 컴포넌트 Props 인터페이스
  */
 interface StudyCardProps {
-  /** 카드 고유 번호 (key용) */
-  number: number;
+  /** 카드 고유 ID (key용) */
+  id: number;
 
   /**
    * 스터디 카테고리 (프로그래밍 언어/분야)
@@ -65,22 +65,6 @@ interface StudyCardProps {
 }
 
 // ============================================
-// 카테고리별 색상 매핑
-// ============================================
-
-/**
- * 카테고리별 태그 색상 정의
- * Tailwind CSS 클래스를 사용합니다.
- */
-const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
-  'C++': { bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  'Python': { bg: 'bg-green-100', text: 'text-green-700' },
-  'Java': { bg: 'bg-blue-100', text: 'text-blue-700' },
-  '알고리즘': { bg: 'bg-orange-100', text: 'text-orange-700' },
-  '기타': { bg: 'bg-red-100', text: 'text-red-700' },
-};
-
-// ============================================
 // StudyCard 컴포넌트
 // ============================================
 
@@ -92,7 +76,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
  *
  * @example
  * <StudyCard
- *   number={1}
+ *   id={1}
  *   category="Python"
  *   status="모집 중"
  *   title="파이썬 스터디 모집합니다!"
@@ -100,7 +84,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
  * />
  */
 export function StudyCard({
-  number,
+  id,
   category = 'C++',
   status = '모집 중',
   title = '웹개발 스터디 모집합니다~',
@@ -110,23 +94,21 @@ export function StudyCard({
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === '모집 완료';
 
-  // 현재 카테고리의 색상 가져오기
-  const categoryColor = CATEGORY_COLORS[category];
 
   return (
     // 카드 컨테이너 - 호버 시 그림자 효과
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
 
       {/* 카드 상단: 모집 상태, 제목, 카테고리 태그 */}
-      <div className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
+      <div className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 flex-1">
 
         {/* 상단 행: 모집 상태 배지 + 작성 시간 */}
         <div className="justify-between items-center flex">
-          {/* 모집 상태 배지 - 상태에 따라 색상 변경 */}
-          <span className={`px-2 py-1 rounded text-xs font-bold ${
+          {/* 모집 상태 배지 - 타원형, 고정 너비 */}
+          <span className={`w-14 text-center py-1.5 rounded-full text-xs text-white ${
             isCompleted
-              ? 'bg-red-50 text-red-500'      // 모집 완료: 빨간색
-              : 'bg-emerald-50 text-emerald-500' // 모집 중: 초록색
+              ? 'bg-red-400'      // 모집 완료: 빨강 배경
+              : 'bg-[#6ECA8F]'  // 모집 중: 초록 배경
           }`}>
             {status}
           </span>
@@ -136,9 +118,9 @@ export function StudyCard({
         </div>
 
         {/* 중간 영역: 제목 + 카테고리 태그 */}
-        <div className="flex flex-col gap-3 sm:gap-4">
-          {/* 스터디 제목 */}
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+        <div className="flex flex-col gap-3 sm:gap-4 flex-1">
+          {/* 스터디 제목 - 2줄 고정 높이 */}
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2 min-h-[2.75rem] sm:min-h-[3.25rem]">
             {title}
           </h3>
 
@@ -152,11 +134,11 @@ export function StudyCard({
             ))}
           */}
           <div className="flex flex-wrap gap-1.5">
-            {categoryColor && (
-              <span className={`${categoryColor.bg} ${categoryColor.text} px-2 py-1 rounded text-[10px] font-semibold`}>
-                {category}
-              </span>
-            )}
+            <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">C++</span>
+            <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">Python</span>
+            <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">Java</span>
+            <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">알고리즘</span>
+            <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">기타</span>
           </div>
         </div>
       </div>
@@ -167,7 +149,7 @@ export function StudyCard({
         <div className="flex items-center gap-2">
           {/* 프로필 이미지 플레이스홀더 */}
           <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full"></div>
-          <span className="text-xs sm:text-sm text-gray-700 font-medium">aBCDFEFGOL</span>
+          <span className="text-xs sm:text-sm text-gray-700 font-medium">34기 씨부엉</span>
         </div>
 
         {/* 조회수 + 댓글 수 */}

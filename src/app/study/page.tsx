@@ -60,6 +60,8 @@ const STUDIES: { id: number; category: StudyCategory; status: StudyStatus; title
   { id: 7, category: 'Python', status: '모집 완료', title: '장고 웹개발 스터디 모집합니다~' },
   { id: 8, category: 'Java', status: '모집 중', title: '안드로이드 앱개발 스터디 모집합니다~' },
   { id: 9, category: '알고리즘', status: '모집 중', title: '백준 문제풀이 스터디 모집합니다~' },
+  { id: 10, category: '알고리즘', status: '모집 중', title: '백준 문제풀이 스터디 모집합니다~' },
+  { id: 11, category: '기타', status: '모집 중', title: '데브옵스 스터디 모집합니다~' },
 ];
 
 // ============================================
@@ -130,11 +132,10 @@ export default function StudyPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             {/* 제목 영역 */}
             <div className="flex items-center gap-3">
-              <span className="text-2xl sm:text-3xl">📚</span>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">스터디 모집</h1>
             </div>
 
-            {/* 나의 작성 목록 버튼 - pill 스타일 */}
+            {/* 나의 작성 목록 버튼 - pill 스타일
             <span className="
               text-sm text-emerald-600
               bg-white border border-emerald-500
@@ -143,7 +144,7 @@ export default function StudyPage() {
               w-fit
             ">
               나의 작성 목록 &gt;
-            </span>
+            </span> */}
           </div>
 
           {/* ========== 모집 상태 필터 탭 ========== */}
@@ -207,7 +208,7 @@ export default function StudyPage() {
             {filteredStudies.map((study) => (
               <SDC
                 key={study.id}
-                number={study.id}
+                id={study.id}
                 category={study.category}
                 status={study.status}
                 title={study.title}
