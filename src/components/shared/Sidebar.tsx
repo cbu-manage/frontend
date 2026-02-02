@@ -145,7 +145,7 @@ export default function Sidebar({
           className="
             mt-44 w-full
             flex items-center justify-center gap-2
-            p-4
+            px-4 py-2.5
             bg-brand hover:opacity-90 active:opacity-80
             text-white font-semibold
             rounded-lg transition-all duration-200

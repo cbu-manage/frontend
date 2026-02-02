@@ -16,17 +16,7 @@
 import { useState } from 'react';
 import Sidebar from '@/components/shared/Sidebar';
 import PGN from '@/components/shared/Pagination';
-
-// ============================================
-// 타입 정의
-// ============================================
-
-/**
- * 프로젝트 모집 상태 타입
- * - '모집 중': 초록색 배지
- * - '모집 완료': 빨간색 배지
- */
-export type ProjectStatus = '모집 중' | '모집 완료';
+import { ProjectCard, ProjectStatus } from '@/components/project/ProjectCard';
 
 // ============================================
 // 상수 정의
@@ -61,136 +51,15 @@ const TOTAL_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
  * @todo 실제 API 연동 시 제거
  */
 const PROJECTS = [
-  { id: 1, status: '모집 중' as ProjectStatus, position: '프론트엔드', title: '[앱 프론트엔드 개발자 모집] 대학생을 위한 중개 플랫폼' },
-  { id: 2, status: '모집 완료' as ProjectStatus, position: '백엔드', title: '[백엔드 개발자 모집] Spring Boot 기반 서버 개발' },
-  { id: 3, status: '모집 중' as ProjectStatus, position: '디자인', title: '[UI/UX 디자이너 모집] 모바일 앱 디자인' },
-  { id: 4, status: '모집 중' as ProjectStatus, position: '기획', title: '[서비스 기획자 모집] 신규 서비스 기획' },
-  { id: 5, status: '모집 완료' as ProjectStatus, position: '개발', title: '[풀스택 개발자 모집] 사이드 프로젝트' },
-  { id: 6, status: '모집 중' as ProjectStatus, position: '기타', title: '[마케터 모집] SNS 마케팅 담당' },
-  { id: 7, status: '모집 중' as ProjectStatus, position: '프론트엔드', title: '[React 개발자 모집] 웹 서비스 개발' },
-  { id: 8, status: '모집 중' as ProjectStatus, position: '백엔드', title: '[Node.js 개발자 모집] API 서버 구축' },
+  { id: 1, status: '모집 중' as ProjectStatus, positions: ['프론트엔드', '백엔드', '개발', '디자인', '기획', '기타'], title: '[앱 프론트엔드 개발자 모집] 대학생을 위한 중개 플랫폼' },
+  { id: 2, status: '모집 완료' as ProjectStatus, positions: ['프론트엔드', '백엔드', '개발', '디자인', '기획'], title: '[백엔드 개발자 모집] Spring Boot 기반 서버 개발' },
+  { id: 3, status: '모집 중' as ProjectStatus, positions: ['프론트엔드', '백엔드', '개발', '디자인'], title: '[UI/UX 디자이너 모집] 모바일 앱 디자인' },
+  { id: 4, status: '모집 중' as ProjectStatus, positions: ['프론트엔드', '백엔드', '개발'], title: '[서비스 기획자 모집] 신규 서비스 기획' },
+  { id: 5, status: '모집 완료' as ProjectStatus, positions: ['프론트엔드', '백엔드'], title: '[풀스택 개발자 모집] 사이드 프로젝트' },
+  { id: 6, status: '모집 중' as ProjectStatus, positions: ['프론트엔드'], title: '[마케터 모집] SNS 마케팅 담당' },
+  { id: 7, status: '모집 중' as ProjectStatus, positions: ['프론트엔드', '백엔드', '개발'], title: '[React 개발자 모집] 웹 서비스 개발' },
+  { id: 8, status: '모집 중' as ProjectStatus, positions: ['백엔드', '개발'], title: '[Node.js 개발자 모집] API 서버 구축' },
 ];
-
-// ============================================
-// 포지션별 색상 매핑
-// ============================================
-
-/**
- * 포지션별 태그 색상 정의
- * Tailwind CSS 클래스를 사용합니다.
- */
-const POSITION_COLORS: Record<string, string> = {
-  '프론트엔드': 'bg-yellow-100 text-yellow-700',
-  '백엔드': 'bg-green-100 text-green-700',
-  '개발': 'bg-blue-100 text-blue-700',
-  '디자인': 'bg-purple-100 text-purple-700',
-  '기획': 'bg-orange-100 text-orange-700',
-  '기타': 'bg-red-100 text-red-700',
-};
-
-// ============================================
-// ProjectCard 컴포넌트
-// ============================================
-
-/**
- * ProjectCard Props 인터페이스
- */
-interface ProjectCardProps {
-  /** 모집 상태 */
-  status?: ProjectStatus;
-  /** 프로젝트 제목 */
-  title?: string;
-  /** 모집 포지션 */
-  position?: string;
-  /** 작성자 닉네임 */
-  author?: string;
-  /** 조회수 */
-  views?: number;
-  /** 댓글 수 */
-  comments?: number;
-  /** 작성 시간 */
-  time?: string;
-}
-
-/**
- * 프로젝트 카드 컴포넌트 (가로형)
- *
- * 스터디 카드와 달리 가로형 레이아웃을 사용합니다.
- * - 왼쪽: 모집 상태 + 제목 (세로 배치)
- * - 오른쪽: 포지션, 작성자, 조회수, 댓글, 시간 (가로 배치)
- *
- * @param props - ProjectCardProps
- * @returns 프로젝트 카드 JSX 요소
- */
-function ProjectCard({
-  status = '모집 중',
-  title = '[앱 프론트엔드 개발자 모집] 대학생을 위한 중개 플랫폼',
-  position = '프론트엔드',
-  author = 'aBCDFEFGOL',
-  views = 122,
-  comments = 333,
-  time = '6시간 전',
-}: ProjectCardProps) {
-  // 모집 완료 여부에 따라 배지 색상 결정
-  const isCompleted = status === '모집 완료';
-
-  // 포지션 색상 가져오기 (없으면 기본 회색)
-  const positionColor = POSITION_COLORS[position] || 'bg-gray-100 text-gray-700';
-
-  return (
-    // 카드 컨테이너 - 가로형 레이아웃
-    <div className="
-      bg-white rounded-2xl border border-gray-200
-      px-4 sm:px-6 py-4
-      min-h-[90px]
-      flex flex-col sm:flex-row sm:items-center sm:justify-between
-      gap-4 sm:gap-0
-      hover:shadow-md transition-shadow cursor-pointer
-    ">
-      {/* ========== 왼쪽: 모집 상태 + 제목 (세로 배치) ========== */}
-      <div className="flex flex-col gap-2">
-        {/* 모집 상태 배지 */}
-        <span className={`px-2 py-1 rounded text-xs font-bold w-fit ${
-          isCompleted
-            ? 'bg-red-50 text-red-500'      // 모집 완료: 빨간색
-            : 'bg-emerald-50 text-emerald-500' // 모집 중: 초록색
-        }`}>
-          {status}
-        </span>
-        {/* 프로젝트 제목 */}
-        <h3 className="text-sm font-bold text-gray-900 line-clamp-2">{title}</h3>
-      </div>
-
-      {/* ========== 오른쪽: 메타 정보 (가로 배치) ========== */}
-      {/*
-        @todo [대기] 모바일에서는 세로 배치 또는 일부 정보 숨김
-        현재: sm 이상에서 가로 배치
-      */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-        {/* 포지션 태그 */}
-        <span className={`${positionColor} px-2 py-1 rounded text-[10px] font-semibold`}>
-          {position}
-        </span>
-
-        {/* 작성자 정보 */}
-        <div className="flex items-center gap-2">
-          {/* 프로필 이미지 플레이스홀더 */}
-          <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-          <span className="text-gray-600 text-xs">{author}</span>
-        </div>
-
-        {/* 조회수 */}
-        <span className="text-xs text-gray-400">👁️ {views}</span>
-
-        {/* 댓글 수 */}
-        <span className="text-xs text-gray-400">💬 {comments}</span>
-
-        {/* 작성 시간 */}
-        <span className="text-xs text-gray-400">🕑 {time}</span>
-      </div>
-    </div>
-  );
-}
 
 // ============================================
 // ProjectPage 컴포넌트
@@ -219,8 +88,8 @@ export default function ProjectPage() {
    * 포지션 + 모집 상태로 필터링된 프로젝트 목록
    */
   const filteredProjects = PROJECTS.filter((project) => {
-    // 포지션 필터: '전체'가 아닌 경우 해당 포지션만 표시
-    const positionMatch = selectedPosition === '전체' || project.position === selectedPosition;
+    // 포지션 필터: '전체'가 아닌 경우 해당 포지션을 포함한 프로젝트만 표시
+    const positionMatch = selectedPosition === '전체' || project.positions.includes(selectedPosition);
 
     // 모집 상태 필터
     const statusMatch = project.status === statusFilter;
@@ -259,7 +128,7 @@ export default function ProjectPage() {
             {/* 제목 */}
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">프로젝트 모집 공고</h1>
 
-            {/* 나의 작성 목록 버튼 - pill 스타일 */}
+            {/* 나의 작성 목록 버튼 - pill 스타일
             <span className="
               text-sm text-emerald-600
               bg-white border border-emerald-500
@@ -268,7 +137,7 @@ export default function ProjectPage() {
               w-fit
             ">
               나의 작성 목록 &gt;
-            </span>
+            </span> */}
           </div>
 
           {/* ========== 모집 상태 필터 탭 ========== */}
@@ -326,8 +195,9 @@ export default function ProjectPage() {
             {filteredProjects.map((project) => (
               <ProjectCard
                 key={project.id}
+                id={project.id}
                 status={project.status}
-                position={project.position}
+                positions={project.positions}
                 title={project.title}
               />
             ))}
