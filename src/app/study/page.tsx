@@ -1,125 +1,237 @@
-// [Next.js 문법] 'use client'는 클라이언트 사이드 렌더링을 명시하는 Next.js 전용 지시어
+/**
+ * @file study/page.tsx
+ * @description 스터디 모집 페이지
+ *
+ * 스터디 모집 공고를 카드 형태로 보여주는 페이지입니다.
+ * - 사이드바: 프로그래밍 언어/분야별 카테고리 필터
+ * - 상단 탭: 모집 중 / 모집 완료 필터
+ * - 카드 그리드: 필터링된 스터디 목록
+ * - 페이지네이션: 페이지 이동
+ *
+ * @todo [대기] 모바일 반응형 - 사이드바 숨김 처리 필요
+ */
+
 'use client';
 
 import { useState } from 'react';
-// [수정] 컴포넌트와 함께 정의된 유니온 타입들을 가져옴 (별칭 SDC 사용)
-import { StudyCard as SDC, StudyCategory, StudyStatus } from '@/components/study/StudyCard';
+import { StudyCard as SDC, StudyStatus, StudyCategory } from '@/components/study/StudyCard';
+import Sidebar from '@/components/shared/Sidebar';
 import PGN from '@/components/shared/Pagination';
 
-// --------------------------------------------------------------------------
-// [리뷰어 피드백 반영: 위치 변경]
-// 기존에 StudyPage 함수 내부에 선언되어 있던 정적 데이터 배열들을 함수 외부(상단)로 이동
-// 리렌더링마다 배열이 재생성되는 것을 방지하여 메모리 효율을 높이기 위함
-// --------------------------------------------------------------------------
-const CATEGORIES: StudyCategory[] = ['전체', 'C++', 'Python', 'Java', '알고리즘', '기타'];
+// ============================================
+// 상수 정의
+// ============================================
+
+/**
+ * 사이드바 카테고리 목록
+ * 프로그래밍 언어 및 분야별 필터
+ */
+const CATEGORIES = [
+  { label: '전체', value: '전체' },
+  { label: 'C++', value: 'C++' },
+  { label: 'Python', value: 'Python' },
+  { label: 'Java', value: 'Java' },
+  { label: '알고리즘', value: '알고리즘' },
+  { label: '기타', value: '기타' },
+];
+
+/**
+ * 페이지네이션용 페이지 번호 배열
+ * @todo 실제 API 연동 시 동적으로 생성
+ */
 const TOTAL_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-// [Next.js 문법] export default 함수는 해당 파일의 대표 페이지가 됩니다. (App Router 라우팅)
+// ============================================
+// 더미 데이터
+// ============================================
+
+/**
+ * 스터디 목록 더미 데이터
+ * @todo 실제 API 연동 시 제거
+ * @todo [대기] 중복 카테고리 지원 시 category → categories: StudyCategory[]
+ */
+const STUDIES: { id: number; category: StudyCategory; status: StudyStatus; title: string }[] = [
+  { id: 1, category: 'C++', status: '모집 중', title: 'C언어 기초 스터디 모집합니다~' },
+  { id: 2, category: 'Python', status: '모집 완료', title: '파이썬 데이터분석 스터디 모집합니다~' },
+  { id: 3, category: 'Java', status: '모집 중', title: '자바 스프링 스터디 모집합니다~' },
+  { id: 4, category: '알고리즘', status: '모집 중', title: '코딩테스트 준비 스터디 모집합니다~' },
+  { id: 5, category: '기타', status: '모집 중', title: 'AWS 클라우드 스터디 모집합니다~' },
+  { id: 6, category: 'C++', status: '모집 중', title: 'C++ 게임개발 스터디 모집합니다~' },
+  { id: 7, category: 'Python', status: '모집 완료', title: '장고 웹개발 스터디 모집합니다~' },
+  { id: 8, category: 'Java', status: '모집 중', title: '안드로이드 앱개발 스터디 모집합니다~' },
+  { id: 9, category: '알고리즘', status: '모집 중', title: '백준 문제풀이 스터디 모집합니다~' },
+  { id: 10, category: '알고리즘', status: '모집 중', title: '백준 문제풀이 스터디 모집합니다~' },
+  { id: 11, category: '기타', status: '모집 중', title: '데브옵스 스터디 모집합니다~' },
+];
+
+// ============================================
+// StudyPage 컴포넌트
+// ============================================
+
+/**
+ * 스터디 모집 페이지 컴포넌트
+ *
+ * @returns 스터디 모집 페이지 JSX 요소
+ */
 export default function StudyPage() {
-  
-  // [자바스크립트/React 문법] 상태 관리를 위한 Hook 사용
-  // [수정] 유니온 타입을 지정하여 잘못된 문자열 입력을 방지
-  const [selected, setSelected] = useState<StudyCategory>('전체');
-  const [status, setStatus] = useState<StudyStatus>('모집 중');
+  // ========== 상태 관리 ==========
+
+  /** 현재 선택된 카테고리 (사이드바) */
+  const [selectedCategory, setSelectedCategory] = useState('전체');
+
+  /** 현재 선택된 모집 상태 (상단 탭) */
+  const [statusFilter, setStatusFilter] = useState<StudyStatus>('모집 중');
+
+  /** 현재 페이지 번호 */
   const [currentPage, setCurrentPage] = useState(1);
 
-  // --- (7주차 추가 시작 : 콘솔로그 - 자바스크립트 로직 파트) ---
-  // [수정] 매개변수 타입을 StudyCategory 유니온 타입으로 제한
-  const handleCategoryClick = (category: StudyCategory) => {
-    setSelected(category);
-    console.log(`선택된 카테고리: ${category}`); // 개별적인 이벤트 로그
-  };
+  // ========== 필터링 로직 ==========
 
-  // 모집 상태 클릭 시 실행될 함수
-  // [수정] 매개변수 타입을 StudyStatus 유니온 타입으로 제한
-  const handleStatusClick = (statusName: StudyStatus) => {
-    setStatus(statusName);
-    // 모집 중이면 true, 모집 완료면 false
-    const isRecruiting = statusName === '모집 중'; // 왼쪽 값과 오른쪽 값을 비교하여 결과를 무조건 불리언
-    
-    // false(모집 완료)일 때만 콘솔에 찍기
-    if (!isRecruiting) {
-      console.log(`모집 상태: ${isRecruiting}`); 
-    }
-  };
-  // --- (7주차 추가 끝 : 콘솔로그) ---
+  /**
+   * 카테고리 + 모집 상태로 필터링된 스터디 목록
+   * @todo [대기] 중복 카테고리 지원 시 includes() 사용
+   * 예: study.categories.includes(selectedCategory)
+   */
+  const filteredStudies = STUDIES.filter((study) => {
+    // 카테고리 필터: '전체'가 아닌 경우 해당 카테고리만 표시
+    const categoryMatch = selectedCategory === '전체' || study.category === selectedCategory;
+
+    // 모집 상태 필터
+    const statusMatch = study.status === statusFilter;
+
+    return categoryMatch && statusMatch;
+  });
 
   return (
-    // (7주차 수정) 전체 화면 너비를 차지하는 배경 레이어 추가 -> 사이드 검둥이 제거
-    <div className="w-full bg-white min-h-screen">
-      <main className="max-w-7xl mx-auto px-6 pt-24 py-12 bg-white min-h-screen">
-        
-        {/* 1번 네모: 제목 */}
-        <div className="mb-8 p-6">
-          <h1 className="text-3xl font-bold text-gray-900">스터디 모집 공고</h1>
-        </div>
+    // 페이지 컨테이너 - 전체 화면 배경색
+    <div className="w-full bg-gray-50 min-h-screen">
 
-        {/* 2번 네모: 필터 구역 (7주차 수정: 반응형 레이아웃 적용) */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10"> 
-          {/* !!!!(7주차 수정) flex-col로 세로 정렬하되, md: 768px 이상에서만 가로(row) 정렬, items-start로 왼쪽 정렬 */}
+      {/* ========== 사이드바 ========== */}
+      {/*
+        @todo [대기] 모바일 반응형
+        - lg 이상에서만 표시: hidden lg:block
+        - 모바일에서는 햄버거 메뉴로 대체
+      */}
+      <Sidebar
+        items={CATEGORIES}
+        selected={selectedCategory}
+        onSelect={setSelectedCategory}
+        writeLink="/study/write"
+      />
 
-          {/* 카테고리 버튼 구역 (7주차 수정: 줄바꿈 허용) */}
-          <div className="flex flex-wrap gap-2"> 
-            {/* (7주차 추가) flex-wrap을 넣어 화면이 좁아지면 버튼이 다음 줄로 넘어가게 함 */}
-            {/* [자바스크립트 문법] .map()을 사용하여 외부 상수의 배열 데이터를 JSX 리스트로 변환 */}
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleCategoryClick(category)}
-                className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                  selected === category
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+      {/* ========== 메인 콘텐츠 영역 ========== */}
+      {/*
+        ml-80: 사이드바 너비(320px)만큼 왼쪽 여백
+        @todo [대기] 모바일에서는 ml-0으로 변경
+        예: className="ml-0 lg:ml-80"
+      */}
+      <div className="ml-80">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-16">
+
+          {/* ========== 페이지 헤더 ========== */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            {/* 제목 영역 */}
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">스터디 모집</h1>
+            </div>
+
+            {/* 나의 작성 목록 버튼 - pill 스타일
+            <span className="
+              text-sm text-emerald-600
+              bg-white border border-emerald-500
+              rounded-full px-4 py-1
+              cursor-pointer hover:bg-emerald-50
+              w-fit
+            ">
+              나의 작성 목록 &gt;
+            </span> */}
           </div>
 
-          {/* 모집 상태 버튼 구역 (7주차 수정: 모바일 환경에서는 숨기고 데스크톱에서만 표시) */}
-          <div className="hidden md:flex bg-gray-100 p-1 rounded-full border border-gray-200"> 
-            <button 
-              onClick={() => handleStatusClick('모집 중')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                status === '모집 중' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600' 
+          {/* ========== 모집 상태 필터 탭 ========== */}
+          <div className="flex items-center gap-3 mb-6 text-sm">
+            {/* 모집 중 버튼 */}
+            <button
+              onClick={() => {
+                // isRecruiting = true → 콘솔에 찍지 않음 (요구사항)
+                setStatusFilter('모집 중');
+              }}
+              className={`flex items-center gap-1 transition-colors ${
+                statusFilter === '모집 중'
+                  ? 'text-gray-900 font-medium'  // 선택됨
+                  : 'text-gray-400'               // 선택 안됨
               }`}
             >
+              {/* 체크 아이콘 - 선택된 경우에만 표시 */}
+              {statusFilter === '모집 중' && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
               모집 중
             </button>
-            <button 
-              onClick={() => handleStatusClick('모집 완료')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                status === '모집 완료' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+
+            {/* 구분선 */}
+            <span className="text-gray-300">|</span>
+
+            {/* 모집 완료 버튼 */}
+            <button
+              onClick={() => {
+                // isRecruiting = false → 콘솔에 찍음 (요구사항)
+                const isRecruiting = false;
+                console.log(`[모집 상태 필터] isRecruiting: ${isRecruiting}`);
+                setStatusFilter('모집 완료');
+              }}
+              className={`flex items-center gap-1 transition-colors ${
+                statusFilter === '모집 완료'
+                  ? 'text-gray-900 font-medium'  // 선택됨
+                  : 'text-gray-400'               // 선택 안됨
               }`}
             >
+              {/* 체크 아이콘 - 선택된 경우에만 표시 */}
+              {statusFilter === '모집 완료' && (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
               모집 완료
             </button>
           </div>
-        </div>
 
-        {/* 3번 네모: 카드 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> {/*카드의 반응형을 담당하는 핵심 코드*/}
-          {/* [자바스크립트/React] 분리된 사용자 정의 컴포넌트 SDC(StudyCard)를 호출 */}
-          {/* [수정] 각 카드마다 원하는 제목과 시간을 개별적으로 지정했습니다. */}
-          <SDC number={1} category="C++" status="모집 중" title="웹개발 입문 스터디원 구함" time="10분 전" />
-          <SDC number={2} category="Python" status="모집 완료" title="데이터 분석 기초 스터디" time="2시간 전" />
-          <SDC number={3} category="Java" status="모집 중" title="자바 스프링 프로젝트 팀빌딩" time="5시간 전" />
-          <SDC number={4} category="알고리즘" status="모집 중" title="코딩테스트 1일 1문제 반" time="어제" />
-          <SDC number={5} category="기타" status="모집 중" title="디자인 협업하실 개발자분들!" time="3일 전" />
-          <SDC number={6} category="C++" status="모집 중" title="자료구조 빡세게 공부할 사람" time="1시간 전" />
-          <SDC number={7} category="Python" status="모집 완료" title="머신러닝 스터디 같이해요" time="4시간 전" />
-          <SDC number={8} category="Java" status="모집 중" title="안드로이드 앱 개발 스터디" time="30분 전" />
-          <SDC number={9} category="알고리즘" status="모집 중" title="LeetCode 같이 풀 사람?" time="어제" />
-        </div>
+          {/* ========== 카드 그리드 ========== */}
+          {/*
+            반응형 그리드:
+            - 모바일 (기본): 1열
+            - 태블릿 (md): 2열
+            - 데스크탑 (lg): 3열
+          */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {filteredStudies.map((study) => (
+              <SDC
+                key={study.id}
+                id={study.id}
+                category={study.category}
+                status={study.status}
+                title={study.title}
+                time="6시간 전"
+              />
+            ))}
 
-        {/* 4번 네모: 페이지네이션 (공통 컴포넌트 PGN 사용) */}
-        <PGN 
-          currentPage={currentPage} 
-          totalPages={TOTAL_PAGES} 
-          onPageChange={(num) => setCurrentPage(num)} 
-        />
-      </main>
+            {/* 필터링 결과가 없는 경우 */}
+            {filteredStudies.length === 0 && (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                해당 조건에 맞는 스터디가 없습니다.
+              </div>
+            )}
+          </div>
+
+          {/* ========== 페이지네이션 ========== */}
+          <PGN
+            currentPage={currentPage}
+            totalPages={TOTAL_PAGES}
+            onPageChange={(num) => setCurrentPage(num)}
+          />
+        </main>
+      </div>
     </div>
-  ); 
+  );
 }
