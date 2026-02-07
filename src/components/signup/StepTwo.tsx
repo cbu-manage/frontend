@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { useSignUp } from "@/hooks/useSignUp";
+import { useSignUp } from "@/hooks/auth";
 import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
 import LongBtn from "../common/LongBtn";
@@ -12,7 +12,7 @@ export default function StepTwo({
   email: string;
   onCompleted: () => void;
 }) {
-  const { registerUser, isSignUpSuccessful } = useSignUp();
+  const { registerUser, signUpErrorMessage } = useSignUp();
   const userStore = useUserStore();
 
   const handleJoin = async (e: React.FormEvent) => {
@@ -20,14 +20,16 @@ export default function StepTwo({
     const emailWithSuffix = email.includes("@")
       ? email
       : `${email}@tukorea.ac.kr`;
-    await registerUser(
+    const success = await registerUser(
       emailWithSuffix,
       userStore.studentNumber,
       userStore.name,
       userStore.nickName
     );
-    if (isSignUpSuccessful) {
+    if (success) {
       onCompleted();
+    } else if (signUpErrorMessage) {
+      alert(signUpErrorMessage);
     } else {
       alert("회원가입에 실패했습니다.");
     }
