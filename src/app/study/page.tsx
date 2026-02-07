@@ -108,8 +108,9 @@ export default function StudyPage() {
     // (7주차 수정) 전체 화면 너비를 차지하는 배경 레이어 추가 -> 사이드 검둥이 제거
     <div className="w-full bg-white min-h-screen">
       <main className="max-w-7xl mx-auto px-6 pt-24 py-12 bg-white min-h-screen">
-        {/* 1번 네모: 제목 + 글 작성 */}
-        <div className="mb-8 p-6 flex justify-between items-center">
+        
+        {/* 1번 네모: 제목 */}
+        <div className="mb-8 p-6">
           <h1 className="text-3xl font-bold text-gray-900">스터디 모집 공고</h1>
           <Link href="/write/study">
             <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
