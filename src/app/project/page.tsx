@@ -14,9 +14,7 @@
 'use client';
 
 import { useState } from 'react';
-<<<<<<< Updated upstream
 import Sidebar from '@/components/shared/Sidebar';
-=======
 import Link from 'next/link';
 import { ProjectRow as PJR, ProjectStatus, ProjectPosition } from '@/components/project/ProjectRow';
 >>>>>>> Stashed changes
