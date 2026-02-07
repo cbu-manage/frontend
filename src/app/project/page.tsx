@@ -16,8 +16,6 @@
 import { useState } from 'react';
 import Sidebar from '@/components/shared/Sidebar';
 import Link from 'next/link';
-import { ProjectRow as PJR, ProjectStatus, ProjectPosition } from '@/components/project/ProjectRow';
->>>>>>> Stashed changes
 import PGN from '@/components/shared/Pagination';
 import { ProjectCard, ProjectStatus } from '@/components/project/ProjectCard';
 
@@ -101,51 +99,17 @@ export default function ProjectPage() {
   });
 
   return (
-<<<<<<< Updated upstream
-    // 페이지 컨테이너 - 전체 화면 배경색
-    <div className="w-full bg-gray-50 min-h-screen">
-=======
     <div className="w-full bg-white min-h-screen">
-      {/* [메인 영역] pt-64: 모바일에서 길어진 헤더 높이만큼 상단 여백(Padding-Top)을 충분히 확보 */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-64 md:pt-32 py-12 bg-white min-h-screen font-sans">
-        
+      <main className="max-w-7xl mx-auto px-6 pt-24 py-12 bg-white min-h-screen">
         {/* 제목 + 글 작성 */}
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">프로젝트 모집</h1>
+        <div className="mb-8 p-6 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">프로젝트 모집 공고</h1>
           <Link href="/write/project">
             <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
               글 작성
             </button>
           </Link>
         </div>
-
-        {/* [1] 필터 구역 */}
-        <div className="mb-8 p-4 sm:p-8 bg-white rounded-xl">
-          <div className="flex flex-col gap-6 md:gap-8">
-            
-            {/* 1-1. 구인 포지션 필터 (모바일에서는 세로 레이아웃) */}
-            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-              <div className="w-auto md:w-28 font-bold text-gray-800 text-base md:text-lg whitespace-nowrap">
-                구인 포지션
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {/* [자바스크립트 문법] .map()을 사용하여 외부 상수의 배열 데이터만큼 버튼 생성 */}
-                {POSITIONS.map((pos) => (
-                  <button
-                    key={pos}
-                    onClick={() => handlePositionClick(pos)}
-                    className={`px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-medium transition-all ${
-                      selectedPosition === pos 
-                        ? 'bg-blue-600 text-white shadow-sm' // 선택된 버튼 스타일
-                        : 'border border-gray-200 text-gray-700 hover:bg-gray-50' // 일반 버튼 스타일
-                    }`}
-                  >
-                    {pos}
-                  </button>
-                ))}
-              </div>
-            </div>
->>>>>>> Stashed changes
 
       {/* ========== 사이드바 ========== */}
       {/*
@@ -264,6 +228,7 @@ export default function ProjectPage() {
           />
         </main>
       </div>
+      </main>
     </div>
   );
 }
