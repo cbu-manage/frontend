@@ -15,6 +15,7 @@
 
 import { useState } from 'react';
 import Sidebar from '@/components/shared/Sidebar';
+import Link from 'next/link';
 import PGN from '@/components/shared/Pagination';
 import { ProjectCard, ProjectStatus } from '@/components/project/ProjectCard';
 
@@ -98,8 +99,17 @@ export default function ProjectPage() {
   });
 
   return (
-    // 페이지 컨테이너 - 전체 화면 배경색
-    <div className="w-full bg-gray-50 min-h-screen">
+    <div className="w-full bg-white min-h-screen">
+      <main className="max-w-7xl mx-auto px-6 pt-24 py-12 bg-white min-h-screen">
+        {/* 제목 + 글 작성 */}
+        <div className="mb-8 p-6 flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">프로젝트 모집 공고</h1>
+          <Link href="/write/project">
+            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+              글 작성
+            </button>
+          </Link>
+        </div>
 
       {/* ========== 사이드바 ========== */}
       {/*
@@ -218,6 +228,7 @@ export default function ProjectPage() {
           />
         </main>
       </div>
+      </main>
     </div>
   );
 }
