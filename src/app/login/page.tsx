@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLogin } from "@/hooks/useLogin";
+import { useLogin } from "@/hooks/auth";
 import InputBox from "@/components/common/InputBox";
 import LongBtn from "@/components/common/LongBtn";
 import OutlineBtn from "@/components/common/OutlineBtn";

@@ -15,10 +15,14 @@ export default function LongBtn({ children, disabled, className = "", ...props }
         ${
           disabled
             ? "bg-gray-300 cursor-not-allowed text-gray-500"
-            : "bg-brand hover:opacity-90 active:opacity-80"
+            : "hover:opacity-90 active:opacity-80"
         }
         ${className}
       `.trim()}
+      style={{
+        backgroundColor: disabled ? "#c7cbd1" : "#95c674",
+        ...props.style,
+      }}
     >
       {children}
     </button>

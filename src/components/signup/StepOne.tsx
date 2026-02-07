@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { useVerifyUser, type UserInfo } from "@/hooks/useVerifyUser";
-import { useVerifyEmail } from "@/hooks/useVerifyEmail";
+import { useVerifyUser } from "@/hooks/user";
+import type { UserInfo } from "@/api/user.api";
+import { useVerifyEmail } from "@/hooks/mail";
 import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
 import ShortBtn from "../common/ShortBtn";
