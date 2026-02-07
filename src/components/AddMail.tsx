@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
-import { useVerifyEmail } from "@/hooks/useVerifyEmail";
-import { useUserStore } from "@/store/userStore";
+import { useVerifyEmail } from "@/hooks/mail";
+import { useMailUpdate } from "@/hooks/mail";
 
 export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => void }) {
-  const userStore = useUserStore();
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const { isVerificationSent, sendEmailToServer, verifyCodeWithServer } = useVerifyEmail();
-  const updateEmail = useUserStore((s) => s.updateEmail);
+  const mailUpdateMutation = useMailUpdate(onEmailUpdated);
 
   return (
     <div className="space-y-4 w-full max-w-md">
@@ -44,26 +43,7 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
               const res = await verifyCodeWithServer(email, code);
               if (res.success) {
                 const emailWithSuffix = email.includes("@") ? email : `${email}@tukorea.ac.kr`;
-                const SERVER_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-                try {
-                  const resp = await fetch(`${SERVER_URL}/mail/update`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      studentNumber: userStore.studentNumber,
-                      email: emailWithSuffix,
-                    }),
-                  });
-                  if (resp.ok) {
-                    updateEmail(emailWithSuffix);
-                    alert("📩 이메일이 성공적으로 등록되었습니다!");
-                    onEmailUpdated?.();
-                  } else {
-                    alert("이메일 업데이트에 실패했습니다. 다시 시도해주세요.");
-                  }
-                } catch (e) {
-                  alert("이메일 업데이트 중 오류가 발생했습니다. 다시 시도해주세요.");
-                }
+                mailUpdateMutation.mutate(emailWithSuffix);
               }
             }}
           >
