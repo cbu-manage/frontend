@@ -3,21 +3,28 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import InputBox from "@/components/common/InputBox";
-import LongBtn from "@/components/common/LongBtn";
+import MultiSelect from "@/components/common/MultiSelect";
+import Toggle from "@/components/common/Toggle";
 
 const WRITE_CONFIG = {
   project: {
     title: "프로젝트 모집",
     backPath: "/project",
+    categories: ["프론트엔드", "백엔드", "개발", "디자인", "기획", "기타"],
   },
   study: {
     title: "스터디 모집",
     backPath: "/study",
+    categories: ["C++", "Python", "Java", "알고리즘", "기타"],
   },
 } as const;
 
 type WriteType = keyof typeof WRITE_CONFIG;
+
+const RECRUIT_STATUS_OPTIONS = [
+  { label: "모집 중", value: "recruiting" },
+  { label: "모집 완료", value: "completed" },
+];
 
 export default function WritePage() {
   const params = useParams();
@@ -26,12 +33,13 @@ export default function WritePage() {
   const config = WRITE_CONFIG[type as WriteType];
 
   const [title, setTitle] = useState("");
-  const [link, setLink] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [recruitStatus, setRecruitStatus] = useState("recruiting");
+  const [content, setContent] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // 나중에 API 호출 - type에 따라 다른 엔드포인트
-    console.log({ type, title, link });
+    console.log({ type, title, categories, recruitStatus, content });
   };
 
   if (!config) {
@@ -40,51 +48,114 @@ export default function WritePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-4xl p-18 mx-4">
-        <div className="text-center mb-14">
-          <h1 className="text-xl font-semibold text-gray-900">
+    <main className="min-h-screen bg-gray-100">
+      <div className="max-w-[1600px] mx-auto px-6 py-8 bg-white min-h-screen">
+        {/* 브레드크럼 */}
+        <nav className="text-sm text-gray-500 mb-2">
+          <Link href={config.backPath} className="hover:text-gray-700 hover:underline">
             {config.title}
-          </h1>
-        </div>
+          </Link>
+          <span className="mx-2">&gt;</span>
+          <span className="text-gray-900">글 작성하기</span>
+        </nav>
 
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
+        {/* 제목 */}
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">글 작성</h1>
+
+        {/* 구분선 */}
+        <div className="border-t border-gray-900 mb-6" />
+
+        {/* 폼 */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* 제목, 분류, 모집상태 - 회색 박스 */}
+          <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
+            {/* 제목 입력 */}
+            <div>
+              <input
+                type="text"
+                placeholder="제목을 입력해 주세요"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className="
+                  w-full px-4 py-3 text-base
+                  bg-gray-50 border border-gray-200 rounded-lg
+                  placeholder:text-gray-400
+                  transition-all duration-150
+                  focus:outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand
+                "
+              />
+            </div>
+
+            {/* 분류 & 모집상태 */}
+            <div className="flex gap-4 items-end">
+              {/* 분류 멀티셀렉트 */}
+              <div className="flex-1">
+                <MultiSelect
+                  label="분류"
+                  placeholder="분류를 선택해 주세요"
+                  options={[...config.categories]}
+                  value={categories}
+                  onChange={setCategories}
+                />
+              </div>
+
+              {/* 모집상태 토글 */}
+              <div>
+                <Toggle
+                  label="모집 상태"
+                  options={RECRUIT_STATUS_OPTIONS}
+                  value={recruitStatus}
+                  onChange={setRecruitStatus}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 내용 입력 */}
           <div>
-            <InputBox
-              insetLabel="제목"
-              placeholder="제목을 입력하세요"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="h-16"
+            <textarea
+              placeholder="내용을 입력해 주세요."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={22}
+              className="
+                w-full px-4 py-3 text-base
+                bg-white border border-gray-200 rounded-lg
+                placeholder:text-gray-400
+                transition-all duration-150 resize-none
+                hover:bg-gray-100
+                focus:outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand
+              "
             />
           </div>
 
-          <div>
-            <InputBox
-              insetLabel="링크"
-              placeholder="링크를 입력하세요"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="h-16"
-            />
-          </div>
-
-          <div className="pt-2">
-            <LongBtn type="submit">게시하기</LongBtn>
+          {/* 하단 버튼 */}
+          <div className="flex justify-end gap-3 pt-2">
+            <Link href={config.backPath}>
+              <button
+                type="button"
+                className="
+                  px-6 py-2.5 text-sm font-medium
+                  text-gray-600 bg-white border border-gray-300 rounded-full
+                  hover:bg-gray-50 transition-colors duration-150
+                "
+              >
+                취소
+              </button>
+            </Link>
+            <button
+              type="submit"
+              className="
+                px-6 py-2.5 text-sm font-medium
+                text-white bg-gray-800 rounded-full
+                hover:bg-gray-900 transition-colors duration-150
+              "
+            >
+              게시하기
+            </button>
           </div>
         </form>
-
-        <div className="mt-8 flex justify-center">
-          <Link href={config.backPath}>
-            <button
-              type="button"
-              className="px-6 py-2 text-gray-600 hover:text-gray-900 text-sm"
-            >
-              목록으로
-            </button>
-          </Link>
-        </div>
       </div>
     </main>
   );
