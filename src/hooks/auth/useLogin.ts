@@ -59,7 +59,7 @@ export function useLogin() {
         const shouldChangePassword = window.confirm(
           "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?"
         );
-        router.push(shouldChangePassword ? "/change-password" : "/");
+        router.push(shouldChangePassword ? "/user?tab=password" : "/");
       } else {
         router.push("/");
       }

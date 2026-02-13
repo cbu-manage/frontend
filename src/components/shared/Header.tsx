@@ -75,7 +75,7 @@ export default function Header() {
               {isDropdownOpen && (
                 <div className="absolute right-0 top-full z-[999] mt-3 w-[180px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
                   <Link
-                    href="/change-password"
+                    href="/user?tab=password"
                     className="block rounded py-3 px-3.5 text-sm hover:bg-gray-100"
                   >
                     비밀번호 변경
