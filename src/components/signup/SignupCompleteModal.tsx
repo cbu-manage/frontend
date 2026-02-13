@@ -6,15 +6,26 @@ import { useUserStore } from "@/store/userStore";
 import LongBtn from "@/components/common/LongBtn";
 import OutlineBtn from "@/components/common/OutlineBtn";
 
-export default function SignupCompleteModal({ open }: { open: boolean }) {
+interface SignupCompleteModalProps {
+  open: boolean;
+  onClose?: () => void;
+}
+
+export default function SignupCompleteModal({ open, onClose }: SignupCompleteModalProps) {
   const userStore = useUserStore();
   const transformedUserId = `cbu${userStore.studentNumber}`;
   const defaultPassword = "12345678";
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-3xl bg-white rounded-4xl p-24 shadow-lg">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-3xl bg-white rounded-4xl p-24 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-center mb-8">
           <Image
             src="/assets/logo.png"
@@ -48,12 +59,16 @@ export default function SignupCompleteModal({ open }: { open: boolean }) {
           </p>
         </div>
         <div className="flex gap-6 justify-center">
-          <Link href="/user?tab=password" className="flex-1 max-w-[200px]">
+          <Link
+            href="/user?tab=password"
+            className="flex-1 max-w-[200px]"
+            onClick={onClose}
+          >
             <OutlineBtn type="button" className="w-full">
               비밀번호 변경
             </OutlineBtn>
           </Link>
-          <Link href="/login" className="flex-1 max-w-[200px]">
+          <Link href="/login" className="flex-1 max-w-[200px]" onClick={onClose}>
             <LongBtn type="button" className="w-full">
               로그인
             </LongBtn>
