@@ -15,7 +15,6 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/shared/Sidebar";
-import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
 import { ProjectCard, ProjectStatus } from "@/components/project/ProjectCard";
 
