@@ -9,7 +9,7 @@ export default function GuidePassword() {
       <p className="text-sm text-zinc-600">현재 기본 비밀번호를 사용 중입니다. 보안을 위해 비밀번호를 변경해 주세요.</p>
       <button
         className="rounded-lg bg-zinc-900 text-white px-4 py-2"
-        onClick={() => router.push("/change-password")}
+        onClick={() => router.push("/user?tab=password")}
       >
         비밀번호 변경하러 가기
       </button>

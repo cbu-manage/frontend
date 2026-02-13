@@ -10,9 +10,10 @@
  * @todo [대기] 모바일 반응형 - 햄버거 메뉴 또는 하단 시트로 변경 필요
  */
 
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
+import Image from "next/image";
 
 // ============================================
 // 타입 정의
@@ -34,7 +35,7 @@ interface SidebarItem {
  */
 interface SidebarProps {
   /** 카테고리 아이템 배열 */
-  items: SidebarItem[];
+  items: readonly SidebarItem[];
 
   /** 현재 선택된 카테고리 값 */
   selected: string;
@@ -42,8 +43,11 @@ interface SidebarProps {
   /** 카테고리 선택 시 호출되는 콜백 함수 */
   onSelect: (value: string) => void;
 
-  /** 글 작성하기 버튼 링크 */
-  writeLink: string;
+  /**
+   * 글 작성하기 버튼 링크
+   * 없으면 글 작성하기 버튼을 렌더하지 않음 (예: user 페이지)
+   */
+  writeLink?: string;
 
   /**
    * 글 작성하기 버튼 라벨
@@ -85,8 +89,9 @@ export default function Sidebar({
   selected,
   onSelect,
   writeLink,
-  writeLabel = '글 작성하기',
+  writeLabel = "글 작성하기",
 }: SidebarProps) {
+  const showWriteButton = Boolean(writeLink);
   return (
     /**
      * 사이드바 컨테이너
@@ -99,15 +104,14 @@ export default function Sidebar({
      * @todo [대기] 모바일에서는 hidden 처리하고 별도 모바일 메뉴 구현 필요
      * 예: className="hidden lg:block w-80 fixed ..."
      */
-    <aside className="w-80 fixed left-0 top-[83px] bg-white border-r border-gray-200 rounded-r-3xl">
+    <aside className="w-80 fixed left-0 top-[83px] h-[calc(100vh-83px)] bg-white border-r border-gray-200 rounded-r-3xl">
       {/*
         내부 컨텐츠 래퍼
         - pl-20 pr-12: 좌측 패딩이 우측보다 큼 (디자인 요구사항)
         - pt-14: 상단 여백
         - pb-48: 하단 여백 (글 작성하기 버튼 공간 확보)
       */}
-      <div className="pl-20 pr-12 pt-14 pb-48">
-
+      <div className="pl-20 pr-12 pt-14 pb-8 flex flex-col h-full">
         {/* ========== 카테고리 네비게이션 ========== */}
         <nav className="space-y-2">
           {items.map((item) => (
@@ -122,11 +126,12 @@ export default function Sidebar({
                 w-full text-left px-4 py-3 rounded-xl
                 flex items-center gap-2
                 transition-all text-sm
-                ${selected === item.value
-                  // 선택된 상태: 배경색 + 테두리 + 굵은 글씨
-                  ? 'bg-gray-100 border border-gray-300 font-medium text-gray-900'
-                  // 선택되지 않은 상태: 호버 시 배경색 변경
-                  : 'text-gray-900 hover:bg-gray-50'
+                ${
+                  selected === item.value
+                    ? // 선택된 상태: 배경색 + 굵은 글씨
+                      "bg-gray-50 border border-gray-50 font-medium text-gray-900"
+                    : // 선택되지 않은 상태: 호버 시 배경색 변경
+                      "text-gray-900 hover:bg-gray-50"
                 }
               `}
             >
@@ -138,30 +143,30 @@ export default function Sidebar({
           ))}
         </nav>
 
-        {/* ========== 글 작성하기 버튼 ========== */}
-        {/* LongBtn 스타일 적용 (bg-brand, rounded-lg, p-4, font-semibold) */}
-        <Link
-          href={writeLink}
-          className="
-            mt-44 w-full
-            flex items-center justify-center gap-2
-            px-4 py-2.5
-            bg-brand hover:opacity-90 active:opacity-80
-            text-white font-semibold
-            rounded-lg transition-all duration-200
-          "
-        >
-          {/* 펜 아이콘 (SVG) */}
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-            />
-          </svg>
-          {writeLabel}
-        </Link>
+        {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
+        {showWriteButton && writeLink && (
+          <div className="mt-auto pt-8">
+            <Link
+              href={writeLink}
+              className="
+                w-full
+                flex items-center justify-center gap-2
+                px-4 py-2.5
+                bg-gray-800 text-gray-0 hover:opacity-90 active:opacity-80 font-semibold
+                rounded-lg transition-all duration-200
+              "
+            >
+              {/* 펜 아이콘 (assets/pencil) */}
+              <Image
+                src="/assets/pencil.svg"
+                alt="글 작성 아이콘"
+                width={16}
+                height={16}
+              />
+              {writeLabel}
+            </Link>
+          </div>
+        )}
       </div>
     </aside>
   );

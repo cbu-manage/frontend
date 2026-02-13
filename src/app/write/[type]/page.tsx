@@ -48,11 +48,14 @@ export default function WritePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100">
-      <div className="max-w-[1600px] mx-auto px-6 py-8 bg-white min-h-screen">
+    <main className="min-h-screen px-80 bg-gray-100">
+      <div className="px-12 py-8 bg-white min-h-screen">
         {/* 브레드크럼 */}
         <nav className="text-sm text-gray-500 mb-2">
-          <Link href={config.backPath} className="hover:text-gray-700 hover:underline">
+          <Link
+            href={config.backPath}
+            className="hover:text-gray-700 hover:underline"
+          >
             {config.title}
           </Link>
           <span className="mx-2">&gt;</span>
@@ -131,7 +134,7 @@ export default function WritePage() {
           </div>
 
           {/* 하단 버튼 */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3">
             <Link href={config.backPath}>
               <button
                 type="button"

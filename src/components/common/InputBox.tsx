@@ -1,8 +1,7 @@
 "use client";
 import React from "react";
 
-interface InputBoxProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputBoxProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /** 에러 메시지 (있으면 error 상태 + 하단 안내 문구 노출) */
   errorMessage?: string;
   /** 성공 상태 여부 (체크 아이콘 노출) */
@@ -54,8 +53,8 @@ export default function InputBox({
               disabled
                 ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
                 : hasError
-                ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
-                : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-transparent focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
+                  ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
+                  : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-transparent focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
             }
             ${hasRightElement ? "pr-12" : ""}
             ${className}
@@ -64,7 +63,7 @@ export default function InputBox({
             borderColor: hasError ? "#ff4e4e" : undefined,
           }}
         />
-        
+
         {/* Inset Label */}
         <label className="absolute left-4 top-2 text-xs font-medium text-gray-500 pointer-events-none transition-all duration-150 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-600 peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-gray-500 has-[:not(:placeholder-shown)]:top-2 has-[:not(:placeholder-shown)]:text-xs">
           {insetLabel}
@@ -117,8 +116,8 @@ export default function InputBox({
               disabled
                 ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
                 : hasError
-                ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
-                : "bg-gray-50 border-transparent text-gray-900 placeholder:text-gray-600 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
+                  ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
+                  : "bg-gray-50 border-transparent text-gray-900 placeholder:text-gray-600 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
             }
             ${hasRightElement ? "pr-12" : ""}
             ${className}
@@ -156,7 +155,10 @@ export default function InputBox({
 
       {/* 에러 메시지 */}
       {hasError && errorMessage && (
-        <p className="text-xs flex items-center gap-1 mt-1" style={{ color: "#ff4e4e" }}>
+        <p
+          className="text-xs flex items-center gap-1 mt-1"
+          style={{ color: "#ff4e4e" }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="11"
