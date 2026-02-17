@@ -25,7 +25,10 @@ export default function MultiSelect({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -50,7 +53,7 @@ export default function MultiSelect({
   return (
     <div className={`w-full ${className}`} ref={dropdownRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-800 mb-2">
+        <label className="block text-base font-medium text-gray-800 mb-2">
           {label}
         </label>
       )}
@@ -61,11 +64,12 @@ export default function MultiSelect({
           onClick={() => setIsOpen(!isOpen)}
           className={`
             w-full flex items-center justify-between gap-2
-            rounded-lg px-4 py-3 text-base
-            border transition-all duration-150 min-h-[48px]
-            ${isOpen
-              ? "bg-white border-brand ring-1 ring-brand"
-              : "bg-white border-gray-200 hover:bg-gray-100"
+            rounded-lg px-5 py-2 text-base
+            border transition-all duration-150 min-h-[44px]
+            ${
+              isOpen
+                ? "bg-white border-brand ring-1 ring-brand"
+                : "bg-white border-gray-300 hover:bg-gray-100"
             }
           `}
         >
@@ -88,7 +92,7 @@ export default function MultiSelect({
             )}
           </div>
           <ChevronDown
-            className={`w-5 h-5 text-gray-500 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+            className={`w-5 h-5 text-gray-500 transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -99,18 +103,29 @@ export default function MultiSelect({
                 key={option}
                 onClick={() => handleToggle(option)}
                 className={`
-                  px-4 py-3 cursor-pointer text-base font-medium transition-colors duration-150
+                  px-3 py-2 cursor-pointer text-base font-medium transition-colors duration-150
                   flex items-center justify-between
-                  ${value.includes(option)
-                    ? "bg-brand/20 text-gray-900"
-                    : "text-gray-700 hover:bg-gray-100"
+                  ${
+                    value.includes(option)
+                      ? "bg-brand/20 text-gray-900"
+                      : "text-gray-700 hover:bg-gray-100"
                   }
                 `}
               >
                 {option}
                 {value.includes(option) && (
-                  <svg className="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  <svg
+                    className="w-4 h-4 text-brand"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 )}
               </li>
