@@ -61,14 +61,14 @@ export default function ProjectDetailPage() {
           backPath="/project"
           {...MOCK_DATA}
           footer={
-            <button className="
-              flex items-center justify-center 
-              px-5 py-2 gap-[7px] 
-              rounded-full border-2 border-brand bg-brand 
-              text-white text-base font-semibold 
-              hover:opacity-90 transition-all duration-200
-            ">
-              {isAuthor ? "신청 인원 확인" : "신청"}
+            <button
+              className={
+                isAuthor
+                  ? "flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-brand text-white text-base font-semibold hover:opacity-90 transition-all duration-200"
+                  : "flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-[var(--Brand-100,#F4F9F1)] transition-all duration-200"
+              }
+            >
+              {isAuthor ? "신청 인원 확인" : "신청하기"}
             </button>
           }
         />
