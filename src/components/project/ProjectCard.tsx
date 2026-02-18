@@ -17,6 +17,9 @@
 
 'use client';
 
+import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -106,7 +109,7 @@ export function ProjectCard({
 
   return (
     // 카드 컨테이너 - 3분할 레이아웃 (왼쪽/중앙/오른쪽)
-    <div className="
+    <Link href={`/project/${id}`} className="
       bg-white rounded-2xl border border-gray-200
       px-4 sm:px-6 py-4
       min-h-[90px]
@@ -152,12 +155,15 @@ export function ProjectCard({
         <span className="text-xs text-gray-400">👁️ {views}</span>
 
         {/* 댓글 수 */}
-        <span className="text-xs text-gray-400">💬 {comments}</span>
+        <span className="flex items-center gap-1 text-xs text-gray-400">
+          <MessageCircle size={14} />
+          {comments}
+        </span>
 
         {/* 작성 시간 */}
         <span className="text-xs text-gray-400">🕑 {time}</span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -170,6 +176,9 @@ export function ProjectCard({
  * ProjectRow 컴포넌트 Props 인터페이스
  */
 interface ProjectRowProps {
+  /** 카드 고유 번호 (key용) */
+  id: number;
+
   /** 모집 상태 */
   status: ProjectStatus;
 
@@ -210,6 +219,7 @@ interface ProjectRowProps {
  * />
  */
 export function ProjectRow({
+  id,
   status,
   position,
   title,
@@ -221,7 +231,7 @@ export function ProjectRow({
   const isCompleted = status === '모집 완료';
 
   return (
-    <div className="border-b border-gray-100 py-4 hover:bg-gray-50 transition-colors cursor-pointer w-full">
+    <Link href={`/project/${id}`} className="border-b border-gray-100 py-4 hover:bg-gray-50 transition-colors cursor-pointer w-full block">
       {/* ========== 모바일 카드형 (sm 미만) ========== */}
       <div className="flex flex-col gap-3 sm:hidden px-4 w-full">
         {/* 상단: 상태 및 포지션 배지 */}
@@ -242,7 +252,12 @@ export function ProjectRow({
         <div className="flex justify-between items-end gap-4">
           <div className="font-semibold text-gray-800 text-sm leading-snug break-keep">
             {title}
-            {comments && <span className="text-blue-500 ml-1 text-xs font-normal">💬 {comments}</span>}
+            {comments && (
+              <span className="inline-flex items-center ml-1 text-blue-500 text-xs font-normal">
+                <MessageCircle size={12} className="mr-0.5" />
+                {comments}
+              </span>
+            )}
           </div>
 
           {/* 작성자 및 시간 */}
@@ -271,11 +286,16 @@ export function ProjectRow({
         </div>
         <div className="col-span-3 md:col-span-4 lg:col-span-4 text-left md:text-center px-4 font-semibold text-gray-800 text-sm md:text-base">
           {title}
-          {comments && <span className="text-blue-500 ml-2 text-xs font-normal">💬 {comments}</span>}
+          {comments && (
+            <span className="inline-flex items-center ml-2 text-blue-500 text-xs font-normal">
+              <MessageCircle size={14} className="mr-1" />
+              {comments}
+            </span>
+          )}
         </div>
         <div className="hidden md:block md:col-span-2 text-gray-500 text-sm">{author}</div>
         <div className="hidden lg:block lg:col-span-2 text-gray-400 text-sm">{time}</div>
       </div>
-    </div>
+    </Link>
   );
 }

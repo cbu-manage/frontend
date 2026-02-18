@@ -222,7 +222,7 @@ export default function ArchivePage() {
     <main className="min-h-screen pb-12 bg-white">
       <div className="px-[9.375%]">
         {/* 헤더 섹션 */}
-        <div className="pt-12 flex items-start justify-between mb-12">
+        <div className="pt-12 flex items-start justify-between">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
               자료방
@@ -232,7 +232,7 @@ export default function ArchivePage() {
             </p>
           </div>
           <Link href="/archive/write">
-            <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-lg hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
+            <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
               <Pencil size={18} />
               글 작성하기
             </button>

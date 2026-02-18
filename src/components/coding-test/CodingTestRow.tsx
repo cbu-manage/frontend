@@ -13,6 +13,9 @@
 
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { MessageCircle } from 'lucide-react';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -79,10 +82,14 @@ export function CodingTestRow({
   author = '34기 씨부엉',
   comments = 333,
 }: CodingTestRowProps) {
+  const router = useRouter();
   const isSolved = status === '해결';
 
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
+    <tr 
+      onClick={() => router.push(`/coding-test/${id}`)}
+      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+    >
       {/* 상태 */}
       <td className="py-4 px-4 text-center">
         <span className={`px-3 py-1 rounded-full text-xs text-white ${
@@ -119,7 +126,7 @@ export function CodingTestRow({
       {/* 댓글 */}
       <td className="py-4 px-4 text-center text-gray-400 text-sm">
         <span className="flex items-center justify-center gap-1">
-          <span>💬</span>
+          <MessageCircle size={14} className="text-gray-400" />
           <span>{comments}</span>
         </span>
       </td>

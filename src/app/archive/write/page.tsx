@@ -16,16 +16,16 @@ export default function ArchiveWritePage() {
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="w-full max-w-4xl bg-white rounded-4xl p-18 mx-4">
+      <div className="w-full max-w-4xl bg-white rounded-4xl px-18 py-12">
         {/* 헤더 */}
-        <div className="text-center mb-14">
+        <div className="text-center mb-14 flex-1 justify-center">
           <h1 className="text-xl font-semibold text-gray-900">
             자료방 글 작성
           </h1>
         </div>
 
         {/* 폼 */}
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* 제목 */}
           <div>
             <InputBox
@@ -50,7 +50,7 @@ export default function ArchiveWritePage() {
           </div>
 
           {/* 버튼 */}
-          <div className="pt-2">
+          <div className="pt-6">
             <LongBtn type="submit">게시하기</LongBtn>
           </div>
         </form>
