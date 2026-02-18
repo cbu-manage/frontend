@@ -1,11 +1,9 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 
 export default function Header() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const pathname = usePathname();
   const name = useUserStore((s) => s.name);
   const clearUser = useUserStore((s) => s.clearUser);
@@ -51,44 +49,37 @@ export default function Header() {
                 </Link>
               </li>
             ))}
+            {isLoggedIn && (
+              <li>
+                <Link
+                  href="/user"
+                  className={`transition-colors hover:text-brand ${
+                    pathname.startsWith("/user")
+                      ? "text-brand font-semibold"
+                      : "text-gray-700"
+                  }`}
+                >
+                  마이페이지
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
-        <div className="flex min-w-[120px] justify-end flex-1 md:flex-none">
+        <div className="flex items-center gap-4 justify-end flex-1 md:flex-none">
           {!isLoggedIn ? (
             <Link
               href="/login"
-              className="text-base font-medium text-gray-700 transition-colors hover:text-brand truncate"
+              className="flex items-center justify-center px-3 py-1.5 gap-[7px] rounded-lg bg-brand text-white text-base font-semibold leading-[140%] tracking-[-0.06px] transition-colors hover:opacity-90"
             >
               로그인
             </Link>
           ) : (
-            <div className="relative flex items-center gap-2 min-w-0">
-              <p className="text-sm text-[#333] truncate">
-                {name}님, 환영합니다!
-              </p>
-              <button
-                onClick={() => setIsDropdownOpen((v) => !v)}
-                className="text-sm text-gray-700 flex-shrink-0"
-              >
-                {isDropdownOpen ? "▲" : "▼"}
-              </button>
-              {isDropdownOpen && (
-                <div className="absolute right-0 top-full z-[999] mt-3 w-[180px] rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-                  <Link
-                    href="/user?tab=password"
-                    className="block rounded py-3 px-3.5 text-sm hover:bg-gray-100"
-                  >
-                    비밀번호 변경
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full rounded py-3 px-3.5 text-left text-sm hover:bg-gray-100"
-                  >
-                    로그아웃
-                  </button>
-                </div>
-              )}
-            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center justify-center px-3 py-1.5 gap-[7px] rounded-lg bg-brand text-white text-base font-semibold leading-[140%] tracking-[-0.06px] transition-colors hover:opacity-90"
+            >
+              로그아웃
+            </button>
           )}
         </div>
       </div>
