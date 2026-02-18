@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { MessageCircle, Clock, MoreHorizontal } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { MessageCircle, Clock, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 interface CommentInputProps {
   placeholder?: string;
@@ -63,6 +63,8 @@ interface CommentItemProps {
   replies?: ReplyData[];
   activeReplyId: number | null;
   onReplyClick: (id: number | null) => void;
+  onEditComment?: (id: number) => void;
+  onDeleteComment?: (id: number) => void;
 }
 
 /**
@@ -76,11 +78,27 @@ export const CommentItem = ({
   depth = 0, 
   replies = [], 
   activeReplyId, 
-  onReplyClick 
+  onReplyClick,
+  onEditComment,
+  onDeleteComment,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
   const isOpen = activeReplyId === id;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
   return (
     <div className="w-full">
@@ -91,9 +109,42 @@ export const CommentItem = ({
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-base">{author}</span>
-          <button className="text-gray-400 hover:text-gray-600">
-            <MoreHorizontal size={20} />
-          </button>
+          <div className="relative shrink-0" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            >
+              <MoreHorizontal size={20} />
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onEditComment?.(id);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Pencil size={18} className="shrink-0 text-gray-500" />
+                  수정
+                </button>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDeleteComment?.(id);
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={18} className="shrink-0" />
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         
         <p className="text-gray-800 text-base font-medium mb-4 leading-relaxed">
@@ -134,6 +185,8 @@ export const CommentItem = ({
               depth={depth + 1} 
               activeReplyId={activeReplyId}
               onReplyClick={onReplyClick}
+              onEditComment={onEditComment}
+              onDeleteComment={onDeleteComment}
             />
           ))}
         </div>

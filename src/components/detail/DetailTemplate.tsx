@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Pencil, Trash2 } from "lucide-react";
 
 interface DetailTemplateProps {
   title: string;
@@ -24,6 +24,8 @@ interface DetailTemplateProps {
   /** false면 댓글 영역은 보이지만 메타데이터의 댓글 수는 숨김 (예: 로그인 유도 메시지일 때) */
   showCommentsCount?: boolean;
   isMarkdown?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export default function DetailTemplate({
@@ -42,8 +44,24 @@ export default function DetailTemplate({
   comments,
   showCommentsCount = true,
   isMarkdown = false,
+  onEdit,
+  onDelete,
 }: DetailTemplateProps) {
   const router = useRouter();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
   // 상태 배지 스타일 및 텍스트 결정
   const getStatusDisplay = () => {
@@ -85,22 +103,55 @@ export default function DetailTemplate({
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
-          <button className="flex items-center justify-center w-14 h-14 shrink-0 hover:bg-gray-50 transition-all text-gray-400">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="relative shrink-0" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="flex items-center justify-center w-14 h-14 shrink-0 rounded-full hover:bg-gray-50 transition-all text-gray-400"
             >
-              <circle cx="12" cy="12" r="1" />
-              <circle cx="12" cy="5" r="1" />
-              <circle cx="12" cy="19" r="1" />
-            </svg>
-          </button>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="1" />
+                <circle cx="12" cy="5" r="1" />
+                <circle cx="12" cy="19" r="1" />
+              </svg>
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onEdit?.();
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  <Pencil size={18} className="shrink-0 text-gray-500" />
+                  수정
+                </button>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDelete?.();
+                    setMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  <Trash2 size={18} className="shrink-0" />
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 메인 컨텐츠 영역 */}
