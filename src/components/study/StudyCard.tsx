@@ -11,6 +11,9 @@
 
 'use client';
 
+import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
+
 // ============================================
 // 타입 정의
 // ============================================
@@ -94,10 +97,9 @@ export function StudyCard({
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === '모집 완료';
 
-
   return (
     // 카드 컨테이너 - 호버 시 그림자 효과
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
+    <Link href={`/study/${id}`} className="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
 
       {/* 카드 상단: 모집 상태, 제목, 카테고리 태그 */}
       <div className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 flex-1">
@@ -155,9 +157,12 @@ export function StudyCard({
         {/* 조회수 + 댓글 수 */}
         <div className="flex gap-2 sm:gap-3 text-xs text-gray-400">
           <span>👁️ 122</span>
-          <span>💬 333</span>
+          <span className="flex items-center gap-1">
+            <MessageCircle size={14} />
+            333
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

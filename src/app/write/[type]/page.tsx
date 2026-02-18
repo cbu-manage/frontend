@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
+
+const EDIT_STORAGE_KEY: Record<string, string> = {
+  study: "editPost_study",
+  project: "editPost_project",
+};
 
 const WRITE_CONFIG = {
   project: {
@@ -36,6 +41,28 @@ export default function WritePage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
   const [content, setContent] = useState("");
+
+  // 수정 시 상세 페이지에서 담아온 데이터로 폼 채우기
+  useEffect(() => {
+    const key = EDIT_STORAGE_KEY[type];
+    if (!key) return;
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as {
+        title?: string;
+        categories?: string[];
+        recruitStatus?: string;
+        content?: string;
+      };
+      if (data.title) setTitle(data.title);
+      if (data.categories?.length) setCategories(data.categories);
+      if (data.recruitStatus) setRecruitStatus(data.recruitStatus);
+      if (data.content) setContent(data.content);
+    } finally {
+      sessionStorage.removeItem(key);
+    }
+  }, [type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import MultiSelect from "@/components/common/MultiSelect";
@@ -42,6 +42,26 @@ export default function WritePage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [solveStatus, setSolveStatus] = useState("unsolved");
   const [content, setContent] = useState("");
+
+  // 수정 시 상세 페이지에서 담아온 데이터로 폼 채우기
+  useEffect(() => {
+    const raw = sessionStorage.getItem("editPost_codingtest");
+    if (!raw) return;
+    try {
+      const data = JSON.parse(raw) as {
+        title?: string;
+        categories?: string[];
+        solveStatus?: string;
+        content?: string;
+      };
+      if (data.title) setTitle(data.title);
+      if (data.categories?.length) setCategories(data.categories);
+      if (data.solveStatus) setSolveStatus(data.solveStatus);
+      if (data.content) setContent(data.content);
+    } finally {
+      sessionStorage.removeItem("editPost_codingtest");
+    }
+  }, []);
 
   const handleChangeUrl = (value: string) => {
     setProblemUrl(value);

@@ -93,25 +93,16 @@ export default function Sidebar({
 }: SidebarProps) {
   const showWriteButton = Boolean(writeLink);
   return (
-    /**
-     * 사이드바 컨테이너
-     * - w-80: 너비 320px
-     * - fixed: 스크롤해도 고정
-     * - left-0: 좌측 끝에 배치
-     * - top-[83px]: 헤더(80px) + 3px 간격
-     * - rounded-r-3xl: 우측 모서리만 둥글게
-     *
-     * @todo [대기] 모바일에서는 hidden 처리하고 별도 모바일 메뉴 구현 필요
-     * 예: className="hidden lg:block w-80 fixed ..."
-     */
-    <aside className="w-80 fixed left-0 top-[83px] h-[calc(100vh-83px)] bg-white border-r border-gray-200 rounded-r-3xl">
-      {/*
-        내부 컨텐츠 래퍼
-        - pl-20 pr-12: 좌측 패딩이 우측보다 큼 (디자인 요구사항)
-        - pt-14: 상단 여백
-        - pb-48: 하단 여백 (글 작성하기 버튼 공간 확보)
+    <>
+      {/* 
+        사이드바 상단 라운딩 뒷배경을 흰색으로 메꾸는 레이어 
+        - 사이드바 라운딩(3xl)이 깎이는 부분 뒤로 gray-50이 보이지 않게 함
+        - 너비를 사이드바보다 아주 약간 작게 하여 테두리를 가리지 않도록 함
       */}
-      <div className="pl-20 pr-12 pt-14 pb-8 flex flex-col h-full">
+      <div className="w-[319px] fixed left-0 top-[80px] h-20 bg-transparent" />
+
+      <aside className="w-80 fixed left-0 top-[80px] h-fit max-h-[calc(100vh-80px)] rounded-r-3xl z-10">
+      <div className="pl-20 pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
         {/* ========== 카테고리 네비게이션 ========== */}
         <nav className="space-y-2">
           {items.map((item) => (
@@ -145,7 +136,7 @@ export default function Sidebar({
 
         {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
         {showWriteButton && writeLink && (
-          <div className="mt-auto pt-8">
+          <div className="mt-auto pt-32">
             <Link
               href={writeLink}
               className="
@@ -169,5 +160,6 @@ export default function Sidebar({
         )}
       </div>
     </aside>
+  </>
   );
 }
