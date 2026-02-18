@@ -12,7 +12,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Clock, Eye } from 'lucide-react';
 
 // ============================================
 // 타입 정의
@@ -116,7 +116,7 @@ export function StudyCard({
           </span>
 
           {/* 작성 시간 */}
-          <span className="text-gray-400 text-xs font-light">🕑{time}</span>
+          <span className="text-gray-400 text-xs font-light flex items-center gap-0.5"><Clock size={12} />{time}</span>
         </div>
 
         {/* 중간 영역: 제목 + 카테고리 태그 */}
@@ -156,7 +156,7 @@ export function StudyCard({
 
         {/* 조회수 + 댓글 수 */}
         <div className="flex gap-2 sm:gap-3 text-xs text-gray-400">
-          <span>👁️ 122</span>
+          <span className="flex items-center gap-1"><Eye size={14} /> 122</span>
           <span className="flex items-center gap-1">
             <MessageCircle size={14} />
             333
