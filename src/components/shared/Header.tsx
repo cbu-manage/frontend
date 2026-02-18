@@ -29,7 +29,7 @@ export default function Header() {
 
   return (
     <header
-      className={isBlockHeader ? "" : "sticky top-0 w-full z-40 bg-gray-0"}
+      className={isBlockHeader ? "border-b border-gray-200" : "sticky top-0 w-full z-40 bg-gray-0 border-b border-gray-200"}
     >
       <div className="flex bg-gray-0 items-center gap-8 px-[9.375%] py-6">
         <Link href="/" className="shrink-0">
@@ -42,7 +42,7 @@ export default function Header() {
                 <Link
                   href={item.path}
                   className={`transition-colors hover:text-brand ${
-                    pathname === item.path
+                    pathname.startsWith(item.path)
                       ? "text-brand font-semibold"
                       : "text-gray-700"
                   }`}
