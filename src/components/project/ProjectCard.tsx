@@ -18,7 +18,7 @@
 'use client';
 
 import Link from 'next/link';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Eye, Clock } from 'lucide-react';
 
 // ============================================
 // 타입 정의
@@ -64,6 +64,9 @@ interface ProjectCardProps {
 
   /** 작성 시간 */
   time?: string;
+
+  /** 프로젝트 내용 (호버 시 미리보기) */
+  content?: string;
 }
 
 // ============================================
@@ -102,66 +105,66 @@ export function ProjectCard({
   author = '씨부엉 34기',
   views = 122,
   comments = 333,
-  time = '6시간 전',
+  time = '1/2333',
+  content = '안녕하세요!웹/앱 서비스 구현을 목표로 한 사이드 프로젝트를 함께할 팀원을 모집합니다. 📌 프로젝트 개요주제: (예: 일정 관리 웹 서비스 : 기획 → 디자인 → 실제 구현 → 배 : 약 6~8주식: 주 1회 온라인 회의',
 }: ProjectCardProps) {
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === '모집 완료';
 
   return (
-    // 카드 컨테이너 - 3분할 레이아웃 (왼쪽/중앙/오른쪽)
-    <Link href={`/project/${id}`} className="
-      bg-white rounded-2xl border border-gray-200
-      px-4 sm:px-6 py-4
-      min-h-[90px]
-      flex flex-col sm:flex-row sm:items-center
-      gap-4 sm:gap-0
-      hover:shadow-md transition-shadow cursor-pointer
-    ">
-      {/* ========== 왼쪽: 모집 상태 + 제목 ========== */}
-      <div className="flex flex-col gap-2 sm:w-1/3">
-        {/* 모집 상태 배지 */}
-        <span className={`w-14 text-center py-0.5 rounded-full text-xs text-white ${
-          isCompleted
-            ? 'bg-red-400'      // 모집 완료: 빨강 배경
-            : 'bg-[#6ECA8F]'    // 모집 중: 초록 배경
-        }`}>
-          {status}
-        </span>
+    <Link href={`/project/${id}`} className="group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden">
+      {/* ========== 카드 상단: 모집 상태 + 마감일 + 제목 + 내용 미리보기 ========== */}
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
+        {/* 상단 행: 모집 상태 배지 + 마감일 */}
+        <div className="flex justify-between items-center">
+          <span className={`w-14 text-center py-1.5 rounded-full text-xs text-white ${
+            isCompleted
+              ? 'bg-red-400'
+              : 'bg-[#6ECA8F]'
+          }`}>
+            {status}
+          </span>
+          <span className="bg-gray-100 text-gray-700 text-xs font-medium flex items-center gap-1 px-3 py-1 rounded-full">
+            <Clock size={12} />마감일 {time}
+          </span>
+        </div>
+
         {/* 프로젝트 제목 */}
-        <h3 className="text-sm font-bold text-gray-900 line-clamp-2">{title}</h3>
+        <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+          {title}
+        </h3>
+
+        {/* 내용 미리보기 - 호버 시 표시 */}
+        {content && (
+          <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 max-h-0 overflow-hidden opacity-0 -mb-3 group-hover:max-h-20 group-hover:opacity-100 group-hover:mb-0 transition-all duration-300 ease-in-out">
+            {content}
+          </p>
+        )}
       </div>
 
-      {/* ========== 중앙: 포지션 태그 ========== */}
-      <div className="sm:w-1/3 flex justify-center">
-        <div className="flex flex-wrap gap-1.5 justify-center">
+      {/* ========== 카드 하단: 포지션 태그 + 메타 정보 ========== */}
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 border-t border-gray-200 flex justify-between items-center">
+        {/* 포지션 태그 */}
+        <div className="flex flex-wrap gap-1.5">
           {positions.map((pos) => (
-            <span key={pos} className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">
+            <span key={pos} className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-[10px] font-medium">
               {pos}
             </span>
           ))}
         </div>
-      </div>
 
-      {/* ========== 오른쪽: 메타 정보 ========== */}
-      <div className="sm:w-1/3 flex items-center justify-end gap-2 sm:gap-3">
-        {/* 작성자 정보 */}
-        <div className="flex items-center gap-2">
-          {/* 프로필 이미지 플레이스홀더 */}
-          <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
-          <span className="text-gray-600 text-xs">{author}</span>
+        {/* 조회수 + 댓글 수 + 작성자 */}
+        <div className="flex items-center gap-12 sm:gap-14 text-xs text-gray-400">
+          <span className="flex items-center gap-1"><Eye size={14} /> {views}</span>
+          <span className="flex items-center gap-1">
+            <MessageCircle size={14} />
+            {comments}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+            <span className="text-gray-600 text-xs">{author}</span>
+          </div>
         </div>
-
-        {/* 조회수 */}
-        <span className="text-xs text-gray-400">👁️ {views}</span>
-
-        {/* 댓글 수 */}
-        <span className="flex items-center gap-1 text-xs text-gray-400">
-          <MessageCircle size={14} />
-          {comments}
-        </span>
-
-        {/* 작성 시간 */}
-        <span className="text-xs text-gray-400">🕑 {time}</span>
       </div>
     </Link>
   );

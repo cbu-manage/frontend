@@ -14,6 +14,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check } from "lucide-react";
 import Sidebar from "@/components/shared/Sidebar";
 import PGN from "@/components/shared/Pagination";
 import { ProjectCard, ProjectStatus } from "@/components/project/ProjectCard";
@@ -187,19 +188,7 @@ export default function ProjectPage() {
               >
                 {/* 체크 아이콘 - 선택된 경우에만 표시 */}
                 {statusFilter === "모집 중" && (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  <Check className="w-4 h-4" />
                 )}
                 모집 중
               </button>
@@ -223,19 +212,7 @@ export default function ProjectPage() {
               >
                 {/* 체크 아이콘 - 선택된 경우에만 표시 */}
                 {statusFilter === "모집 완료" && (
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  <Check className="w-4 h-4" />
                 )}
                 모집 완료
               </button>
