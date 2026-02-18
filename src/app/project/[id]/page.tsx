@@ -60,6 +60,17 @@ export default function ProjectDetailPage() {
         <DetailTemplate
           backPath="/project"
           {...MOCK_DATA}
+          onEdit={() => {
+            const payload = {
+              id: String(id),
+              title: MOCK_DATA.title,
+              categories: MOCK_DATA.categories,
+              recruitStatus: MOCK_DATA.status,
+              content: MOCK_DATA.content,
+            };
+            sessionStorage.setItem("editPost_project", JSON.stringify(payload));
+            router.push(`/write/project?id=${id}`);
+          }}
           footer={
             <button
               className={

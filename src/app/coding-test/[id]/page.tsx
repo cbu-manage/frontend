@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DetailTemplate from "@/components/detail/DetailTemplate";
 import Image from "next/image";
 import { CommentInput, CommentItem } from "@/components/detail/CommentSection";
@@ -160,6 +160,7 @@ const MOCK_COMMENTS = [
 
 export default function CodingTestDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
   const name = useUserStore((s) => s.name);
   const isMember = !!name;
@@ -182,6 +183,17 @@ export default function CodingTestDetailPage() {
         commentsCount={isMember ? totalCommentsCount : 0}
         {...MOCK_DATA}
         showCommentsCount={isMember}
+        onEdit={() => {
+          const payload = {
+            id: String(params.id),
+            title: MOCK_DATA.title,
+            categories: MOCK_DATA.categories,
+            solveStatus: MOCK_DATA.status,
+            content: MOCK_DATA.content,
+          };
+          sessionStorage.setItem("editPost_codingtest", JSON.stringify(payload));
+          router.push(`/coding-test/write?id=${params.id}`);
+        }}
         comments={
           isMember ? (
             <div className="space-y-12">

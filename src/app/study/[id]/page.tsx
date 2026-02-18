@@ -64,6 +64,17 @@ export default function StudyDetailPage() {
         <DetailTemplate
           backPath="/study"
           {...MOCK_DATA}
+          onEdit={() => {
+            const payload = {
+              id: String(id),
+              title: MOCK_DATA.title,
+              categories: MOCK_DATA.categories,
+              recruitStatus: MOCK_DATA.status,
+              content: MOCK_DATA.content,
+            };
+            sessionStorage.setItem("editPost_study", JSON.stringify(payload));
+            router.push(`/write/study?id=${id}`);
+          }}
           footer={
             <button
               className={
