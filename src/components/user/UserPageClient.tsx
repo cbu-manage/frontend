@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
+import MyPostsSection from "@/components/user/MyPostsSection";
 
 const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
@@ -59,7 +60,7 @@ export default function UserPageClient() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className={`min-h-screen ${selectedMenu === "profile" ? "bg-white" : "bg-[#F8FAFF]"}`}>
       <div className="flex">
         <Sidebar
           items={USER_MENU_ITEMS}
@@ -137,16 +138,7 @@ export default function UserPageClient() {
 
           {selectedMenu === "password" && <ChangePasswordSection />}
 
-          {selectedMenu === "posts" && (
-            <div className="max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-                내 작성글
-              </h1>
-              <p className="text-gray-600">
-                내가 작성한 글 목록이 여기에 표시됩니다.
-              </p>
-            </div>
-          )}
+          {selectedMenu === "posts" && <MyPostsSection />}
         </div>
       </div>
     </main>
