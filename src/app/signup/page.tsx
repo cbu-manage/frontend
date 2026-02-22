@@ -1,11 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import StepOne from "@/components/signup/StepOne";
 import StepTwo from "@/components/signup/StepTwo";
 import SignupCompleteModal from "@/components/signup/SignupCompleteModal";
 
-export default function JoinPage() {
+function JoinPageContent() {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [verifiedEmail, setVerifiedEmail] = useState<string>("");
@@ -68,4 +68,10 @@ export default function JoinPage() {
   );
 }
 
-
+export default function JoinPage() {
+  return (
+    <Suspense fallback={null}>
+      <JoinPageContent />
+    </Suspense>
+  );
+}
