@@ -1,13 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import StepOne from "@/components/signup/StepOne";
 import StepTwo from "@/components/signup/StepTwo";
 import SignupCompleteModal from "@/components/signup/SignupCompleteModal";
 
 export default function JoinPage() {
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [verifiedEmail, setVerifiedEmail] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("preview") === "modal") {
+      setShowModal(true);
+    }
+  }, [searchParams]);
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-0">
@@ -45,6 +53,15 @@ export default function JoinPage() {
             </a>
           </p>
         )}
+        <p className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="text-sm text-gray-400 hover:text-gray-600 underline"
+          >
+            회원가입 완료 모달 미리보기
+          </button>
+        </p>
       </div>
       <SignupCompleteModal open={showModal} onClose={() => setShowModal(false)} />
     </main>
