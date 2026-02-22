@@ -82,7 +82,7 @@ export default function DetailTemplate({
   const statusDisplay = getStatusDisplay();
 
   return (
-    <div className={`flex-1 bg-white ${hasSidebar ? "ml-80 px-16" : "px-[9.375%]"} py-16 min-h-screen`}>
+    <div className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] px-16" : "px-[9.375%]"} py-16 min-h-screen`}>
       <div className="w-full">
         {/* 상단 네비게이션 (뒤로가기, 메뉴) */}
         <div className="flex justify-between items-center mb-8">

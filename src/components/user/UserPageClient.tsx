@@ -2,11 +2,13 @@
 
 import { useUserStore } from "@/store/userStore";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
+import InputBox from "@/components/common/InputBox";
 
 const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
@@ -37,15 +39,15 @@ export default function UserPageClient() {
 
   if (!user.name) {
     return (
-      <main className="min-h-screen bg-white">
-        <div className="px-[9.375%] py-16">
+      <main className="min-h-screen bg-gray-50">
+        <div className="py-16">
           <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-              사용자 정보
+            <h1 className="text-4xl font-bold text-gray-900 mb-8">
+              내 정보
             </h1>
             <div className="text-center py-16">
               <p className="text-gray-600 mb-6">
-                로그인 후 사용자 정보를 확인하세요.
+                로그인 후 내 정보를 확인하세요.
               </p>
               <Link href="/login">
                 <button className="px-6 py-3 bg-brand text-white rounded-lg font-medium hover:opacity-90 transition-opacity">
@@ -60,77 +62,67 @@ export default function UserPageClient() {
   }
 
   return (
-    <main className={`min-h-screen ${selectedMenu === "profile" ? "bg-white" : "bg-[#F8FAFF]"}`}>
-      <div className="flex">
+    <main className={`min-h-screen bg-gray-50`}>
+      <div className="flex py-12">
         <Sidebar
           items={USER_MENU_ITEMS}
           selected={selectedMenu}
           onSelect={handleSelect}
         />
-        {/* 고정 사이드바(w-80) 오른쪽으로 컨텐츠를 밀기 위해 ml-80 사용 */}
-        <div className="flex-1 ml-80 pl-16 pr-16 py-16">
+        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%] min-w-0">
           {selectedMenu === "profile" && (
-            <div className="max-w-2xl">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8">
-                사용자 정보
-              </h1>
-              <div className="space-y-6">
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    기본 정보
+            <div className="flex justify-center">
+              <div className="w-full max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-sm px-14 py-12">
+                <div className="flex flex-col items-center text-center mb-10">
+                  <Image
+                    src="/assets/originowl.svg"
+                    alt="씨부엉"
+                    width={64}
+                    height={64}
+                    className="mb-4"
+                  />
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    내 정보
                   </h2>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-600">이름</p>
-                      <p className="text-base font-medium text-gray-900">
-                        {user.name}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">학번</p>
-                      <p className="text-base font-medium text-gray-900">
-                        {user.studentNumber}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">닉네임</p>
-                      <p className="text-base font-medium text-gray-900">
-                        {user.nickName}
-                      </p>
-                    </div>
-                  </div>
                 </div>
-
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    학적 정보
-                  </h2>
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-gray-600">학년</p>
-                      <p className="text-base font-medium text-gray-900">
-                        {user.grade}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">전공</p>
-                      <p className="text-base font-medium text-gray-900">
-                        {user.major}
-                      </p>
-                    </div>
+                <form className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputBox
+                      label="이름"
+                      value={user.name}
+                      disabled
+                    />
+                    <InputBox
+                      label="학번"
+                      value={String(user.studentNumber)}
+                      disabled
+                    />
                   </div>
-                </div>
-
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    연락처
-                  </h2>
-                  <div>
-                    <p className="text-sm text-gray-600">이메일</p>
-                    <p className="text-base font-medium text-gray-900">
-                      {user.email || "등록되지 않음"}
-                    </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputBox
+                      label="학과"
+                      value={user.major}
+                      disabled
+                    />
+                    <InputBox
+                      label="학년"
+                      value={user.grade}
+                      disabled
+                    />
                   </div>
+                  <InputBox
+                    label="학교 이메일"
+                    value={user.email || "등록되지 않음"}
+                    disabled
+                  />
+                </form>
+                <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
+                  <button
+                    type="button"
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    탈퇴하기
+                  </button>
                 </div>
               </div>
             </div>
