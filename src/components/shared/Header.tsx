@@ -49,20 +49,6 @@ export default function Header() {
                 </Link>
               </li>
             ))}
-            {isLoggedIn && (
-              <li>
-                <Link
-                  href="/user"
-                  className={`transition-colors hover:text-brand ${
-                    pathname.startsWith("/user")
-                      ? "text-brand font-semibold"
-                      : "text-gray-700"
-                  }`}
-                >
-                  마이페이지
-                </Link>
-              </li>
-            )}
           </ul>
         </nav>
         <div className="flex items-center gap-4 justify-end flex-1 md:flex-none">
@@ -74,12 +60,22 @@ export default function Header() {
               로그인
             </Link>
           ) : (
-            <button
-              onClick={handleLogout}
-              className="flex items-center justify-center px-3 py-1.5 gap-[7px] rounded-lg bg-brand text-white text-base font-semibold leading-[140%] tracking-[-0.06px] transition-colors hover:opacity-90"
-            >
-              로그아웃
-            </button>
+            <>
+              <Link
+                href="/user"
+                className={`transition-colors hover:text-brand ${
+                  pathname.startsWith("/user") ?  "text-brand font-semibold" : "text-gray-700 font-medium"
+                }`}
+              >
+                마이페이지
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center px-3 py-1.5 gap-[7px] rounded-lg bg-brand text-white text-base font-semibold leading-[140%] tracking-[-0.06px] transition-colors hover:opacity-90"
+              >
+                로그아웃
+              </button>
+            </>
           )}
         </div>
       </div>
