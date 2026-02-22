@@ -178,8 +178,8 @@ export default function StudyPage() {
           writeLink="/study/write"
         />
 
-        {/* 고정 사이드바(w-80) 오른쪽으로 컨텐츠를 밀기 위해 ml-80 사용 */}
-        <div className="flex-1 ml-80 pl-16 pr-16 py-16">
+        {/* 고정 사이드바 오른쪽으로 컨텐츠를 밀기 */}
+        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-16 pr-16 py-16">
           <div className="max-w-6xl mx-auto">
             {/* ========== 페이지 헤더 ========== */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">

@@ -99,10 +99,10 @@ export default function Sidebar({
         - 사이드바 라운딩(3xl)이 깎이는 부분 뒤로 gray-50이 보이지 않게 함
         - 너비를 사이드바보다 아주 약간 작게 하여 테두리를 가리지 않도록 함
       */}
-      <div className="w-[319px] fixed left-0 top-[80px] h-20 bg-transparent" />
+      <div className="w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
 
-      <aside className="w-80 fixed left-0 top-[80px] h-fit max-h-[calc(100vh-80px)] rounded-r-3xl z-10">
-      <div className="pl-20 pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
+      <aside className="w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] rounded-r-3xl z-10">
+      <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
         {/* ========== 카테고리 네비게이션 ========== */}
         <nav className="space-y-2">
           {items.map((item) => (
