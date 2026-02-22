@@ -8,13 +8,16 @@ import { useUserStore } from "@/store/userStore";
 export function useChangePassword() {
   const router = useRouter();
   const studentNumber = useUserStore((s) => s.studentNumber);
+  const setAuthStatus = useUserStore((s) => s.setAuthStatus);
 
   const mutation = useMutation({
     mutationFn: (newPassword: string) =>
       authApi.changePassword({ studentNumber, password: newPassword }),
     onSuccess: () => {
+      const { isEmailNull } = useUserStore.getState();
+      setAuthStatus({ isDefaultPassword: false, isEmailNull });
       alert("비밀번호 변경 완료!");
-      router.push("/user");
+      router.push("/");
     },
   });
 
