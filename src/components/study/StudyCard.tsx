@@ -107,10 +107,10 @@ export function StudyCard({
         {/* 상단 행: 모집 상태 배지 + 작성 시간 */}
         <div className="justify-between items-center flex">
           {/* 모집 상태 배지 - 타원형, 고정 너비 */}
-          <span className={`w-14 text-center py-1.5 rounded-full text-xs text-white ${
+          <span className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
             isCompleted
-              ? 'bg-red-400'      // 모집 완료: 빨강 배경
-              : 'bg-[#6ECA8F]'  // 모집 중: 초록 배경
+              ? 'bg-[#FC5E6E]'      // 모집 완료
+              : 'bg-[#45CD89]'  // 모집 중
           }`}>
             {status}
           </span>

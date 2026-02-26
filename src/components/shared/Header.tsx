@@ -29,7 +29,7 @@ export default function Header() {
     <header
       className={isBlockHeader ? "border-b border-gray-200" : "sticky top-0 w-full z-40 bg-gray-0 border-b border-gray-200"}
     >
-      <div className="flex bg-gray-0 items-center gap-8 px-[9.375%] py-6">
+      <div className="flex bg-gray-0 items-center gap-8 pl-[9.375%] pr-16 py-6 min-w-[1200px]">
         <Link href="/" className="shrink-0">
           <img src="/assets/logo.png" alt="로고이미지" className="h-8 w-auto" />
         </Link>

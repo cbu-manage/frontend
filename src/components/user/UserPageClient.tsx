@@ -69,7 +69,7 @@ export default function UserPageClient() {
           selected={selectedMenu}
           onSelect={handleSelect}
         />
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%] min-w-0">
+        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-16 pr-16 min-w-0">
           {selectedMenu === "profile" && (
             <div className="flex justify-center">
               <div className="w-full max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-sm px-14 py-12">

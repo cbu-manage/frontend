@@ -94,8 +94,8 @@ export function CodingTestRow({
       <td className="py-4 px-4 text-center">
         <span className={`px-3 py-1 rounded-full text-xs text-white ${
           isSolved
-            ? 'bg-[#6ECA8F]'  // 해결: 초록 배경
-            : 'bg-red-400'    // 미해결: 빨강 배경
+            ? 'bg-[#45CD89]'  
+            : 'bg-[#FC5E6E]'    
         }`}>
           {status}
         </span>

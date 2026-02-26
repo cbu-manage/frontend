@@ -101,7 +101,7 @@ export default function Sidebar({
       */}
       <div className="w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
 
-      <aside className="w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] rounded-r-3xl z-10">
+      <aside className="w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] min-h-[36rem] rounded-r-3xl z-10">
       <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
         {/* ========== 카테고리 네비게이션 ========== */}
         <nav className="space-y-2">
@@ -114,9 +114,11 @@ export default function Sidebar({
                 onSelect(item.value);
               }}
               className={`
-                w-full text-left px-4 py-3 rounded-xl
+                w-full text-left px-4 py-3 rounded-xl border border-transparent
                 flex items-center gap-2
                 transition-all text-sm
+                [outline:0]
+                focus-visible:bg-gray-100 active:bg-gray-200
                 ${
                   selected === item.value
                     ? // 선택된 상태: 배경색 + 굵은 글씨
@@ -136,7 +138,7 @@ export default function Sidebar({
 
         {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
         {showWriteButton && writeLink && (
-          <div className="mt-auto pt-32">
+          <div className="mt-auto pt-8">
             <Link
               href={writeLink}
               className="
