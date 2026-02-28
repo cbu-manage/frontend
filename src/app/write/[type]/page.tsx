@@ -108,11 +108,11 @@ export default function WritePage() {
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 className="
-                  w-full px-4 py-3 text-base
+                  w-full px-4 py-3 text-base font-semibold
                   bg-gray-50 border border-gray-200 rounded-lg
                   placeholder:text-gray-400
                   transition-all duration-150
-                  focus:outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand
+                  focus:outline-none focus:bg-gray-50 focus:border-brand focus:ring-1 focus:ring-brand focus:placeholder:text-gray-400
                 "
               />
             </div>
@@ -154,7 +154,6 @@ export default function WritePage() {
                 bg-white border border-gray-200 rounded-lg
                 placeholder:text-gray-400
                 transition-all duration-150 resize-none
-                hover:bg-gray-100
                 focus:outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand
               "
             />
