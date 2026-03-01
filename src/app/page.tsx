@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">("기획");
   const [showArrow, setShowArrow] = useState(true);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 0) {
-        setShowArrow(false);
-      }
+      setShowArrow(window.scrollY === 0);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -68,45 +68,81 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-gray-0">
+    <main className="min-h-screen" style={{ backgroundColor: "#151517" }}>
       <div className="px-[9.375%]">
-        {/* 환영 메시지 섹션 */}
-        <div className="flex flex-col items-center justify-center min-h-[100vh] mb-40 sm:mb-24">
-          <div className="text-center">
-            <div className="text-3xl font-semibold text-zinc-900">
-              <span className="text-[#95C674] font-semibold">씨부엉</span>에 오신 것을 환영합니다.
-            </div>
-            <p className="text-xl text-neutral-600 mt-2 mb-9">
-              한국공학대학교 프로그래밍 동아리 씨부엉의 공식 웹사이트입니다.
+        {/* 히어로: 가운데 부엉이, 호버 시 크기 확대 + owl-icon으로 전환 */}
+        <div
+          className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] mb-40 sm:mb-24 relative"
+          onMouseEnter={() => setIsHeroHovered(true)}
+          onMouseLeave={() => setIsHeroHovered(false)}
+        >
+          <div
+            className="relative transition-transform duration-300 ease-out"
+            style={{ transform: isHeroHovered ? "scale(1.25)" : "scale(1)" }}
+          >
+            <Image
+              src={isHeroHovered ? "/assets/owl-icon.svg" : "/assets/main_icon.svg"}
+              alt="씨부엉"
+              width={160}
+              height={160}
+              className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain transition-opacity duration-200"
+            />
+          </div>
+
+          {/* 호버 시 부엉이 밑 환영 문구 */}
+          <div
+            className={`flex flex-col items-center gap-3 mt-20 text-center transition-opacity duration-300 ${
+              isHeroHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <h2
+              className="font-bold tracking-tight text-xl sm:text-3xl lg:text-[42px] leading-tight"
+              style={{
+                background:
+                  "radial-gradient(419.6% 101.53% at 0% 50.88%, rgba(255, 255, 255, 0.60) 0%, rgba(255, 255, 255, 0.90) 35%, rgba(255, 255, 255, 0.75) 100%)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              씨부엉에 오신 것을 환영합니다.
+            </h2>
+            <p className="text-[#F2F2F2] font-medium text-sm sm:text-base lg:text-lg tracking-tight opacity-70">
+              본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인 회원관리를 위한 웹사이트입니다.
             </p>
           </div>
-        </div>
 
-        {/* 아래로 스크롤 안내 화살표 - 하단 중간 고정 */}
-        {showArrow && (
-          <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 transition-opacity duration-300">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full border border-zinc-300 text-zinc-500 bg-white/80 backdrop-blur-sm shadow-lg animate-bounce">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
+          {/* SCROLL DOWN - 메인 페이지 & 맨 위일 때만 표시 */}
+          {showArrow && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-4">
+              <span
+                className="text-center text-xs font-normal"
+                style={{
+                  color: "#E6E6E6",
+                  fontFamily: '"neurimbo Gothic", sans-serif',
+                  letterSpacing: "1.2px",
+                }}
               >
-                <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+                SCROLL DOWN
+              </span>
+              <Image
+                src="/assets/scroll-down.svg"
+                alt="스크롤 다운"
+                width={48}
+                height={48}
+                className="w-10 h-10 sm:w-12 sm:h-12"
+              />
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* CBU 구성 섹션 */}
         <div id="cbu-section" className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-zinc-900 mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               CBU는 이렇게 구성되어 있어요!
             </h2>
-            <p className="text-lg text-neutral-600">
+            <p className="text-lg text-zinc-300">
               각 분야별로 스터디를 통해 함께 배우며 발전해 나가요.
             </p>
           </div>
@@ -119,8 +155,8 @@ export default function Home() {
                 onClick={() => setSelectedTab(tab)}
                 className={`px-6 py-3 rounded-lg text-base font-medium transition-all ${
                   selectedTab === tab
-                    ? "bg-zinc-800 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    ? "bg-white text-[#151517]"
+                    : "bg-white/10 text-zinc-300 hover:bg-white/20"
                 }`}
               >
                 {tab}
@@ -130,7 +166,7 @@ export default function Home() {
 
           {/* 선택된 탭의 콘텐츠 카드 */}
           <div className="relative mt-10">
-            <div className="bg-zinc-800 rounded-2xl p-10 md:p-14 text-white relative overflow-hidden">
+            <div className="bg-white/5 rounded-2xl p-10 md:p-14 text-white border border-white/10 relative overflow-hidden">
               {/* 장식용 원들 */}
               <div className="absolute top-4 right-8 flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-zinc-600"></div>
@@ -162,10 +198,10 @@ export default function Home() {
         {/* 활동 섹션 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-40 mt-4 sm:mt-10">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-zinc-900 mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               CBU에서는 어떤 활동을 진행할까요?
             </h2>
-            <p className="text-lg text-neutral-600">
+            <p className="text-lg text-zinc-300">
               각 분야별로 스터디&프로젝트를 통해 함께 발전해 나가요!
             </p>
           </div>
@@ -175,13 +211,13 @@ export default function Home() {
             {activities.map((activity, idx) => (
               <div
                 key={idx}
-                className="w-full aspect-[5/3] bg-white rounded-xl p-6 md:p-8 shadow-sm border border-zinc-100 hover:shadow-md transition-shadow flex flex-col"
+                className="w-full aspect-[5/3] bg-white/5 rounded-xl p-6 md:p-8 border border-white/10 hover:bg-white/10 transition-colors flex flex-col"
               >
                 <div className="text-4xl mb-4">{activity.icon}</div>
-                <h3 className="text-xl font-bold text-zinc-900 mb-3">
+                <h3 className="text-xl font-bold text-white mb-3">
                   {activity.title}
                 </h3>
-                <p className="text-neutral-600 leading-relaxed">
+                <p className="text-zinc-300 leading-relaxed">
                   {activity.description}
                 </p>
               </div>
