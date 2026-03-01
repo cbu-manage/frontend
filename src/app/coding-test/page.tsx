@@ -260,7 +260,7 @@ export default function CodingTestPage() {
   return (
     // 페이지 컨테이너 - 전체 화면 배경색
     <div className="w-full bg-gray-0 min-h-screen">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-16">
+      <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
         {/* ========== 페이지 헤더 ========== */}
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
           코딩테스트 준비
@@ -284,7 +284,7 @@ export default function CodingTestPage() {
                       setStatusFilter(option);
                       setOpenFilter(null);
                     }}
-                    className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
                   >
                     {option}
                   </button>
@@ -421,26 +421,26 @@ export default function CodingTestPage() {
           @todo [대기] 모바일에서 카드 레이아웃으로 변경 필요
         */}
         <div className="bg-white  border border-gray-200 overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+          <table className="w-full min-w-[37.5rem]">
             {/* 테이블 헤더 - 초록색 배경 */}
             <thead className="bg-[#95C674] text-white">
               <tr>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[5rem] sm:w-[6.25rem]">
                   상태
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[15rem] sm:w-[20rem]">
                   문제
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   언어
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   플랫폼
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   작성자
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[60px] sm:w-[80px]"></th>
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[3.75rem] sm:w-[5rem]"></th>
               </tr>
             </thead>
 

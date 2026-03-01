@@ -294,8 +294,11 @@ function PostCard({ post }: { post: MyPost }) {
         </p>
       </div>
 
+      {/* 구분선 - 카드 좌우 패딩 적용 */}
+      <div className="mx-4 sm:mx-6 border-t border-gray-200" />
+
       {/* 카드 하단: 포지션 태그 + 메타 정보 */}
-      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 border-t border-gray-200 flex justify-between items-center">
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
         {/* 포지션 태그 */}
         <div className="flex flex-wrap gap-1.5">
           {post.tags.map((pos) => (

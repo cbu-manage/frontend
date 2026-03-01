@@ -179,7 +179,7 @@ export default function StudyPage() {
         />
 
         {/* 고정 사이드바 오른쪽으로 컨텐츠를 밀기 */}
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-16 py-16">
+        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] py-16">
           <div>
             {/* ========== 페이지 헤더 ========== */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
