@@ -91,40 +91,40 @@ export function CodingTestRow({
       className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
     >
       {/* 상태 */}
-      <td className="py-4 px-4 text-center">
-        <span className={`px-3 py-1 rounded-full text-xs text-white ${
+      <td className="py-5 px-3 text-center w-[5rem] sm:w-[6.25rem]">
+        <span className={`inline-flex items-center justify-center px-3.8 py-2.5 rounded-full text-sm font-medium text-white min-w-[65px] ${
           isSolved
-            ? 'bg-[#6ECA8F]'  // 해결: 초록 배경
-            : 'bg-red-400'    // 미해결: 빨강 배경
+            ? 'bg-[#45CD89]'  
+            : 'bg-[#FC5E6E]'    
         }`}>
           {status}
         </span>
       </td>
 
       {/* 문제 */}
-      <td className="py-4 px-4 text-gray-800 text-sm">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-[15rem] sm:w-[20rem]">
         {title}
       </td>
 
       {/* 언어 */}
-      <td className="py-4 px-4 text-center text-gray-600 text-sm">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-[8rem]">
         {language}
       </td>
 
       {/* 플랫폼 */}
-      <td className="py-4 px-4 text-center">
-        <span className="text-gray-600 text-sm underline">
+      <td className="py-5 px-3 text-center w-[8rem]">
+        <span className="text-gray-800 text-base">
           {platform}
         </span>
       </td>
 
       {/* 작성자 */}
-      <td className="py-4 px-4 text-center text-gray-600 text-sm">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-[8rem]">
         {author}
       </td>
 
       {/* 댓글 */}
-      <td className="py-4 px-4 text-center text-gray-400 text-sm">
+      <td className="py-5 px-3 text-center text-gray-400 text-base">
         <span className="flex items-center justify-center gap-1">
           <MessageCircle size={14} className="text-gray-400" />
           <span>{comments}</span>

@@ -169,8 +169,8 @@ export default function StudyPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#F8FAFF]">
-      <div className="flex">
+    <main className="min-h-screen min-w-[1200px] bg-[#F8FAFF]">
+      <div className="flex min-w-[1200px]">
         <Sidebar
           items={CATEGORIES}
           selected={selectedCategory}
@@ -179,8 +179,8 @@ export default function StudyPage() {
         />
 
         {/* 고정 사이드바 오른쪽으로 컨텐츠를 밀기 */}
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-16 pr-16 py-16">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] py-16">
+          <div>
             {/* ========== 페이지 헤더 ========== */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               {/* 제목 영역 */}

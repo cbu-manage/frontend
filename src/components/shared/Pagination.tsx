@@ -33,9 +33,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <button
           key={num}
           onClick={() => onPageChange(num)}
-          className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+          className={`w-10 h-10 flex items-center justify-center rounded-lg text-base font-medium transition-all ${
             currentPage === num
-              ? 'bg-brand text-white shadow-md'
+              ? 'bg-[#E3E7ED] text-gray-700'
               : 'text-gray-700 hover:bg-gray-100'
           }`}
         >

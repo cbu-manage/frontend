@@ -67,13 +67,13 @@ export default function DetailTemplate({
   const getStatusDisplay = () => {
     switch (status) {
       case "recruiting":
-        return { text: "모집 중", className: "bg-brand text-white" };
+        return { text: "모집 중", className: "bg-[#45CD89] text-white" };
       case "completed":
-        return { text: "모집 완료", className: "bg-gray-200 text-gray-500" };
+        return { text: "모집 완료", className: "bg-[#FC5E6E] text-white" };
       case "solved":
-        return { text: "해결", className: "bg-brand text-white" };
+        return { text: "해결", className: "bg-[#45CD89] text-white" };
       case "unsolved":
-        return { text: "미해결", className: "bg-notice text-white" };
+        return { text: "미해결", className: "bg-[#FC5E6E] text-white" };
       default:
         return { text: "", className: "" };
     }
@@ -82,7 +82,7 @@ export default function DetailTemplate({
   const statusDisplay = getStatusDisplay();
 
   return (
-    <div className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] px-16" : "px-[9.375%]"} py-16 min-h-screen`}>
+    <div className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%]" : "px-[9.375%]"} py-16 min-h-screen`}>
       <div className="w-full">
         {/* 상단 네비게이션 (뒤로가기, 메뉴) */}
         <div className="flex justify-between items-center mb-8">
@@ -159,7 +159,7 @@ export default function DetailTemplate({
           {/* 상태 배지 */}
           <div className="mb-6">
             <span
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold ${statusDisplay.className}`}
+              className={`text-center py-3 px-4 rounded-full text-xs font-semibold ${statusDisplay.className}`}
             >
               {statusDisplay.text}
             </span>
