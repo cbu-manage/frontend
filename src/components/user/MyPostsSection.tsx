@@ -271,12 +271,12 @@ function PostCard({ post }: { post: MyPost }) {
       className="group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
     >
       {/* 카드 상단: 상태 + 마감일 + 제목 + 내용 미리보기 */}
-      <div className="px-6 sm:px-8 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
+      <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
         {/* 상태 배지 */}
         <div className="flex items-center">
           <span
-            className={`w-14 text-center py-1.5 rounded-full text-xs text-white ${
-              isCompleted ? "bg-red-400" : "bg-[#6ECA8F]"
+            className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
+              isCompleted ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
             }`}
           >
             {post.status}
@@ -294,14 +294,17 @@ function PostCard({ post }: { post: MyPost }) {
         </p>
       </div>
 
+      {/* 구분선 - 카드 좌우 패딩 적용 */}
+      <div className="mx-4 sm:mx-6 border-t border-gray-200" />
+
       {/* 카드 하단: 포지션 태그 + 메타 정보 */}
-      <div className="bg-white px-6 sm:px-8 py-4 sm:py-5 border-t border-gray-200 flex justify-between items-center">
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
         {/* 포지션 태그 */}
         <div className="flex flex-wrap gap-1.5">
           {post.tags.map((pos) => (
             <span
               key={pos}
-              className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold"
+              className="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-full text-sm font-semibold"
             >
               {pos}
             </span>

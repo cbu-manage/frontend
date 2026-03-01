@@ -117,10 +117,10 @@ export function ProjectCard({
       <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
         {/* 상단 행: 모집 상태 배지 + 마감일 */}
         <div className="flex justify-between items-center">
-          <span className={`w-14 text-center py-1.5 rounded-full text-xs text-white ${
+          <span className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
             isCompleted
-              ? 'bg-red-400'
-              : 'bg-[#6ECA8F]'
+              ? 'bg-[#FC5E6E]'
+              : 'bg-[#45CD89]'
           }`}>
             {status}
           </span>
@@ -136,14 +136,17 @@ export function ProjectCard({
 
         {/* 내용 미리보기 - 호버 시 표시 */}
         {content && (
-          <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 max-h-0 overflow-hidden opacity-0 -mb-3 group-hover:max-h-20 group-hover:opacity-100 group-hover:mb-0 transition-all duration-300 ease-in-out">
+          <p className="text-sm text-gray-700 leading-relaxed line-clamp-2 max-h-0 overflow-hidden opacity-0 -mb-3 group-hover:max-h-20 group-hover:opacity-100 group-hover:mb-0 transition-all duration-300 ease-in-out">
             {content}
           </p>
         )}
       </div>
 
+      {/* 구분선 - 카드 좌우 패딩 적용 */}
+      <div className="mx-4 sm:mx-6 border-t border-gray-200" />
+
       {/* ========== 카드 하단: 포지션 태그 + 메타 정보 ========== */}
-      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 border-t border-gray-200 flex justify-between items-center">
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
         {/* 포지션 태그 */}
         <div className="flex flex-wrap gap-1.5">
           {positions.map((pos) => (

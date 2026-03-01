@@ -36,6 +36,7 @@ export default function WritePage() {
   const type = params.type as string;
 
   const [title, setTitle] = useState("");
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
   const [problemUrl, setProblemUrl] = useState("");
   const [platform, setPlatform] = useState<string | null>(null);
   const [languages, setLanguages] = useState<string[]>([]);
@@ -115,14 +116,16 @@ export default function WritePage() {
                 placeholder="제목을 입력해 주세요"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onFocus={() => setIsTitleFocused(true)}
+                onBlur={() => setIsTitleFocused(false)}
                 required
-                className="
-                  w-full px-4 py-3 text-base
-                  bg-gray-50 border border-gray-200 rounded-lg
-                  placeholder:text-gray-400
+                className={`
+                  w-full px-4 py-3 text-base rounded-lg
+                  bg-gray-50 placeholder:text-gray-400
                   transition-all duration-150
                   focus:outline-none focus:bg-white focus:border-brand focus:ring-1 focus:ring-brand
-                "
+                  ${isTitleFocused || !title.trim() ? "border border-gray-200" : "border-0"}
+                `}
               />
             </div>
 

@@ -69,7 +69,7 @@ export default function MultiSelect({
             ${
               isOpen
                 ? "bg-white border-brand ring-1 ring-brand"
-                : "bg-white border-gray-300 hover:bg-gray-100"
+                : "bg-white border-gray-300"
             }
           `}
         >
@@ -78,13 +78,15 @@ export default function MultiSelect({
               value.map((item) => (
                 <span
                   key={item}
-                  className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                  className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full"
                 >
                   {item}
-                  <X
-                    className="w-3.5 h-3.5 text-gray-500 hover:text-gray-700 cursor-pointer"
+                  <span 
+                    className="flex items-center justify-center w-4 h-4 bg-white rounded-full cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={(e) => handleRemove(item, e)}
-                  />
+                  >
+                    <X className="w-3 h-3 text-gray-900" />
+                  </span>
                 </span>
               ))
             ) : (

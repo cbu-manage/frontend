@@ -223,11 +223,11 @@ export default function CodingTestPage() {
   /** 상태 필터 (전체/미해결/해결) */
   const [statusFilter, setStatusFilter] = useState<string>("전체");
 
-  /** 언어 필터 (전체/Python/Java 등) */
-  const [languageFilter, setLanguageFilter] = useState<string>("전체");
+  /** 언어 필터 (복수 선택 가능) */
+  const [languageFilter, setLanguageFilter] = useState<string[]>([]);
 
-  /** 플랫폼 필터 (전체/프로그래머스/백준 등) */
-  const [platformFilter, setPlatformFilter] = useState<string>("전체");
+  /** 플랫폼 필터 (복수 선택 가능) */
+  const [platformFilter, setPlatformFilter] = useState<string[]>([]);
 
   /** 현재 열린 필터 드롭다운 */
   const [openFilter, setOpenFilter] = useState<string | null>(null);
@@ -251,16 +251,16 @@ export default function CodingTestPage() {
     const statusMatch =
       statusFilter === "전체" || problem.status === statusFilter;
     const languageMatch =
-      languageFilter === "전체" || problem.language === languageFilter;
+      languageFilter.length === 0 || languageFilter.includes(problem.language);
     const platformMatch =
-      platformFilter === "전체" || problem.platform === platformFilter;
+      platformFilter.length === 0 || platformFilter.includes(problem.platform);
     return statusMatch && languageMatch && platformMatch;
   });
 
   return (
     // 페이지 컨테이너 - 전체 화면 배경색
     <div className="w-full bg-gray-0 min-h-screen">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-16">
+      <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
         {/* ========== 페이지 헤더 ========== */}
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
           코딩테스트 준비
@@ -284,7 +284,7 @@ export default function CodingTestPage() {
                       setStatusFilter(option);
                       setOpenFilter(null);
                     }}
-                    className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                    className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
                   >
                     {option}
                   </button>
@@ -302,15 +302,23 @@ export default function CodingTestPage() {
             />
             {openFilter === "language" && (
               <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
-                {["전체", "Python", "Java", "C++", "JavaScript", "C"].map(
+                {["Python", "Java", "C++", "JavaScript", "C"].map(
                   (option) => (
                     <button
                       key={option}
+                      type="button"
                       onClick={() => {
-                        setLanguageFilter(option);
-                        setOpenFilter(null);
+                        if (languageFilter.includes(option)) {
+                          setLanguageFilter(languageFilter.filter((lang) => lang !== option));
+                        } else {
+                          setLanguageFilter([...languageFilter, option]);
+                        }
                       }}
-                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                      className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                        languageFilter.includes(option)
+                          ? "bg-brand/20 text-gray-900 font-medium"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
                     >
                       {option}
                     </button>
@@ -329,14 +337,22 @@ export default function CodingTestPage() {
             />
             {openFilter === "platform" && (
               <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
-                {["전체", "프로그래머스", "백준", "LeetCode"].map((option) => (
+                {["프로그래머스", "백준", "LeetCode"].map((option) => (
                   <button
                     key={option}
+                    type="button"
                     onClick={() => {
-                      setPlatformFilter(option);
-                      setOpenFilter(null);
+                      if (platformFilter.includes(option)) {
+                        setPlatformFilter(platformFilter.filter((plat) => plat !== option));
+                      } else {
+                        setPlatformFilter([...platformFilter, option]);
+                      }
                     }}
-                    className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                    className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                      platformFilter.includes(option)
+                        ? "bg-brand/20 text-gray-900 font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
                   >
                     {option}
                   </button>
@@ -348,27 +364,54 @@ export default function CodingTestPage() {
 
         {/* 선택된 필터 표시 영역 */}
         {(statusFilter !== "전체" ||
-          languageFilter !== "전체" ||
-          platformFilter !== "전체") && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          languageFilter.length > 0 ||
+          platformFilter.length > 0) && (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
             {statusFilter !== "전체" && (
               <SelectedFilterChip
                 label={statusFilter}
                 onClear={() => setStatusFilter("전체")}
               />
             )}
-            {languageFilter !== "전체" && (
+            {languageFilter.map((lang) => (
               <SelectedFilterChip
-                label={languageFilter}
-                onClear={() => setLanguageFilter("전체")}
+                key={lang}
+                label={lang}
+                onClear={() => setLanguageFilter(languageFilter.filter((l) => l !== lang))}
               />
-            )}
-            {platformFilter !== "전체" && (
+            ))}
+            {platformFilter.map((plat) => (
               <SelectedFilterChip
-                label={platformFilter}
-                onClear={() => setPlatformFilter("전체")}
+                key={plat}
+                label={plat}
+                onClear={() => setPlatformFilter(platformFilter.filter((p) => p !== plat))}
               />
-            )}
+            ))}
+            
+            {/* 초기화 버튼 */}
+            <button
+              onClick={() => {
+                setStatusFilter("전체");
+                setLanguageFilter([]);
+                setPlatformFilter([]);
+              }}
+              className="inline-flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <svg 
+                className="w-3.5 h-3.5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+                />
+              </svg>
+              초기화
+            </button>
           </div>
         )}
 
@@ -378,26 +421,26 @@ export default function CodingTestPage() {
           @todo [대기] 모바일에서 카드 레이아웃으로 변경 필요
         */}
         <div className="bg-white  border border-gray-200 overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+          <table className="w-full min-w-[37.5rem]">
             {/* 테이블 헤더 - 초록색 배경 */}
             <thead className="bg-[#95C674] text-white">
               <tr>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[5rem] sm:w-[6.25rem]">
                   상태
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[15rem] sm:w-[20rem]">
                   문제
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   언어
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   플랫폼
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
                   작성자
                 </th>
-                <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[60px] sm:w-[80px]"></th>
+                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[3.75rem] sm:w-[5rem]"></th>
               </tr>
             </thead>
 
