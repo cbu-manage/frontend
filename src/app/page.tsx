@@ -47,24 +47,32 @@ export default function Home() {
   const activities = [
     {
       title: "스터디 운영",
-      description: "씨부엉에서는 운영한 스터디를 바탕으로 6개월마다 우수 스터디를 시상하고 있어요!",
-      icon: "📚"
-    },
-    {
-      title: "자율 프로젝트",
-      description: "소규모 자율 프로젝트를 진행하면서 포트폴리오를 쌓아올려요!",
-      icon: "💼"
-    },
-    {
-      title: "풍부한 자료방 공유",
-      description: "IT관련 공모전 및 대외활동 정보 자료방을 제공해요",
-      icon: "📁"
+      detail:
+        "운영된 스터디를 바탕으로 \n6개월마다 우수 스터디를 \n시상하고 있어요!",
+      icon: "📚",
     },
     {
       title: "코딩 행사 및 이벤트",
-      description: "#알고리즘 챌린지 #모밤코 등 동아리 내에서 진행하는 코딩 행사 및 이벤트에 참여할 수 있어요!",
-      icon: "🎉"
-    }
+      detail:
+        "#알고리즘 챌린지, #모밤코 등 \n동아리 내에서 진행하는 코딩 행사 및 \n이벤트에 참여할 수 있어요 !",
+      icon: "💻",
+    },
+    {
+      title: "풍부한 자료방 공유",
+      detail:
+        "IT관련 공모전 및 대외활동 정보 \n자료방을 제공해요",
+      icon: "📁",
+    },
+  ];
+
+  const stories = [
+    { title: "CBU OT" },
+    { title: "정기 스터디 시간" },
+    { title: "프로젝트 회의" },
+    { title: "해커톤 준비 현장" },
+    { title: "동아리 세미나" },
+    { title: "스터디 회식" },
+    { title: "종강 파티" },
   ];
 
   return (
@@ -80,6 +88,7 @@ export default function Home() {
             className="relative transition-transform duration-300 ease-out"
             style={{ transform: isHeroHovered ? "scale(1.25)" : "scale(1)" }}
           >
+            {/* 중앙 부엉이 아이콘 */}
             <Image
               src={isHeroHovered ? "/assets/owl-icon.svg" : "/assets/main_icon.svg"}
               alt="씨부엉"
@@ -87,6 +96,143 @@ export default function Home() {
               height={160}
               className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 object-contain transition-opacity duration-200"
             />
+
+            {/* 호버 시 주변 장식 아이콘들 */}
+            {/* 좌측 상단 - 200 OK */}
+            <div
+              className={`pointer-events-none absolute -top-15 -left-25 sm:-top-15 sm:-left-25 md:-top-15 md:-left-25 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
+              }`}
+            >
+              <Image
+                src="/assets/200ok.svg"
+                alt="200 OK"
+                width={100}
+                height={36}
+                className="w-20 sm:w-24 md:w-28"
+              />
+            </div>
+
+            {/* 좌측 중앙 - Developer */}
+            <div
+              className={`pointer-events-none absolute top-5 -left-40 sm:-left-40 md:-left-40 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 -translate-x-0"
+                  : "opacity-0 -translate-x-2"
+              }`}
+            >
+              <Image
+                src="/assets/Developer.svg"
+                alt="Developer"
+                width={110}
+                height={40}
+                className="w-20 sm:w-24 md:w-28"
+              />
+            </div>
+
+            {/* 좌측 하단 - PM 아이콘 */}
+            <div
+              className={`pointer-events-none absolute bottom-5 -left-32 sm:bottom-5 sm:-left-32 md:bottom-5 md:-left-32 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
+              }`}
+            >
+              <Image
+                src="/assets/PM.svg"
+                alt="PM"
+                width={80}
+                height={80}
+                className="w-25 h-25 sm:w-25 sm:h-25"
+              />
+            </div>
+
+            {/* 우측 상단 - IF */}
+            <div
+              className={`pointer-events-none absolute -top-14 -right-10 sm:-top-16 sm:-right-10 md:-top-18 md:-right-10 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 -translate-y-0"
+                  : "opacity-0 -translate-y-2"
+              }`}
+            >
+              <Image
+                src="/assets/IF.svg"
+                alt="IF"
+                width={80}
+                height={80}
+                className="w-13 h-13"
+              />
+            </div>
+
+            {/* 부엉이 머리 위쪽 - 클로버
+            <div
+              className={`pointer-events-none absolute -top-35 left-10 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 scale-100"
+                  : "opacity-0 scale-75"
+              }`}
+            >
+              <Image
+                src="/assets/clover.svg"
+                alt="clover"
+                width={40}
+                height={40}
+                className="w-10 h-10"
+              />
+            </div> */}
+
+            {/* 우측 중앙 - Design (붓 아이콘) */}
+            <div
+              className={`pointer-events-none absolute -top-10 -right-35 sm:-top-10 sm:-right-35 md:-top-10 md:-right-35 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-3"
+              }`}
+            >
+              <Image
+                src="/assets/Design.svg"
+                alt="Design"
+                width={72}
+                height={72}
+                className="w-15 h-15 sm:w-15 sm:h-15"
+              />
+            </div>
+
+            {/* 우측 중앙 - Let's CBU */}
+            <div
+              className={`pointer-events-none absolute top-8 right-[-200px] sm:top-10 sm:right-[-200px] md:top-12 md:right-[-200px] transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-3"
+              }`}
+            >
+              <Image
+                src="/assets/ler'scbu.svg"
+                alt="Let's CBU"
+                width={140}
+                height={44}
+                className="w-28 sm:w-32 md:w-36"
+              />
+            </div>
+
+            {/* 우측 하단 - DE (코드 아이콘, 조금 위쪽) */}
+            <div
+              className={`pointer-events-none absolute -bottom-5 -right-35 sm:-bottom-5 sm:-right-35 md:-bottom-5 md:-right-35 transition-all duration-300 ${
+                isHeroHovered
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-2"
+              }`}
+            >
+              <Image
+                src="/assets/DE.svg"
+                alt="Code"
+                width={72}
+                height={72}
+                className="w-30 h-30 sm:w-30 sm:h-30"
+              />
+            </div>
           </div>
 
           {/* 호버 시 부엉이 밑 환영 문구 */}
@@ -110,6 +256,22 @@ export default function Home() {
             <p className="text-[#F2F2F2] font-medium text-sm sm:text-base lg:text-lg tracking-tight opacity-70">
               본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인 회원관리를 위한 웹사이트입니다.
             </p>
+            <a
+              href="https://forms.gle/mjibpj7qBiKRrChm8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="
+                mt-4 inline-flex h-10 px-5 py-2
+                items-center justify-center gap-3
+                rounded-full bg-[#F2F2F2]
+                text-sm sm:text-base font-semibold tracking-tight
+                text-[#151517]
+                hover:bg-white hover:shadow-md
+                transition-colors transition-shadow
+              "
+            >
+              28기 씨부엉 신청하기
+            </a>
           </div>
 
           {/* SCROLL DOWN - 메인 페이지 & 맨 위일 때만 표시 */}
@@ -136,54 +298,115 @@ export default function Home() {
           )}
         </div>
 
-        {/* CBU 구성 섹션 */}
-        <div id="cbu-section" className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
-          <div className="text-center mb-10">
+        {/* CBU ACTIVITY 섹션 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
+          <div className="text-center mb-14">
             <h2 className="text-3xl font-bold text-white mb-2">
-              CBU는 이렇게 구성되어 있어요!
+              CBU ACTIVITY
             </h2>
             <p className="text-lg text-zinc-300">
-              각 분야별로 스터디를 통해 함께 배우며 발전해 나가요.
+              각 분야별로 스터디와 프로젝트를 통해 함께 성장해 나가요.
+            </p>
+          </div>
+
+          {/* 활동 카드 그리드 */}
+          <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+            {activities.map((activity, idx) => (
+             <div
+             key={idx}
+             className="group relative w-full max-w-80 h-80 rounded-3xl bg-[#212123] px-10 py-10 flex flex-col items-center justify-center text-center transition-all duration-300"
+           >
+             {/* 공통 헤더 (항상 보임) */}
+             <div className="flex flex-col items-center gap-6 z-10">
+               <div
+                 className="flex items-center justify-center text-white text-xs font-semibold rounded-full"
+                 style={{
+                   width: "33px",
+                   height: "33px",
+                   padding: "4.529px 0 3.471px 0",
+                   background:
+                     "linear-gradient(141deg, #90B97C 4.39%, #6CDAFF 95.61%)",
+                 }}
+               >
+                 {idx + 1}
+               </div>
+           
+               <h3 className="text-xl font-bold text-white">
+                 {activity.title}
+               </h3>
+           
+               {/* 기본 상태 아이콘 */}
+               <div className="text-7xl transition-opacity duration-300 group-hover:opacity-20">
+                 {activity.icon}
+               </div>
+             </div>
+           
+             {/* 호버 오버레이 (디테일만) */}
+             <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center px-8 pt-10 pb-20 text-center bg-[rgba(0,0,0,0.56)] backdrop-blur-[2px]">
+               <p className="text-sm sm:text-base text-zinc-200 leading-relaxed max-w-md mt-35" style={{ whiteSpace: 'pre-line' }}>
+                 {activity.detail}
+               </p>
+             </div>
+           </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CBU COMPOSITION 섹션 */}
+        <div
+          id="cbu-section"
+          className="max-w-7xl mx-auto px-4 sm:px-6 py-40 mt-4 sm:mt-10"
+        >
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              CBU COMPOSITION
+            </h2>
+            <p className="text-lg text-zinc-300">
+              각 파트별 구성과 역할을 확인해 보세요.
             </p>
           </div>
 
           {/* 탭 네비게이션 */}
-          <div className="flex justify-center gap-3 mb-10">
-            {(["기획", "개발", "디자인"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setSelectedTab(tab)}
-                className={`px-6 py-3 rounded-lg text-base font-medium transition-all ${
-                  selectedTab === tab
-                    ? "bg-white text-[#151517]"
-                    : "bg-white/10 text-zinc-300 hover:bg-white/20"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          <div className="flex justify-center mb-10">
+            <div className="inline-flex items-center gap-1 rounded-full bg-[#2F2F31] px-2 py-1">
+              {(["기획", "개발", "디자인"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setSelectedTab(tab)}
+                  className={`px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all
+                    ${
+                      selectedTab === tab
+                        ? "bg-[#50CA73] text-black"
+                        : "bg-transparent text-zinc-300 hover:text-white"
+                    }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 선택된 탭의 콘텐츠 카드 */}
           <div className="relative mt-10">
-            <div className="bg-white/5 rounded-2xl p-10 md:p-14 text-white border border-white/10 relative overflow-hidden">
-              {/* 장식용 원들 */}
-              <div className="absolute top-4 right-8 flex gap-2">
-                <div className="w-3 h-3 rounded-full bg-zinc-600"></div>
-                <div className="w-2 h-2 rounded-full bg-zinc-600"></div>
-                <div className="w-4 h-4 rounded-full bg-zinc-600"></div>
-              </div>
-
+            <div
+              className="bg-white/5 rounded-2xl p-10 md:p-14 text-white border border-white/10 relative overflow-hidden"
+              style={{
+                backgroundImage: "url('/assets/main_circles.svg')",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right center",
+                backgroundSize: "auto 100%",
+              }}
+            >
               <div className="relative z-10">
                 <div className="mb-4">
                   <span className="text-sm text-zinc-400 mb-2 block">
                     {tabContents[selectedTab].label}
                   </span>
-                  <h3 className="text-4xl md:text-5xl font-bold mb-6">
+                  <h3 className="text-5xl md:text-5xl font-bold mb-6">
                     {tabContents[selectedTab].title}
                   </h3>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {tabContents[selectedTab].description.map((text, idx) => (
                     <p key={idx} className="text-lg text-zinc-200 leading-relaxed">
                       {text}
@@ -195,34 +418,48 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 활동 섹션 */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-40 mt-4 sm:mt-10">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              CBU에서는 어떤 활동을 진행할까요?
-            </h2>
+        {/* CBU STORY 섹션 */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-32">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-white mb-2">CBU STORY</h2>
             <p className="text-lg text-zinc-300">
-              각 분야별로 스터디&프로젝트를 통해 함께 발전해 나가요!
+              씨부엉은 이런 활동들을 하고 있어요.
             </p>
           </div>
 
-          {/* 활동 카드 그리드 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 justify-items-center">
-            {activities.map((activity, idx) => (
-              <div
-                key={idx}
-                className="w-full aspect-[5/3] bg-white/5 rounded-xl p-6 md:p-8 border border-white/10 hover:bg-white/10 transition-colors flex flex-col"
-              >
-                <div className="text-4xl mb-4">{activity.icon}</div>
-                <h3 className="text-xl font-bold text-white mb-3">
-                  {activity.title}
-                </h3>
-                <p className="text-zinc-300 leading-relaxed">
-                  {activity.description}
-                </p>
-              </div>
-            ))}
+          <div className="relative overflow-hidden">
+            <div
+              className="flex gap-10"
+              style={{ animation: "cbu-marquee 40s linear infinite" }}
+            >
+              {[...stories, ...stories].map((story, idx) => (
+                <div
+                  key={`${story.title}-${idx}`}
+                  className="shrink-0 w-110 h-90 rounded-3xl bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373] relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-zinc-900/40" />
+                  <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
+                    <div>
+                      <p className="text-lg sm:text-xl font-semibold text-white">
+                        {story.title}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <style jsx global>{`
+            @keyframes cbu-marquee {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
+          `}</style>
         </div>
       </div>
     </main>
