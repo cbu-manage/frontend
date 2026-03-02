@@ -153,6 +153,9 @@ export default function StudyPage() {
   /** 현재 페이지 번호 */
   const [currentPage, setCurrentPage] = useState(1);
 
+  const name = useUserStore((s) => s.name);
+  const isMember = !!name;
+
   // ========== 필터링 로직 ==========
 
   /**
@@ -277,6 +280,11 @@ export default function StudyPage() {
                   </div>
                 )}
 
+                {isError && (
+                  <div className="col-span-full text-center py-12 text-red-500">
+                    스터디 목록을 불러오는 중 오류가 발생했습니다.
+                  </div>
+                )}
             {/* ========== 카드 그리드 ========== */}
             {/*
             반응형 그리드:
@@ -320,6 +328,18 @@ export default function StudyPage() {
                     />
                   ))}
 
+                {!isLoading &&
+                  !isError &&
+                  studies.map((study) => (
+                    <SDC
+                      key={study.id}
+                      id={study.id}
+                      category={study.category as StudyCategory}
+                      status={study.status as StudyStatus}
+                      title={study.title}
+                      time={study.createdAt ?? "방금 전"}
+                    />
+                  ))}
                 {!isLoading && !isError && studies.length === 0 && (
                   <div className="col-span-full text-center py-12 text-gray-500">
                     해당 조건에 맞는 스터디가 없습니다.
@@ -327,6 +347,19 @@ export default function StudyPage() {
                 )}
               </div>
 
+                {!isLoading && !isError && studies.length === 0 && (
+                  <div className="col-span-full text-center py-12 text-gray-500">
+                    해당 조건에 맞는 스터디가 없습니다.
+                  </div>
+                )}
+              </div>
+
+              {/* ========== 페이지네이션 ========== */}
+              <PGN
+                currentPage={currentPage}
+                totalPages={pageNumbers}
+                onPageChange={(num) => setCurrentPage(num)}
+              />
               {/* ========== 페이지네이션 ========== */}
               <PGN
                 currentPage={currentPage}
