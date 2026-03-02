@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { studyApi, type StudyListParams } from "@/api";
 import type { StudyStatus } from "@/components/study/StudyCard";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 9;
 
 export interface StudyListItem {
   id: number;
@@ -24,18 +24,17 @@ type UseStudyListParams = {
   page: number;
   status: StudyStatus;
   category: string;
-  enabled?: boolean;
 };
 
 // 백엔드 카테고리 enum과 프론트 카테고리 문자열 매핑
 // 추정 매핑: 0=전체, 1=C++, 2=Python, 3=Java, 4=알고리즘, 5=기타
 const CATEGORY_CODE_MAP: Record<string, number> = {
-  전체: 1,
-  "C++": 2,
-  Python: 3,
-  Java: 4,
-  알고리즘: 5,
-  기타: 6,
+  전체: 0,
+  "C++": 1,
+  Python: 2,
+  Java: 3,
+  알고리즘: 4,
+  기타: 5,
 };
 
 function normalizeResponse(
@@ -69,12 +68,7 @@ function normalizeResponse(
   };
 }
 
-export function useStudyList({
-  page,
-  status,
-  category,
-  enabled = true,
-}: UseStudyListParams) {
+export function useStudyList({ page, status, category }: UseStudyListParams) {
   return useQuery({
     queryKey: ["studies", page, status, category],
     queryFn: async () => {
@@ -87,7 +81,6 @@ export function useStudyList({
       const res = await studyApi.getList(paging);
       return normalizeResponse(res.data, { status });
     },
-    enabled,
   });
 }
 

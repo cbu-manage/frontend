@@ -42,7 +42,11 @@ export function useLogin() {
       };
     },
     onSuccess: ({ data, studentNumber, password }) => {
-      const emailValue = data.email === "null" ? null : data.email;
+      const rawEmail = data.email === "null" ? null : data.email;
+      const emailValue =
+        rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
+      const isDefaultPassword = password === "1234";
+      const isEmailNull = !emailValue;
 
       setUser({
         name: data.name,
@@ -50,12 +54,19 @@ export function useLogin() {
         email: emailValue,
       });
       setAuthStatus({
-        isDefaultPassword: password === "1234",
-        isEmailNull: emailValue === null,
+        isDefaultPassword,
+        isEmailNull,
       });
       setErrorMessage(null);
 
-      if (password === "1234") {
+      // 1순위: 이메일이 없거나 학교 메일이 아닌 경우 → 이메일 등록 페이지로 이동
+      if (isEmailNull) {
+        router.push("/private");
+        return;
+      }
+
+      // 2순위: 기본 비밀번호인 경우 → 비밀번호 변경 권장
+      if (isDefaultPassword) {
         const shouldChangePassword = window.confirm(
           "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?"
         );
