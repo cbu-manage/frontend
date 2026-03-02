@@ -22,7 +22,9 @@ export const mailApi = {
     }),
 
   verify: (address: string, authCode: string) =>
-    api.post<MailVerifyResponse>("/mail/verify", { address, authCode }),
+    api.post<MailVerifyResponse>("/mail/verify", null, {
+      params: { address, authCode },
+    }),
 
   update: (data: MailUpdateRequest) =>
     api.post("/mail/update", data),
