@@ -16,7 +16,7 @@ export { mailApi, type MailSendResponse, type MailVerifyResponse, type MailUpdat
 export { userApi, type UserInfo, type VerifyUserRequest } from "./user.api";
 
 // Study
-export { studyApi, type StudyListParams, type StudyFilterParams } from "./study.api";
+export { studyApi, type StudyListParams } from "./study.api";
 
 // Project
 export {
