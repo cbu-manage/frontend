@@ -6,11 +6,9 @@ import AddMail from "@/components/AddMail";
 
 export default function PrivateGuidePage() {
   const router = useRouter();
-  const { isEmailNull, isDefaultPassword, emailUpdated } = useUserStore((s) => ({
-    isEmailNull: s.isEmailNull,
-    isDefaultPassword: s.isDefaultPassword,
-    emailUpdated: s.emailUpdated,
-  }));
+  const isEmailNull = useUserStore((s) => s.isEmailNull);
+  const isDefaultPassword = useUserStore((s) => s.isDefaultPassword);
+  const emailUpdated = useUserStore((s) => s.emailUpdated);
 
   // 이메일 등록 완료 후 비밀번호 상태에 따라 다음 단계로 이동
   useEffect(() => {
