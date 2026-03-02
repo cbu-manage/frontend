@@ -9,7 +9,7 @@ export default function Footer() {
 
   const footerInfo = [
     { title: "소속", name: "한국공학대학교" },
-    { title: "문의", name: "ray@tukorea.ac.kr" },
+    { title: "문의", name: "cbumanage@gmail.com" },
   ];
   // 소셜 링크 정보(간단하게)
   const socialLinks = [
@@ -62,7 +62,7 @@ export default function Footer() {
           <p
             className={`text-xs ${isHome ? "text-zinc-500" : "text-[#CCC]"}`}
           >
-            Copyright ⓒ 2025 씨부엉 All rights reserved.
+            Copyright ⓒ 2026 씨부엉 All rights reserved.
           </p>
         </div>
       </div>
