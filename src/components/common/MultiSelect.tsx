@@ -65,7 +65,7 @@ export default function MultiSelect({
           className={`
             w-full flex items-center justify-between gap-2
             rounded-lg px-5 py-2 text-base
-            border transition-all duration-150 min-h-[44px]
+            border transition-all duration-150 min-h-[51px]
             ${
               isOpen
                 ? "bg-white border-brand ring-1 ring-brand"
