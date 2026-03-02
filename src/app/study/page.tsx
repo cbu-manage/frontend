@@ -22,6 +22,7 @@ import {
 } from "@/components/study/StudyCard";
 import Sidebar from "@/components/shared/Sidebar";
 import PGN from "@/components/shared/Pagination";
+import { useStudyList } from "@/hooks/study/useStudyList";
 
 // ============================================
 // 상수 정의
@@ -38,95 +39,6 @@ const CATEGORIES = [
   { label: "Java", value: "Java" },
   { label: "알고리즘", value: "알고리즘" },
   { label: "기타", value: "기타" },
-];
-
-/**
- * 페이지네이션용 페이지 번호 배열
- * @todo 실제 API 연동 시 동적으로 생성
- */
-const TOTAL_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-// ============================================
-// 더미 데이터
-// ============================================
-
-/**
- * 스터디 목록 더미 데이터
- * @todo 실제 API 연동 시 제거
- * @todo [대기] 중복 카테고리 지원 시 category → categories: StudyCategory[]
- */
-const STUDIES: {
-  id: number;
-  category: StudyCategory;
-  status: StudyStatus;
-  title: string;
-}[] = [
-  {
-    id: 1,
-    category: "C++",
-    status: "모집 중",
-    title: "C언어 기초 스터디 모집합니다~",
-  },
-  {
-    id: 2,
-    category: "Python",
-    status: "모집 완료",
-    title: "파이썬 데이터분석 스터디 모집합니다~",
-  },
-  {
-    id: 3,
-    category: "Java",
-    status: "모집 중",
-    title: "자바 스프링 스터디 모집합니다~",
-  },
-  {
-    id: 4,
-    category: "알고리즘",
-    status: "모집 중",
-    title: "코딩테스트 준비 스터디 모집합니다~",
-  },
-  {
-    id: 5,
-    category: "기타",
-    status: "모집 중",
-    title: "AWS 클라우드 스터디 모집합니다~",
-  },
-  {
-    id: 6,
-    category: "C++",
-    status: "모집 중",
-    title: "C++ 게임개발 스터디 모집합니다~",
-  },
-  {
-    id: 7,
-    category: "Python",
-    status: "모집 완료",
-    title: "장고 웹개발 스터디 모집합니다~",
-  },
-  {
-    id: 8,
-    category: "Java",
-    status: "모집 중",
-    title: "안드로이드 앱개발 스터디 모집합니다~",
-  },
-  {
-    id: 9,
-    category: "알고리즘",
-    status: "모집 중",
-    title: "백준 문제풀이 스터디 모집합니다~",
-  },
-  {
-    id: 10,
-    category: "알고리즘",
-    status: "모집 중",
-    title: "백준 문제풀이 스터디 모집합니다~",
-  },
-  {
-    id: 11,
-    category: "기타",
-    status: "모집 중",
-    title: "데브옵스 스터디 모집합니다~",
-  },
 ];
 
 // ============================================
@@ -150,23 +62,16 @@ export default function StudyPage() {
   /** 현재 페이지 번호 */
   const [currentPage, setCurrentPage] = useState(1);
 
-  // ========== 필터링 로직 ==========
-
-  /**
-   * 카테고리 + 모집 상태로 필터링된 스터디 목록
-   * @todo [대기] 중복 카테고리 지원 시 includes() 사용
-   * 예: study.categories.includes(selectedCategory)
-   */
-  const filteredStudies = STUDIES.filter((study) => {
-    // 카테고리 필터: '전체'가 아닌 경우 해당 카테고리만 표시
-    const categoryMatch =
-      selectedCategory === "전체" || study.category === selectedCategory;
-
-    // 모집 상태 필터
-    const statusMatch = study.status === statusFilter;
-
-    return categoryMatch && statusMatch;
+  // API 연동: 스터디 목록 조회
+  const { data, isLoading, isError } = useStudyList({
+    page: currentPage,
+    status: statusFilter,
+    category: selectedCategory,
   });
+
+  const studies = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
     <main className="min-h-screen min-w-[1200px] bg-[#F8FAFF]">
@@ -256,19 +161,32 @@ export default function StudyPage() {
             - 데스크탑 (lg): 3열
           */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredStudies.map((study) => (
-                <SDC
-                  key={study.id}
-                  id={study.id}
-                  category={study.category}
-                  status={study.status}
-                  title={study.title}
-                  time="6시간 전"
-                />
-              ))}
+              {isLoading && (
+                <div className="col-span-full text-center py-12 text-gray-500">
+                  스터디 목록을 불러오는 중입니다...
+                </div>
+              )}
 
-              {/* 필터링 결과가 없는 경우 */}
-              {filteredStudies.length === 0 && (
+              {isError && (
+                <div className="col-span-full text-center py-12 text-red-500">
+                  스터디 목록을 불러오는 중 오류가 발생했습니다.
+                </div>
+              )}
+
+              {!isLoading &&
+                !isError &&
+                studies.map((study) => (
+                  <SDC
+                    key={study.id}
+                    id={study.id}
+                    category={study.category as StudyCategory}
+                    status={study.status as StudyStatus}
+                    title={study.title}
+                    time={study.createdAt ?? "방금 전"}
+                  />
+                ))}
+
+              {!isLoading && !isError && studies.length === 0 && (
                 <div className="col-span-full text-center py-12 text-gray-500">
                   해당 조건에 맞는 스터디가 없습니다.
                 </div>
@@ -278,7 +196,7 @@ export default function StudyPage() {
             {/* ========== 페이지네이션 ========== */}
             <PGN
               currentPage={currentPage}
-              totalPages={TOTAL_PAGES}
+              totalPages={pageNumbers}
               onPageChange={(num) => setCurrentPage(num)}
             />
           </div>
