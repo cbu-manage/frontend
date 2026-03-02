@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import Link from 'next/link';
-import ArchiveCard from '@/components/archive/card';
-import Pagination from '@/components/shared/Pagination';
-import { Pencil } from 'lucide-react';
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import ArchiveCard from "@/components/archive/card";
+import Pagination from "@/components/shared/Pagination";
+import { Pencil } from "lucide-react";
+import RequireMember from "@/components/auth/RequireMember";
 
 // 샘플 데이터 (나중에 API로 받을 데이터)
 const sampleArchives = [
@@ -219,46 +220,48 @@ export default function ArchivePage() {
   }, [currentPage]);
 
   return (
-    <main className="min-h-screen pb-12 bg-white">
-      <div className="px-[9.375%]">
-        {/* 헤더 섹션 */}
-        <div className="pt-12 flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              자료방
-            </h1>
-            <p className="text-base text-gray-600">
-              스터디와 프로젝트에서 공유된 자료들을 한눈에 확인해보세요.
-            </p>
+    <RequireMember>
+      <main className="min-h-screen pb-12 bg-white">
+        <div className="px-[9.375%]">
+          {/* 헤더 섹션 */}
+          <div className="pt-12 flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                자료방
+              </h1>
+              <p className="text-base text-gray-600">
+                스터디와 프로젝트에서 공유된 자료들을 한눈에 확인해보세요.
+              </p>
+            </div>
+            <Link href="/archive/write">
+              <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
+                <Pencil size={18} />
+                글 작성하기
+              </button>
+            </Link>
           </div>
-          <Link href="/archive/write">
-            <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
-              <Pencil size={18} />
-              글 작성하기
-            </button>
-          </Link>
-        </div>
 
-        {/* 카드 그리드 */}
-        <div className="py-8 md:py-12">
-          <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {paginatedArchives.map((archive) => (
-                <ArchiveCard key={archive.id} {...archive} />
-              ))}
+          {/* 카드 그리드 */}
+          <div className="py-8 md:py-12">
+            <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {paginatedArchives.map((archive) => (
+                  <ArchiveCard key={archive.id} {...archive} />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* 페이지네이션 */}
-        {totalPages.length > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        )}
-      </div>
-    </main>
+          {/* 페이지네이션 */}
+          {totalPages.length > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
+        </div>
+      </main>
+    </RequireMember>
   );
 }
