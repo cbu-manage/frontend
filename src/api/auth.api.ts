@@ -27,6 +27,8 @@ export const authApi = {
   login: (data: LoginRequest) =>
     api.post<LoginResponse>("/login", data),
 
+  logout: () => api.delete("/login"),
+
   signup: (data: SignupRequest) =>
     api.post("/login/signup", data),
 
