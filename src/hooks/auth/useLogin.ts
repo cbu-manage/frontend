@@ -45,7 +45,8 @@ export function useLogin() {
       const rawEmail = data.email === "null" ? null : data.email;
       const emailValue =
         rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
-      const isDefaultPassword = password === "1234";
+
+      const isDefaultPassword = password === "1234" || password === "1111";
       const isEmailNull = !emailValue;
 
       setUser({
@@ -65,7 +66,7 @@ export function useLogin() {
         return;
       }
 
-      // 2순위: 기본 비밀번호인 경우 → 비밀번호 변경 권장
+      // 2순위: 기본 비밀번호(1234, 1111)인 경우 → 비밀번호 변경 페이지로 이동
       if (isDefaultPassword) {
         const shouldChangePassword = window.confirm(
           "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?"
