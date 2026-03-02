@@ -79,11 +79,11 @@ export default function Home() {
       image: "/assets/mentoring_pic.jpg",
     },
     {
-      title: "스터디 사진",
+      title: "스터디",
       image: "/assets/study_pic.jpg",
     },
     {
-      title: "프로젝트 사진",
+      title: "프로젝트",
       image: "/assets/study2_pic.jpg",
     },
   ];
@@ -99,7 +99,7 @@ export default function Home() {
         >
           <div
             className="relative transition-transform duration-300 ease-out"
-            style={{ transform: isHeroHovered ? "scale(1.25)" : "scale(1)" }}
+            style={{ transform: isHeroHovered ? "scale(1.15)" : "scale(1)" }}
           >
             {/* 중앙 부엉이 아이콘 */}
             <Image
@@ -441,49 +441,39 @@ export default function Home() {
           </div>
 
           <div className="relative overflow-hidden">
-            <div
-              className="flex gap-10"
-              style={{ animation: "cbu-marquee 40s linear infinite" }}
-            >
-              {[...stories, ...stories].map((story, idx) => (
-                <div
-                  key={`${story.title}-${idx}`}
-                  className="shrink-0 w-110 h-90 rounded-3xl relative overflow-hidden bg-[#737373]"
-                >
-                  {/* 배경 사진 */}
-                  <Image
-                    src={story.image}
-                    alt={story.title}
-                    fill
-                    className="object-cover"
-                  />
-                  {/* 그라데이션 + 어둡게 오버레이 */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
-                  <div className="absolute inset-0 bg-zinc-900/35" />
+            <div className="flex w-max gap-10 animate-[cbu-marquee_60s_linear_infinite]">
+              {[0, 1].map((loopIndex) => (
+                <div key={loopIndex} className="flex gap-10">
+                  {stories.map((story, idx) => (
+                    <div
+                      key={`${story.title}-${loopIndex}-${idx}`}
+                      className="shrink-0 w-[260px] sm:w-[360px] lg:w-[500px] xl:w-[649px] h-[220px] sm:h-[280px] lg:h-[360px] xl:h-[437px] rounded-[32px] relative overflow-hidden bg-[#737373]"
+                    >
+                      {/* 배경 사진 */}
+                      <Image
+                        src={story.image}
+                        alt={story.title}
+                        fill
+                        className="object-cover"
+                      />
+                      {/* 그라데이션 + 어둡게 오버레이 */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
+                      <div className="absolute inset-0 bg-zinc-900/35" />
 
-                  {/* 타이틀 */}
-                  <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
-                    <div>
-                      <p className="text-lg sm:text-xl font-semibold text-white">
-                        {story.title}
-                      </p>
+                      {/* 타이틀 */}
+                      <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
+                        <div>
+                          <p className="text-lg sm:text-xl font-semibold text-white">
+                            {story.title}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               ))}
             </div>
           </div>
-
-          <style jsx global>{`
-            @keyframes cbu-marquee {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(-50%);
-              }
-            }
-          `}</style>
         </div>
       </div>
     </main>

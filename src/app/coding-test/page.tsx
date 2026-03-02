@@ -23,6 +23,7 @@ import {
 } from "@/components/coding-test/CodingTestRow";
 import PGN from "@/components/shared/Pagination";
 import { Pencil } from "lucide-react";
+import RequireMember from "@/components/auth/RequireMember";
 
 // ============================================
 // 상수 정의
@@ -260,9 +261,10 @@ export default function CodingTestPage() {
   });
 
   return (
-    // 페이지 컨테이너 - 전체 화면 배경색
-    <div className="w-full bg-gray-0 min-h-screen">
-      <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
+    <RequireMember>
+      {/* 페이지 컨테이너 - 전체 화면 배경색 */}
+      <div className="w-full bg-gray-0 min-h-screen">
+        <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
         {/* ========== 페이지 헤더 ========== */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -490,13 +492,14 @@ export default function CodingTestPage() {
           </table>
         </div>
 
-        {/* ========== 페이지네이션 ========== */}
-        <PGN
-          currentPage={currentPage}
-          totalPages={TOTAL_PAGES}
-          onPageChange={(num) => setCurrentPage(num)}
-        />
-      </main>
-    </div>
+          {/* ========== 페이지네이션 ========== */}
+          <PGN
+            currentPage={currentPage}
+            totalPages={TOTAL_PAGES}
+            onPageChange={(num) => setCurrentPage(num)}
+          />
+        </main>
+      </div>
+    </RequireMember>
   );
 }
