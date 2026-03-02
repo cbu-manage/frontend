@@ -75,7 +75,7 @@ export default function WritePage() {
   }
 
   return (
-    <main className="min-h-screen px-80 bg-gray-100">
+    <main className="min-h-screen px-65 bg-gray-100">
       <div className="px-12 py-8 bg-white min-h-screen">
         {/* 브레드크럼 */}
         <nav className="text-sm text-gray-500 mb-2">
