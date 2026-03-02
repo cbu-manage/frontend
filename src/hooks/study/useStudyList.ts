@@ -24,6 +24,7 @@ type UseStudyListParams = {
   page: number;
   status: StudyStatus;
   category: string;
+  enabled?: boolean;
 };
 
 // 백엔드 카테고리 enum과 프론트 카테고리 문자열 매핑
@@ -68,7 +69,12 @@ function normalizeResponse(
   };
 }
 
-export function useStudyList({ page, status, category }: UseStudyListParams) {
+export function useStudyList({
+  page,
+  status,
+  category,
+  enabled = true,
+}: UseStudyListParams) {
   return useQuery({
     queryKey: ["studies", page, status, category],
     queryFn: async () => {
@@ -81,6 +87,7 @@ export function useStudyList({ page, status, category }: UseStudyListParams) {
       const res = await studyApi.getList(paging);
       return normalizeResponse(res.data, { status });
     },
+    enabled,
   });
 }
 
