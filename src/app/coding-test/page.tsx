@@ -14,6 +14,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   CodingTestRow,
   SolveStatus,
@@ -21,6 +22,7 @@ import {
   Platform,
 } from "@/components/coding-test/CodingTestRow";
 import PGN from "@/components/shared/Pagination";
+import { Pencil } from "lucide-react";
 
 // ============================================
 // 상수 정의
@@ -262,103 +264,122 @@ export default function CodingTestPage() {
     <div className="w-full bg-gray-0 min-h-screen">
       <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
         {/* ========== 페이지 헤더 ========== */}
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">
-          코딩테스트 준비
-        </h1>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            코딩테스트 준비
+          </h1>
+        </div>
 
-        {/* ========== 필터 영역 ========== */}
-        <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
-          {/* 상태 필터 드롭다운 */}
-          <div className="relative">
-            <FilterButton
-              label="상태"
-              isOpen={openFilter === "status"}
-              onClick={() => toggleFilter("status")}
-            />
-            {openFilter === "status" && (
-              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
-                {["전체", "미해결", "해결"].map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setStatusFilter(option);
-                      setOpenFilter(null);
-                    }}
-                    className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 언어 필터 드롭다운 */}
-          <div className="relative">
-            <FilterButton
-              label="언어"
-              isOpen={openFilter === "language"}
-              onClick={() => toggleFilter("language")}
-            />
-            {openFilter === "language" && (
-              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
-                {["Python", "Java", "C++", "JavaScript", "C"].map(
-                  (option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => {
-                        if (languageFilter.includes(option)) {
-                          setLanguageFilter(languageFilter.filter((lang) => lang !== option));
-                        } else {
-                          setLanguageFilter([...languageFilter, option]);
-                        }
-                      }}
-                      className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
-                        languageFilter.includes(option)
-                          ? "bg-brand/20 text-gray-900 font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ),
+        {/* ========== 필터 영역 + 작성 버튼 ========== */}
+        <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* 필터 드롭다운 모음 */}
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {/* 상태 필터 드롭다운 */}
+              <div className="relative">
+                <FilterButton
+                  label="상태"
+                  isOpen={openFilter === "status"}
+                  onClick={() => toggleFilter("status")}
+                />
+                {openFilter === "status" && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
+                    {["전체", "미해결", "해결"].map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setStatusFilter(option);
+                          setOpenFilter(null);
+                        }}
+                        className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* 플랫폼 필터 드롭다운 */}
-          <div className="relative">
-            <FilterButton
-              label="플랫폼"
-              isOpen={openFilter === "platform"}
-              onClick={() => toggleFilter("platform")}
-            />
-            {openFilter === "platform" && (
-              <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
-                {["프로그래머스", "백준", "LeetCode"].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      if (platformFilter.includes(option)) {
-                        setPlatformFilter(platformFilter.filter((plat) => plat !== option));
-                      } else {
-                        setPlatformFilter([...platformFilter, option]);
-                      }
-                    }}
-                    className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
-                      platformFilter.includes(option)
-                        ? "bg-brand/20 text-gray-900 font-medium"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
+              {/* 언어 필터 드롭다운 */}
+              <div className="relative">
+                <FilterButton
+                  label="언어"
+                  isOpen={openFilter === "language"}
+                  onClick={() => toggleFilter("language")}
+                />
+                {openFilter === "language" && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
+                    {["Python", "Java", "C++", "JavaScript", "C"].map(
+                      (option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            if (languageFilter.includes(option)) {
+                              setLanguageFilter(
+                                languageFilter.filter((lang) => lang !== option),
+                              );
+                            } else {
+                              setLanguageFilter([...languageFilter, option]);
+                            }
+                          }}
+                          className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                            languageFilter.includes(option)
+                              ? "bg-brand/20 text-gray-900 font-medium"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* 플랫폼 필터 드롭다운 */}
+              <div className="relative">
+                <FilterButton
+                  label="플랫폼"
+                  isOpen={openFilter === "platform"}
+                  onClick={() => toggleFilter("platform")}
+                />
+                {openFilter === "platform" && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
+                    {["프로그래머스", "백준", "LeetCode"].map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() => {
+                          if (platformFilter.includes(option)) {
+                            setPlatformFilter(
+                              platformFilter.filter((plat) => plat !== option),
+                            );
+                          } else {
+                            setPlatformFilter([...platformFilter, option]);
+                          }
+                        }}
+                        className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
+                          platformFilter.includes(option)
+                            ? "bg-brand/20 text-gray-900 font-medium"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 글 작성하기 버튼 */}
+            <Link href="/coding-test/write">
+              <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
+                <Pencil size={18} />
+                글 작성하기
+              </button>
+            </Link>
           </div>
         </div>
 
