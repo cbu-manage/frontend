@@ -59,6 +59,7 @@ export function useVerifyEmail() {
     verificationError: verifyMutation.isError,
     verificationErrorMessage: "",
     isVerificationSent: sendMutation.isSuccess,
+    isVerifying: verifyMutation.isPending,
     sendEmailToServer,
     verifyCodeWithServer,
   };
