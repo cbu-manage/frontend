@@ -66,13 +66,26 @@ export default function Home() {
   ];
 
   const stories = [
-    { title: "CBU OT" },
-    { title: "정기 스터디 시간" },
-    { title: "프로젝트 회의" },
-    { title: "해커톤 준비 현장" },
-    { title: "동아리 세미나" },
-    { title: "스터디 회식" },
-    { title: "종강 파티" },
+    {
+      title: "종강 회식",
+      image: "/assets/company-dinner-pic.jpg",
+    },
+    {
+      title: "박람회 방문",
+      image: "/assets/fair_pic.jpg",
+    },
+    {
+      title: "현직자 선배의 멘토링",
+      image: "/assets/mentoring_pic.jpg",
+    },
+    {
+      title: "스터디 사진",
+      image: "/assets/study_pic.jpg",
+    },
+    {
+      title: "프로젝트 사진",
+      image: "/assets/study2_pic.jpg",
+    },
   ];
 
   return (
@@ -435,9 +448,20 @@ export default function Home() {
               {[...stories, ...stories].map((story, idx) => (
                 <div
                   key={`${story.title}-${idx}`}
-                  className="shrink-0 w-110 h-90 rounded-3xl bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373] relative overflow-hidden"
+                  className="shrink-0 w-110 h-90 rounded-3xl relative overflow-hidden bg-[#737373]"
                 >
-                  <div className="absolute inset-0 bg-zinc-900/40" />
+                  {/* 배경 사진 */}
+                  <Image
+                    src={story.image}
+                    alt={story.title}
+                    fill
+                    className="object-cover"
+                  />
+                  {/* 그라데이션 + 어둡게 오버레이 */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
+                  <div className="absolute inset-0 bg-zinc-900/35" />
+
+                  {/* 타이틀 */}
                   <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
                     <div>
                       <p className="text-lg sm:text-xl font-semibold text-white">
