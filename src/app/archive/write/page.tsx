@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { resourcesApi } from "@/api";
 import InputBox from "@/components/common/InputBox";
 import LongBtn from "@/components/common/LongBtn";
 
@@ -8,10 +11,23 @@ export default function ArchiveWritePage() {
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
 
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      await resourcesApi.create({ title, link });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      router.push("/archive");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // 나중에 API 호출
-    console.log({ title, link });
+    if (!title.trim() || !link.trim()) return;
+    createMutation.mutate();
   };
 
   return (
