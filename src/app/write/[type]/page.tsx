@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { Calendar as CalendarIcon } from "lucide-react";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
+import { Calendar } from "@/components/common/Calendar";
 
 const EDIT_STORAGE_KEY: Record<string, string> = {
   study: "editPost_study",
@@ -40,7 +42,10 @@ export default function WritePage() {
   const [title, setTitle] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
+  const [recruitDeadline, setRecruitDeadline] = useState<Date | undefined>();
+  const [recruitCount, setRecruitCount] = useState(0);
   const [content, setContent] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
 
   // 수정 시 상세 페이지에서 담아온 데이터로 폼 채우기
   useEffect(() => {
@@ -53,11 +58,15 @@ export default function WritePage() {
         title?: string;
         categories?: string[];
         recruitStatus?: string;
+        recruitDeadline?: string;
+        recruitCount?: number;
         content?: string;
       };
       if (data.title) setTitle(data.title);
       if (data.categories?.length) setCategories(data.categories);
       if (data.recruitStatus) setRecruitStatus(data.recruitStatus);
+      if (data.recruitDeadline) setRecruitDeadline(new Date(data.recruitDeadline));
+      if (data.recruitCount) setRecruitCount(data.recruitCount);
       if (data.content) setContent(data.content);
     } finally {
       sessionStorage.removeItem(key);
@@ -66,7 +75,15 @@ export default function WritePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ type, title, categories, recruitStatus, content });
+    console.log({ 
+      type, 
+      title, 
+      categories, 
+      recruitStatus, 
+      recruitDeadline, 
+      recruitCount, 
+      content 
+    });
   };
 
   if (!config) {
@@ -75,7 +92,7 @@ export default function WritePage() {
   }
 
   return (
-    <main className="min-h-screen px-65 bg-gray-100">
+    <main className="min-h-screen px-80 bg-gray-100 min-w-[1400px]">
       <div className="px-12 py-8 bg-white min-h-screen">
         {/* 브레드크럼 */}
         <nav className="text-sm text-gray-500 mb-2">
@@ -97,7 +114,7 @@ export default function WritePage() {
 
         {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 제목, 분류, 모집상태 - 회색 박스 */}
+          {/* 제목, 분류, 모집정보 - 회색 박스 */}
           <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
             {/* 제목 입력 */}
             <div>
@@ -109,31 +126,116 @@ export default function WritePage() {
                 required
                 className="
                   w-full px-4 py-3 text-base font-semibold
-                  bg-gray-50 border border-gray-200 rounded-lg
+                  border border-gray-200 rounded-lg
                   placeholder:text-gray-400
                   transition-all duration-150
-                  focus:outline-none focus:bg-gray-50 focus:border-brand focus:ring-1 focus:ring-brand focus:placeholder:text-gray-400
+                  focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand focus:placeholder:text-gray-400
                 "
+                style={{ backgroundColor: "#F5F6F8" }}
               />
             </div>
 
-            {/* 분류 & 모집상태 */}
-            <div className="flex gap-4 items-end">
-              {/* 분류 멀티셀렉트 */}
+            {/* 분류 */}
+            <div>
+              <MultiSelect
+                label="분류"
+                placeholder="분류를 선택해 주세요"
+                options={[...config.categories]}
+                value={categories}
+                onChange={setCategories}
+              />
+            </div>
+
+            {/* 모집마감일 | 모집인원 | 모집상태 */}
+            <div className="flex gap-8 items-end">
+              {/* 모집마감일 */}
               <div className="flex-1">
-                <MultiSelect
-                  label="분류"
-                  placeholder="분류를 선택해 주세요"
-                  options={[...config.categories]}
-                  value={categories}
-                  onChange={setCategories}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  모집 마감일
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowCalendar(!showCalendar)}
+                    className="
+                      w-full px-4 py-2 text-sm font-medium
+                      border border-gray-200 rounded-lg
+                      text-left flex items-center justify-between
+                      hover:border-gray-300 transition-colors duration-150 bg-white min-h-[51px]
+                    "
+                  >
+                    <span className={recruitDeadline ? "text-gray-900" : "text-gray-400"}>
+                      {recruitDeadline 
+                        ? recruitDeadline.toLocaleDateString("sv-SE")
+                        : "모집 마감일을 선택해 주세요."}
+                    </span>
+                    <div className="p-1.5 rounded-full" style={{ backgroundColor: "#EEEFF3" }}>
+                      <CalendarIcon className="w-5 h-5 stroke-[1.5]" />
+                    </div>
+                  </button>
+                  
+                  {/* 캘린더 팝업 */}
+                  {showCalendar && (
+                    <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
+                      <Calendar
+                        mode="single"
+                        selected={recruitDeadline}
+                        onDayClick={(date) => {
+                          setRecruitDeadline(date);
+                          setShowCalendar(false);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* 구분선 */}
+              <div className="w-px h-12 bg-gray-100" />
+
+              {/* 모집인원 */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  모집 인원
+                </label>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setRecruitCount(Math.max(0, recruitCount - 1))}
+                    className="
+                      w-10 h-10 rounded-full text-gray-700
+                      hover:opacity-80 transition-all duration-150
+                      flex items-center justify-center text-xl font-medium
+                    "
+                    style={{ backgroundColor: "#F5F6F8" }}
+                  >
+                    −
+                  </button>
+                  <span className="text-xl font-semibold text-gray-900 w-14 text-center">
+                    {String(recruitCount).padStart(2, "0")}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRecruitCount(recruitCount + 1)}
+                    className="
+                      w-10 h-10 rounded-full text-gray-700
+                      hover:opacity-80 transition-all duration-150
+                      flex items-center justify-center text-xl font-medium
+                    "
+                    style={{ backgroundColor: "#F5F6F8" }}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* 구분선 */}
+              <div className="w-px h-12 bg-gray-100" />
 
               {/* 모집상태 토글 */}
               <div>
                 <Toggle
-                  label="모집 상태"
+                  label="모집상태"
                   options={RECRUIT_STATUS_OPTIONS}
                   value={recruitStatus}
                   onChange={setRecruitStatus}
