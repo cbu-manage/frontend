@@ -18,6 +18,14 @@ export { userApi, type UserInfo, type VerifyUserRequest } from "./user.api";
 // Study
 export { studyApi, type StudyListParams } from "./study.api";
 
+// Resources (자료방)
+export {
+  resourcesApi,
+  type ResourceListParams,
+  type ResourceItem,
+  type ResourceListResponse,
+} from "./resources.api";
+
 // Project
 export {
   projectApi,
