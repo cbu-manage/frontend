@@ -18,6 +18,7 @@ import { Check } from "lucide-react";
 import Sidebar from "@/components/shared/Sidebar";
 import PGN from "@/components/shared/Pagination";
 import { ProjectCard, ProjectStatus } from "@/components/project/ProjectCard";
+import RequireMember from "@/components/auth/RequireMember";
 
 // ============================================
 // 상수 정의
@@ -141,112 +142,116 @@ export default function ProjectPage() {
   });
 
   return (
-    <main className="min-h-screen min-w-[1200px] bg-[#F8FAFF]">
-      <div className="flex min-w-[1200px]">
-        <Sidebar
-          items={POSITIONS}
-          selected={selectedPosition}
-          onSelect={setSelectedPosition}
-          writeLink="/project/write"
-        />
+    <RequireMember>
+      <main className="min-h-screen min-w-[1200px] bg-[#F8FAFF]">
+        <div className="flex min-w-[1200px]">
+          <Sidebar
+            items={POSITIONS}
+            selected={selectedPosition}
+            onSelect={setSelectedPosition}
+            writeLink="/project/write"
+          />
 
-        {/* 고정 사이드바 오른쪽으로 컨텐츠를 밀기 */}
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] py-16">
-          <div>
-            {/* ========== 페이지 헤더 ========== */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-              {/* 제목 */}
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                프로젝트 모집 공고
-              </h1>
+          {/* 고정 사이드바 오른쪽으로 컨텐츠를 밀기 */}
+          <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] py-16">
+            <div>
+              {/* ========== 페이지 헤더 ========== */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                {/* 제목 */}
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  프로젝트 모집 공고
+                </h1>
 
-              {/* 나의 작성 목록 버튼 - pill 스타일
-            <span className="
-              text-sm text-emerald-600
-              bg-white border border-emerald-500
-              rounded-full px-4 py-1
-              cursor-pointer hover:bg-emerald-50
-              w-fit
-            ">
-              나의 작성 목록 &gt;
-            </span> */}
-            </div>
+                {/* 나의 작성 목록 버튼 - pill 스타일
+              <span className="
+                text-sm text-emerald-600
+                bg-white border border-emerald-500
+                rounded-full px-4 py-1
+                cursor-pointer hover:bg-emerald-50
+                w-fit
+              ">
+                나의 작성 목록 &gt;
+              </span> */}
+              </div>
 
-            {/* ========== 모집 상태 필터 탭 ========== */}
-            <div className="flex items-center gap-3 mb-6 text-sm">
-              {/* 모집 중 버튼 */}
-              <button
-                onClick={() => {
-                  // isRecruiting = true → 콘솔에 찍지 않음 (요구사항)
-                  setStatusFilter("모집 중");
-                }}
-                className={`flex items-center gap-1 transition-colors ${
-                  statusFilter === "모집 중"
-                    ? "text-gray-900 font-medium" // 선택됨
-                    : "text-gray-400" // 선택 안됨
-                }`}
-              >
-                {/* 체크 아이콘 - 선택된 경우에만 표시 */}
-                {statusFilter === "모집 중" && (
-                  <Check className="w-4 h-4" />
+              {/* ========== 모집 상태 필터 탭 ========== */}
+              <div className="flex items-center gap-3 mb-6 text-sm">
+                {/* 모집 중 버튼 */}
+                <button
+                  onClick={() => {
+                    // isRecruiting = true → 콘솔에 찍지 않음 (요구사항)
+                    setStatusFilter("모집 중");
+                  }}
+                  className={`flex items-center gap-1 transition-colors ${
+                    statusFilter === "모집 중"
+                      ? "text-gray-900 font-medium" // 선택됨
+                      : "text-gray-400" // 선택 안됨
+                  }`}
+                >
+                  {/* 체크 아이콘 - 선택된 경우에만 표시 */}
+                  {statusFilter === "모집 중" && (
+                    <Check className="w-4 h-4" />
+                  )}
+                  모집 중
+                </button>
+
+                {/* 구분선 */}
+                <span className="text-gray-300">|</span>
+
+                {/* 모집 완료 버튼 */}
+                <button
+                  onClick={() => {
+                    // isRecruiting = false → 콘솔에 찍음 (요구사항)
+                    const isRecruiting = false;
+                    console.log(
+                      `[모집 상태 필터] isRecruiting: ${isRecruiting}`,
+                    );
+                    setStatusFilter("모집 완료");
+                  }}
+                  className={`flex items-center gap-1 transition-colors ${
+                    statusFilter === "모집 완료"
+                      ? "text-gray-900 font-medium" // 선택됨
+                      : "text-gray-400" // 선택 안됨
+                  }`}
+                >
+                  {/* 체크 아이콘 - 선택된 경우에만 표시 */}
+                  {statusFilter === "모집 완료" && (
+                    <Check className="w-4 h-4" />
+                  )}
+                  모집 완료
+                </button>
+              </div>
+
+              {/* ========== 프로젝트 리스트 ========== */}
+              <div className="flex flex-col gap-4">
+                {filteredProjects.map((project) => (
+                  <ProjectCard
+                    key={project.id}
+                    id={project.id}
+                    status={project.status}
+                    positions={project.positions}
+                    title={project.title}
+                  />
+                ))}
+
+                {/* 필터링 결과가 없는 경우 */}
+                {filteredProjects.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    해당 조건에 맞는 프로젝트가 없습니다.
+                  </div>
                 )}
-                모집 중
-              </button>
+              </div>
 
-              {/* 구분선 */}
-              <span className="text-gray-300">|</span>
-
-              {/* 모집 완료 버튼 */}
-              <button
-                onClick={() => {
-                  // isRecruiting = false → 콘솔에 찍음 (요구사항)
-                  const isRecruiting = false;
-                  console.log(`[모집 상태 필터] isRecruiting: ${isRecruiting}`);
-                  setStatusFilter("모집 완료");
-                }}
-                className={`flex items-center gap-1 transition-colors ${
-                  statusFilter === "모집 완료"
-                    ? "text-gray-900 font-medium" // 선택됨
-                    : "text-gray-400" // 선택 안됨
-                }`}
-              >
-                {/* 체크 아이콘 - 선택된 경우에만 표시 */}
-                {statusFilter === "모집 완료" && (
-                  <Check className="w-4 h-4" />
-                )}
-                모집 완료
-              </button>
+              {/* ========== 페이지네이션 ========== */}
+              <PGN
+                currentPage={currentPage}
+                totalPages={TOTAL_PAGES}
+                onPageChange={(num) => setCurrentPage(num)}
+              />
             </div>
-
-            {/* ========== 프로젝트 리스트 ========== */}
-            <div className="flex flex-col gap-4">
-              {filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  id={project.id}
-                  status={project.status}
-                  positions={project.positions}
-                  title={project.title}
-                />
-              ))}
-
-              {/* 필터링 결과가 없는 경우 */}
-              {filteredProjects.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                  해당 조건에 맞는 프로젝트가 없습니다.
-                </div>
-              )}
-            </div>
-
-            {/* ========== 페이지네이션 ========== */}
-            <PGN
-              currentPage={currentPage}
-              totalPages={TOTAL_PAGES}
-              onPageChange={(num) => setCurrentPage(num)}
-            />
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </RequireMember>
   );
 }
