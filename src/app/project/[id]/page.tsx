@@ -69,7 +69,7 @@ export default function ProjectDetailPage() {
               content: MOCK_DATA.content,
             };
             sessionStorage.setItem("editPost_project", JSON.stringify(payload));
-            router.push(`/write/project?id=${id}`);
+            router.push(`/project/write?id=${id}`);
           }}
           footer={
             <button

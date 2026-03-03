@@ -13,6 +13,7 @@ interface ToggleProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  size?: "sm" | "md";
 }
 
 export default function Toggle({
@@ -21,7 +22,10 @@ export default function Toggle({
   value,
   onChange,
   className = "",
+  size = "sm",
 }: ToggleProps) {
+  const textSizeClass = size === "md" ? "text-base" : "text-sm";
+
   return (
     <div className={className}>
       {label && (
@@ -37,7 +41,7 @@ export default function Toggle({
             type="button"
             onClick={() => onChange(option.value)}
             className={`
-              px-4 py-2 text-sm font-medium rounded-full transition-all duration-200
+              px-4 py-2 ${textSizeClass} font-medium rounded-full transition-all duration-200
               ${value === option.value
                 ? "bg-white text-gray-900 shadow-sm"
                 : "text-gray-500 hover:text-gray-700"
