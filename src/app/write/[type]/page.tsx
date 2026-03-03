@@ -4,9 +4,11 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
 import { Calendar } from "@/components/common/Calendar";
+import { studyApi } from "@/api";
 
 const EDIT_STORAGE_KEY: Record<string, string> = {
   study: "editPost_study",
@@ -32,6 +34,14 @@ const RECRUIT_STATUS_OPTIONS = [
   { label: "모집 중", value: "recruiting" },
   { label: "모집 완료", value: "completed" },
 ];
+
+const STUDY_CATEGORY_CODE: Record<string, number> = {
+  "C++": 1,
+  Python: 2,
+  Java: 3,
+  알고리즘: 4,
+  기타: 5,
+};
 
 export default function WritePage() {
   const params = useParams();
@@ -72,6 +82,31 @@ export default function WritePage() {
       sessionStorage.removeItem(key);
     }
   }, [type]);
+  const queryClient = useQueryClient();
+
+  const studyCreateMutation = useMutation({
+    mutationFn: async () => {
+      if (type !== "study") return;
+
+      const primaryCategory = categories[0];
+      const categoryCode =
+        STUDY_CATEGORY_CODE[primaryCategory as keyof typeof STUDY_CATEGORY_CODE] ?? 0;
+
+      await studyApi.create({
+        title,
+        content,
+        studyTags: categories,
+        studyName: title,
+        recruiting: recruitStatus === "recruiting",
+        maxMembers: 5, // TODO: 별도 입력 필드 생기면 교체
+        category: categoryCode,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studies"] });
+      router.push("/study");
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +119,14 @@ export default function WritePage() {
       recruitCount, 
       content 
     });
+    if (type === "study") {
+      if (!title.trim() || !content.trim() || categories.length === 0) return;
+      studyCreateMutation.mutate();
+      return;
+    }
+
+    // 프로젝트 등 다른 타입은 나중에 연결
+    console.log({ type, title, categories, recruitStatus, content });
   };
 
   if (!config) {
