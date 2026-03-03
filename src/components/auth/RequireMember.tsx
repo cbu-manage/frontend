@@ -1,0 +1,37 @@
+"use client";
+
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { useUserStore } from "@/store/userStore";
+
+type RequireMemberProps = {
+  children: ReactNode;
+};
+
+export default function RequireMember({ children }: RequireMemberProps) {
+  const name = useUserStore((s) => s.name);
+  const isMember = !!name;
+
+  if (!isMember) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-[9.375%]">
+        <div className="max-w-xl text-center space-y-3">
+          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+            회원만 접근 가능한 페이지입니다.
+          </h1>
+          <p className="text-base text-gray-600">
+            로그인 이후 이용해주세요.
+          </p>
+          <Link href="/login">
+            <button className="mt-12 inline-flex items-center justify-center rounded-lg bg-brand px-6 py-3 text-sm sm:text-base font-medium text-white hover:opacity-90 transition-opacity">
+              로그인 하러 가기
+            </button>
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return <>{children}</>;
+}
+

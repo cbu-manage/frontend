@@ -45,6 +45,7 @@ export function useLogin() {
       const rawEmail = data.email === "null" ? null : data.email;
       const emailValue =
         rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
+
       const isDefaultPassword = password === "1234" || password === "1111";
       const isEmailNull = !emailValue;
 
