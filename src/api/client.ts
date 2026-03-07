@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "@/store/authStore";
 
 export const api = axios.create({
   baseURL:
@@ -12,10 +13,12 @@ export const api = axios.create({
   },
 });
 
-// 요청 인터셉터 (토큰 자동)
+// 요청 인터셉터 (토큰 자동 - zustand store 우선, 없으면 localStorage)
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
+    const token =
+      useAuthStore.getState().accessToken ??
+      localStorage.getItem("accessToken");
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

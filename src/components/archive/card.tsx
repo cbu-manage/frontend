@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { Eye, FileText } from 'lucide-react';
+import { Eye, FileText } from "lucide-react";
 
 interface ArchiveCardProps {
   id: string;
   title: string;
+  link?: string;
   thumbnailUrl?: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -15,13 +16,14 @@ interface ArchiveCardProps {
 export default function ArchiveCard({
   id,
   title,
+  link,
   thumbnailUrl,
   uploadedBy,
   uploadedAt,
   views = 0,
 }: ArchiveCardProps) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden flex flex-col h-full">
+  const content = (
+    <>
       {/* 썸네일 영역 */}
       <div className="w-full aspect-video bg-gray-200 overflow-hidden">
         {thumbnailUrl ? (
@@ -38,7 +40,7 @@ export default function ArchiveCard({
       </div>
 
       {/* 콘텐츠 영역 */}
-      <div className="p-4 flex flex-col gap-3 flex-1 flex-grow">
+      <div className="p-4 flex flex-col gap-3 flex-1 grow">
         {/* 제목 */}
         <h3 className="text-sm font-bold text-gray-900 line-clamp-2 leading-snug">
           {title}
@@ -53,7 +55,7 @@ export default function ArchiveCard({
           </span>
           <span className="text-xs text-gray-400">{uploadedAt}</span>
         </div>
-        <div className="flex gap-2 text-xs text-gray-500 flex-shrink-0">
+        <div className="flex gap-2 text-xs text-gray-500 shrink-0">
           {views > 0 && (
             <span className="flex items-center gap-1">
               <Eye size={16} />
@@ -62,6 +64,25 @@ export default function ArchiveCard({
           )}
         </div>
       </div>
+    </>
+  );
+
+  if (link) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden flex flex-col h-full">
+      {content}
     </div>
   );
 }

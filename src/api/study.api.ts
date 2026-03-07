@@ -36,6 +36,10 @@ export type StudyDetailResponse = {
     createdAt: string;
     category: number;
     groupId?: number;
+    authorGeneration?: number;
+    authorName?: string;
+    viewCount?: number;
+    isAuthor?: boolean;
   };
 };
 

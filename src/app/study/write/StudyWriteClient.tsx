@@ -1,105 +1,86 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
-import { Calendar } from "@/components/common/Calendar";
 import { studyApi } from "@/api";
-
-const EDIT_STORAGE_KEY: Record<string, string> = {
-  study: "editPost_study",
-  project: "editPost_project",
-};
-
-const WRITE_CONFIG = {
-  project: {
-    title: "프로젝트 모집",
-    backPath: "/project",
-    categories: ["프론트엔드", "백엔드", "개발", "디자인", "기획", "기타"],
-  },
-  study: {
-    title: "스터디 모집",
-    backPath: "/study",
-    categories: ["C++", "Python", "Java", "알고리즘", "기타"],
-  },
-} as const;
-
-type WriteType = keyof typeof WRITE_CONFIG;
 
 const RECRUIT_STATUS_OPTIONS = [
   { label: "모집 중", value: "recruiting" },
   { label: "모집 완료", value: "completed" },
 ];
 
-const STUDY_CATEGORY_CODE: Record<string, number> = {
-  "C++": 1,
-  Python: 2,
-  Java: 3,
-  알고리즘: 4,
-  기타: 5,
-};
+/** 스터디는 category 1 고정 (study_dev.json 기준) */
+const STUDY_CATEGORY = 1;
 
-export default function WritePage() {
-  const params = useParams();
+export default function StudyWriteClient() {
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("id");
   const router = useRouter();
-  const type = params.type as string;
-  const config = WRITE_CONFIG[type as WriteType];
+  const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
+  const [studyName, setStudyName] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
-  const [recruitDeadline, setRecruitDeadline] = useState<Date | undefined>();
-  const [recruitCount, setRecruitCount] = useState(0);
+  const [recruitCount, setRecruitCount] = useState(4);
   const [content, setContent] = useState("");
-  const [showCalendar, setShowCalendar] = useState(false);
 
-  // 수정 시 상세 페이지에서 담아온 데이터로 폼 채우기
+  // 상세 페이지에서 넘어온 수정 데이터 채우기
   useEffect(() => {
-    const key = EDIT_STORAGE_KEY[type];
-    if (!key) return;
-    const raw = sessionStorage.getItem(key);
+    const raw = sessionStorage.getItem("editPost_study");
     if (!raw) return;
     try {
       const data = JSON.parse(raw) as {
         title?: string;
+        studyName?: string;
         categories?: string[];
         recruitStatus?: string;
-        recruitDeadline?: string;
         recruitCount?: number;
         content?: string;
       };
       if (data.title) setTitle(data.title);
+      if (data.studyName) setStudyName(data.studyName);
       if (data.categories?.length) setCategories(data.categories);
       if (data.recruitStatus) setRecruitStatus(data.recruitStatus);
-      if (data.recruitDeadline) setRecruitDeadline(new Date(data.recruitDeadline));
-      if (data.recruitCount) setRecruitCount(data.recruitCount);
+      if (typeof data.recruitCount === "number")
+        setRecruitCount(data.recruitCount);
       if (data.content) setContent(data.content);
     } finally {
-      sessionStorage.removeItem(key);
+      sessionStorage.removeItem("editPost_study");
     }
-  }, [type]);
-  const queryClient = useQueryClient();
+  }, []);
 
-  const studyCreateMutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: async () => {
-      if (type !== "study") return;
-
-      const primaryCategory = categories[0];
-      const categoryCode =
-        STUDY_CATEGORY_CODE[primaryCategory as keyof typeof STUDY_CATEGORY_CODE] ?? 0;
-
       await studyApi.create({
         title,
         content,
         studyTags: categories,
-        studyName: title,
+        studyName: studyName.trim() || title,
         recruiting: recruitStatus === "recruiting",
-        maxMembers: 5, // TODO: 별도 입력 필드 생기면 교체
-        category: categoryCode,
+        maxMembers: Math.max(1, recruitCount),
+        category: STUDY_CATEGORY,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studies"] });
+      router.push("/study");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      await studyApi.update(Number(editId), {
+        title,
+        content,
+        studyTags: categories,
+        studyName: studyName.trim() || title,
+        maxMembers: Math.max(1, recruitCount),
       });
     },
     onSuccess: () => {
@@ -110,56 +91,40 @@ export default function WritePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ 
-      type, 
-      title, 
-      categories, 
-      recruitStatus, 
-      recruitDeadline, 
-      recruitCount, 
-      content 
-    });
-    if (type === "study") {
-      if (!title.trim() || !content.trim() || categories.length === 0) return;
-      studyCreateMutation.mutate();
+
+    if (!title.trim() || !content.trim() || categories.length === 0) return;
+    if (recruitCount < 1) return;
+
+    if (editId) {
+      updateMutation.mutate();
       return;
     }
 
-    // 프로젝트 등 다른 타입은 나중에 연결
-    console.log({ type, title, categories, recruitStatus, content });
+    createMutation.mutate();
   };
 
-  if (!config) {
-    router.replace("/");
-    return null;
-  }
-
   return (
-    <main className="min-h-screen px-80 bg-gray-100 min-w-[1400px]">
+    <main className="min-h-screen px-65 bg-gray-100">
       <div className="px-12 py-8 bg-white min-h-screen">
-        {/* 브레드크럼 */}
         <nav className="text-sm text-gray-500 mb-2">
-          <Link
-            href={config.backPath}
-            className="hover:text-gray-700 hover:underline"
-          >
-            {config.title}
+          <Link href="/study" className="hover:text-gray-700 hover:underline">
+            스터디 모집
           </Link>
           <span className="mx-2">&gt;</span>
-          <span className="text-gray-900">글 작성하기</span>
+          <span className="text-gray-900">
+            {editId ? "글 수정하기" : "글 작성하기"}
+          </span>
         </nav>
 
-        {/* 제목 */}
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">글 작성</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          {editId ? "글 수정" : "글 작성"}
+        </h1>
 
-        {/* 구분선 */}
         <div className="border-t border-gray-900 mb-6" />
 
-        {/* 폼 */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* 제목, 분류, 모집정보 - 회색 박스 */}
           <div className="bg-white border border-gray-200 rounded-lg p-5 space-y-4">
-            {/* 제목 입력 */}
+            {/* 제목 */}
             <div>
               <input
                 type="text"
@@ -169,72 +134,48 @@ export default function WritePage() {
                 required
                 className="
                   w-full px-4 py-3 text-base font-semibold
-                  border border-gray-200 rounded-lg
+                  bg-gray-50 border border-gray-200 rounded-lg
                   placeholder:text-gray-400
                   transition-all duration-150
-                  focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand focus:placeholder:text-gray-400
+                  focus:outline-none focus:bg-gray-50 focus:border-brand focus:ring-1 focus:ring-brand focus:placeholder:text-gray-400
                 "
-                style={{ backgroundColor: "#F5F6F8" }}
               />
             </div>
 
-            {/* 분류 */}
+            {/* 스터디 이름 (studyName) */}
             <div>
-              <MultiSelect
-                label="분류"
-                placeholder="분류를 선택해 주세요"
-                options={[...config.categories]}
-                value={categories}
-                onChange={setCategories}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                스터디 이름
+              </label>
+              <input
+                type="text"
+                placeholder="예: 알고리즘 마스터"
+                value={studyName}
+                onChange={(e) => setStudyName(e.target.value)}
+                className="
+                  w-full px-4 py-3 text-base
+                  bg-gray-50 border border-gray-200 rounded-lg
+                  placeholder:text-gray-400
+                  transition-all duration-150
+                  focus:outline-none focus:bg-gray-50 focus:border-brand focus:ring-1 focus:ring-brand
+                "
               />
             </div>
 
-            {/* 모집마감일 | 모집인원 | 모집상태 */}
+            {/* 분류 / 모집인원 / 모집상태 (가로 한 줄) */}
             <div className="flex gap-8 items-end">
-              {/* 모집마감일 */}
+              {/* 분류: 가로 전체 사용 */}
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  모집 마감일
+                  분류
                 </label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setShowCalendar(!showCalendar)}
-                    className="
-                      w-full px-4 py-2 text-sm font-medium
-                      border border-gray-200 rounded-lg
-                      text-left flex items-center justify-between
-                      hover:border-gray-300 transition-colors duration-150 bg-white min-h-[51px]
-                    "
-                  >
-                    <span className={recruitDeadline ? "text-gray-900" : "text-gray-400"}>
-                      {recruitDeadline 
-                        ? recruitDeadline.toLocaleDateString("sv-SE")
-                        : "모집 마감일을 선택해 주세요."}
-                    </span>
-                    <div className="p-1.5 rounded-full" style={{ backgroundColor: "#EEEFF3" }}>
-                      <CalendarIcon className="w-5 h-5 stroke-[1.5]" />
-                    </div>
-                  </button>
-                  
-                  {/* 캘린더 팝업 */}
-                  {showCalendar && (
-                    <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4">
-                      <Calendar
-                        mode="single"
-                        selected={recruitDeadline}
-                        onDayClick={(date) => {
-                          setRecruitDeadline(date);
-                          setShowCalendar(false);
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
+                <MultiSelect
+                  placeholder="분류 선택"
+                  options={["C++", "Python", "Java", "알고리즘", "기타"]}
+                  value={categories}
+                  onChange={setCategories}
+                />
               </div>
-
-              {/* 구분선 */}
-              <div className="w-px h-12 bg-gray-100" />
 
               {/* 모집인원 */}
               <div>
@@ -244,7 +185,9 @@ export default function WritePage() {
                 <div className="flex items-center justify-center gap-4">
                   <button
                     type="button"
-                    onClick={() => setRecruitCount(Math.max(0, recruitCount - 1))}
+                    onClick={() =>
+                      setRecruitCount((prev) => Math.max(1, prev - 1))
+                    }
                     className="
                       w-10 h-10 rounded-full text-gray-700
                       hover:opacity-80 transition-all duration-150
@@ -259,7 +202,9 @@ export default function WritePage() {
                   </span>
                   <button
                     type="button"
-                    onClick={() => setRecruitCount(recruitCount + 1)}
+                    onClick={() =>
+                      setRecruitCount((prev) => Math.max(1, prev + 1))
+                    }
                     className="
                       w-10 h-10 rounded-full text-gray-700
                       hover:opacity-80 transition-all duration-150
@@ -277,8 +222,11 @@ export default function WritePage() {
 
               {/* 모집상태 토글 */}
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  모집 상태
+                </label>
                 <Toggle
-                  label="모집상태"
+                  size="md"
                   options={RECRUIT_STATUS_OPTIONS}
                   value={recruitStatus}
                   onChange={setRecruitStatus}
@@ -287,7 +235,7 @@ export default function WritePage() {
             </div>
           </div>
 
-          {/* 내용 입력 */}
+          {/* 내용 */}
           <div>
             <textarea
               placeholder="내용을 입력해 주세요."
@@ -306,7 +254,7 @@ export default function WritePage() {
 
           {/* 하단 버튼 */}
           <div className="flex justify-end gap-3">
-            <Link href={config.backPath}>
+            <Link href="/study">
               <button
                 type="button"
                 className="
@@ -326,7 +274,7 @@ export default function WritePage() {
                 hover:bg-gray-900 transition-colors duration-150
               "
             >
-              게시하기
+              {editId ? "수정하기" : "게시하기"}
             </button>
           </div>
         </form>
