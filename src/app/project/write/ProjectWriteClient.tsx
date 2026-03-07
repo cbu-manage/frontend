@@ -44,6 +44,13 @@ const ENUM_TO_LABEL: Record<string, string> = {
 };
 const PROJECT_CATEGORY = 2;
 
+/** 붙여넣기 시 숨겨진 문자 제거 (복붙 400 에러 방지) */
+function sanitizePastedText(text: string): string {
+  return text
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "") // Zero-width, BOM 제거
+    .replace(/\r\n|\r/g, "\n"); // 줄바꿈 정규화
+}
+
 export default function ProjectWriteClient() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -186,6 +193,16 @@ export default function ProjectWriteClient() {
                 placeholder="제목을 입력해 주세요"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                onPaste={(e) => {
+                  e.preventDefault();
+                  const pasted = sanitizePastedText(
+                    e.clipboardData.getData("text/plain")
+                  );
+                  const input = e.currentTarget;
+                  const start = input.selectionStart ?? 0;
+                  const end = input.selectionEnd ?? 0;
+                  setTitle(title.slice(0, start) + pasted + title.slice(end));
+                }}
                 required
                 className="
                   w-full px-4 py-3 text-base font-semibold
@@ -333,6 +350,16 @@ export default function ProjectWriteClient() {
               placeholder="내용을 입력해 주세요."
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              onPaste={(e) => {
+                e.preventDefault();
+                const pasted = sanitizePastedText(
+                  e.clipboardData.getData("text/plain")
+                );
+                const textarea = e.currentTarget;
+                const start = textarea.selectionStart ?? 0;
+                const end = textarea.selectionEnd ?? 0;
+                setContent(content.slice(0, start) + pasted + content.slice(end));
+              }}
               rows={22}
               className="
                 w-full px-4 py-3 text-base

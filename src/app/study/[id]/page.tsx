@@ -57,7 +57,10 @@ export default function StudyDetailPage() {
   const study = studyRes?.data?.data;
   const groupId = study?.groupId;
 
-  const isAuthor = study?.isAuthor ?? false;
+  // 백엔드가 isAuthor를 안 주거나 false면 authorName으로 fallback
+  const isAuthor =
+    study?.isAuthor ??
+    (!!currentUserName && !!study?.authorName && study.authorName === currentUserName);
 
   const appliedStatus = useMemo(() => {
     if (!groupId || !myGroupsRes?.data) return null;
