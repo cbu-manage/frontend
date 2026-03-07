@@ -4,7 +4,31 @@
  */
 import { api } from "./client";
 
-// TODO: 세부 타입 추가
+/** GET /groups/my 응답의 그룹 멤버 */
+export type GroupMemberItem = {
+  groupMemberId: number;
+  userId: number;
+  userName: string;
+  grade: string;
+  major: string;
+  groupMemberRole: string;
+  groupMemberStatus: string;
+  createdAt: string;
+};
+
+/** GET /groups/my 응답의 그룹 한 건 */
+export type MyGroupItem = {
+  groupId: number;
+  groupName: string;
+  createdAt: string;
+  updatedAt: string;
+  groupRecruitmentStatus: string;
+  groupStatus: string;
+  activeMemberCount: number;
+  maxActiveMembers: number;
+  minActiveMembers: number;
+  members: GroupMemberItem[];
+};
 
 export const groupApi = {
   /** 그룹 상세 정보 조회 */
@@ -39,7 +63,10 @@ export const groupApi = {
     api.patch(`/groups/members/${groupMemberId}/status`, data),
 
   /** 자신이 가입한 그룹 조회 */
-  getMyGroups: () => api.get("/groups/my"),
+  getMyGroups: () =>
+    api.get<{ code: string; message: string; data: MyGroupItem[] }>(
+      "/groups/my"
+    ),
 
   /** 그룹 전체 조회 (관리자 전용) */
   getAll: () => api.get("/groups/admin"),

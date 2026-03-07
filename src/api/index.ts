@@ -51,7 +51,13 @@ export { commentApi } from "./comment.api";
 export { groupApi } from "./group.api";
 
 // Post (공통)
-export { postApi, type PostListParams } from "./post.api";
+export {
+  postApi,
+  POST_CATEGORY,
+  type PostListParams,
+  type PostListItem,
+  type PostListResponse,
+} from "./post.api";
 
 // Image
 export { imageApi } from "./image.api";

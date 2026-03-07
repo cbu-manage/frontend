@@ -57,7 +57,11 @@ export default function ProjectDetailPage() {
   const [hasApplied, setHasApplied] = useState(false);
   const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
 
-  const { data: projectRes, isLoading, isError } = useQuery({
+  const {
+    data: projectRes,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["project", numericId],
     queryFn: () => projectApi.getById(numericId),
     enabled: !!numericId && !Number.isNaN(numericId),
@@ -74,23 +78,26 @@ export default function ProjectDetailPage() {
     rawData && typeof rawData === "object" && "data" in rawData
       ? (rawData as { data?: unknown }).data
       : rawData
-  ) as {
-    postId?: number;
-    authorId?: number;
-    title?: string;
-    content?: string;
-    recruitmentFields?: string[];
-    recruiting?: boolean;
-    createdAt?: string;
-    deadline?: string;
-    maxMember?: number;
-    groupId?: number;
-    authorGeneration?: number;
-    authorName?: string;
-    viewCount?: number;
-    isLeader?: boolean;
-    hasApplied?: boolean;
-  } | null | undefined;
+  ) as
+    | {
+        postId?: number;
+        authorId?: number;
+        title?: string;
+        content?: string;
+        recruitmentFields?: string[];
+        recruiting?: boolean;
+        createdAt?: string;
+        deadline?: string;
+        maxMember?: number;
+        groupId?: number;
+        authorGeneration?: number;
+        authorName?: string;
+        viewCount?: number;
+        isLeader?: boolean;
+        hasApplied?: boolean;
+      }
+    | null
+    | undefined;
 
   const groupId = projectData?.groupId;
   // 백엔드가 isLeader를 안 주거나 false면 authorName으로 fallback
@@ -104,9 +111,12 @@ export default function ProjectDetailPage() {
   const appliedStatus = useMemo(() => {
     if (!groupId || !myGroupsRes?.data) return null;
     const raw = myGroupsRes.data;
-    const list = Array.isArray(raw) ? raw : (raw as { data?: unknown[] })?.data ?? [];
+    const list = Array.isArray(raw)
+      ? raw
+      : ((raw as { data?: unknown[] })?.data ?? []);
     const found = list.find(
-      (g: { groupId?: number }) => (g as { groupId?: number }).groupId === groupId
+      (g: { groupId?: number }) =>
+        (g as { groupId?: number }).groupId === groupId,
     );
     return found ? (found as { status?: string }).status : null;
   }, [groupId, myGroupsRes]);
@@ -198,103 +208,87 @@ export default function ProjectDetailPage() {
 
   const statusKey = projectData.recruiting ? "recruiting" : "completed";
   const categories = (projectData.recruitmentFields ?? []).map(
-    (e) => ENUM_TO_LABEL[e] ?? e
+    (e) => ENUM_TO_LABEL[e] ?? e,
   );
 
   return (
     <RequireMember>
       <main className="min-h-screen bg-white">
-      <div className="flex">
-        <Sidebar
-          items={POSITIONS}
-          selected=""
-          onSelect={(val) => router.push(`/project?position=${val}`)}
-          writeLink="/project/write"
-        />
-        <DetailTemplate
-          backPath="/project"
-          title={projectData.title ?? ""}
-          status={statusKey}
-          author={authorDisplay}
-          date={formatDate(projectData.createdAt)}
-          views={projectData.viewCount ?? 0}
-          infoLabel="모집 분야"
-          categories={categories}
-          content={projectData.content ?? ""}
-          onEdit={
-            isLeader
-              ? () => router.push(`/project/write?id=${id}`)
-              : undefined
-          }
-          onDelete={
-            isLeader
-              ? () => {
-                  if (!numericId) return;
-                  if (window.confirm("이 프로젝트 모집 글을 삭제할까요?")) {
-                    deleteMutation.mutate();
+        <div className="flex">
+          <Sidebar
+            items={POSITIONS}
+            selected=""
+            onSelect={(val) => router.push(`/project?position=${val}`)}
+            writeLink="/project/write"
+          />
+          <DetailTemplate
+            backPath="/project"
+            title={projectData.title ?? ""}
+            status={statusKey}
+            author={authorDisplay}
+            date={formatDate(projectData.createdAt)}
+            views={projectData.viewCount ?? 0}
+            infoLabel="모집 분야"
+            categories={categories}
+            content={projectData.content ?? ""}
+            onEdit={
+              isLeader
+                ? () => router.push(`/project/write?id=${id}`)
+                : undefined
+            }
+            onDelete={
+              isLeader
+                ? () => {
+                    if (!numericId) return;
+                    if (window.confirm("이 프로젝트 모집 글을 삭제할까요?")) {
+                      deleteMutation.mutate();
+                    }
                   }
-                }
-              : undefined
-          }
-          footer={
-            isLeader ? (
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={handleShowApplicants}
-                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
-                >
-                  신청 인원 확인
-                </button>
-                {projectData.recruiting && (
+                : undefined
+            }
+            footer={
+              isLeader ? (
+                <div className="flex gap-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          "모집을 마감하면 더 이상 신청을 받을 수 없습니다. 계속할까요?",
-                        )
-                      ) {
-                        closeMutation.mutate();
-                      }
-                    }}
-                    className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-brand text-white text-base font-semibold hover:opacity-90 transition-all duration-200"
+                    onClick={handleShowApplicants}
+                    className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
                   >
-                    모집 마감
+                    신청 인원 확인
                   </button>
-                )}
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  if (!groupId) return;
-                  if (isApplied) {
-                    if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
-                      cancelApplyMutation.mutate();
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!groupId) return;
+                    if (isApplied) {
+                      if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
+                        cancelApplyMutation.mutate();
+                      }
+                    } else {
+                      if (window.confirm("이 프로젝트에 신청하시겠습니까?")) {
+                        applyMutation.mutate();
+                      }
                     }
-                  } else {
-                    if (window.confirm("이 프로젝트에 신청하시겠습니까?")) {
-                      applyMutation.mutate();
-                    }
-                  }
-                }}
-                className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
-              >
-                {isApplied ? "신청 취소" : "신청하기"}
-              </button>
-            )
-          }
-        />
-      </div>
-      {groupId && (
-        <ApplicantsModal
-          open={applicantsModalOpen}
-          onClose={() => setApplicantsModalOpen(false)}
-          groupId={groupId}
-          title="프로젝트 신청 인원"
-        />
-      )}
+                  }}
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
+                >
+                  {isApplied ? "신청 취소" : "신청하기"}
+                </button>
+              )
+            }
+          />
+        </div>
+        {groupId && (
+          <ApplicantsModal
+            open={applicantsModalOpen}
+            onClose={() => setApplicantsModalOpen(false)}
+            groupId={groupId}
+            recruiting={projectData.recruiting}
+            onCloseRecruitment={() => closeMutation.mutate()}
+          />
+        )}
       </main>
     </RequireMember>
   );
