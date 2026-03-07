@@ -13,7 +13,6 @@ export default function RequireMember({ children }: RequireMemberProps) {
   const name = useUserStore((s) => s.name);
   const [hasChecked, setHasChecked] = useState(false);
 
-  // persist rehydration 대기 (1프레임으로는 부족할 수 있어 100ms 대기)
   useEffect(() => {
     const id = setTimeout(() => setHasChecked(true), 100);
     return () => clearTimeout(id);
@@ -21,7 +20,8 @@ export default function RequireMember({ children }: RequireMemberProps) {
 
   const isMember = !!name;
 
-  // persist rehydration 전에는 로딩 표시 (잘못된 "회원만 접근 가능" 방지)
+  console.log("[RequireMember]", { name, hasChecked, isMember });
+
   if (!hasChecked) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
