@@ -13,10 +13,10 @@ export default function RequireMember({ children }: RequireMemberProps) {
   const name = useUserStore((s) => s.name);
   const [hasChecked, setHasChecked] = useState(false);
 
-  // persist rehydration 대기 - SSR/초기 렌더에서는 name이 비어 있을 수 있음
+  // persist rehydration 대기 (1프레임으로는 부족할 수 있어 100ms 대기)
   useEffect(() => {
-    const id = requestAnimationFrame(() => setHasChecked(true));
-    return () => cancelAnimationFrame(id);
+    const id = setTimeout(() => setHasChecked(true), 100);
+    return () => clearTimeout(id);
   }, []);
 
   const isMember = !!name;
