@@ -1,11 +1,19 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
+import { authCookieStorage } from "@/lib/cookie";
 
 type AuthStore = {
   accessToken: string | null;
   setAccessToken: (token: string | null) => void;
   clearAuth: () => void;
 };
+
+/** 토큰을 쿠키에 저장해 새로고침/탭 닫았다 열어도 유지 */
+const cookieStorage = createJSONStorage<{ accessToken: string | null }>(() => ({
+  getItem: () => authCookieStorage.getItem(),
+  setItem: (_name, value) => authCookieStorage.setItem("authStore", value),
+  removeItem: () => authCookieStorage.removeItem(),
+}));
 
 export const useAuthStore = create<AuthStore>()(
   persist(
@@ -16,6 +24,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "authStore",
+      storage: cookieStorage,
       partialize: (state) => ({ accessToken: state.accessToken }),
     }
   )

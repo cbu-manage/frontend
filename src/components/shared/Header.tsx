@@ -23,7 +23,7 @@ export default function Header() {
     }
     clearUser();
     clearAuth();
-    localStorage.removeItem("accessToken");
+    // 토큰은 authStore(쿠키)에만 저장되므로 clearAuth로 제거됨
     alert("로그아웃 되었습니다.");
     window.location.href = "/";
   };

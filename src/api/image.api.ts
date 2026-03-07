@@ -5,6 +5,7 @@
  */
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
+import { getAccessTokenFromCookie } from "@/lib/cookie";
 
 const getImageBaseUrl = () => {
   const base = process.env.NEXT_PUBLIC_API_URL;
@@ -26,8 +27,7 @@ const imageApiBase = axios.create({
 imageApiBase.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token =
-      useAuthStore.getState().accessToken ??
-      localStorage.getItem("accessToken");
+      useAuthStore.getState().accessToken ?? getAccessTokenFromCookie();
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
