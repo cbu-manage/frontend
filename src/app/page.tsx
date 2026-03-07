@@ -135,7 +135,7 @@ export default function Home() {
             <div
               className={`pointer-events-none absolute top-5 -left-40 sm:-left-40 md:-left-40 transition-all duration-300 ${
                 isHeroHovered
-                  ? "opacity-100 -translate-x-0"
+                  ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-2"
               }`}
             >
@@ -169,7 +169,7 @@ export default function Home() {
             <div
               className={`pointer-events-none absolute -top-14 -right-10 sm:-top-16 sm:-right-10 md:-top-18 md:-right-10 transition-all duration-300 ${
                 isHeroHovered
-                  ? "opacity-100 -translate-y-0"
+                  ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-2"
               }`}
             >
@@ -466,7 +466,7 @@ export default function Home() {
                       className="object-cover"
                     />
                     {/* 그라데이션 + 어둡게 오버레이 */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
+                    <div className="absolute inset-0 bg-linear-gradient(to bottom, rgba(217,217,217,0), #737373)" />
                     <div className="absolute inset-0 bg-zinc-900/35" />
 
                     {/* 타이틀 */}

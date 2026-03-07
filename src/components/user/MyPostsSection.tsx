@@ -27,6 +27,8 @@ interface MyPost {
   content: string;
   /** 태그 (포지션, 언어, 분야 등) */
   tags: string[];
+  /** 작성자 표시 (프로젝트 모집 등) */
+  author?: string;
   views: number;
   comments: number;
   time: string;
@@ -68,6 +70,7 @@ const DUMMY_POSTS: MyPost[] = [
     title: ["[앱 프론트엔드 개발자 모집] 대학생을 위한 중개 플랫폼", "[백엔드 개발자 모집] Spring Boot 기반 서버 개발", "[풀스택] 동아리 관리 시스템 개발"][i],
     content: ["안녕하세요! 웹/앱 서비스 구현을 목표로 한 사이드 프로젝트를 함께할 팀원을 모집합니다. 📌 프로젝트 개요주제: 일정 관리 웹 서비스", "Spring Boot + JPA 기반 REST API 서버를 함께 개발할 백엔드 개발자를 모집합니다. AWS 배포 경험자 우대합니다.", "Next.js + Spring Boot로 동아리 관리 시스템을 만들 팀원을 모집합니다. 기획부터 배포까지 함께합니다."][i],
     tags: [["프론트엔드", "백엔드", "디자인", "기획"], ["백엔드", "개발"], ["프론트엔드", "백엔드", "개발", "디자인", "기획", "기타"]][i],
+    author: ["씨부엉 34기", "씨부엉 33기", "씨부엉 35기"][i],
     views: [122, 98, 211][i],
     comments: [333, 15, 42][i],
     time: ["3/1", "2/28", "3/15"][i],
@@ -182,8 +185,8 @@ export default function MyPostsSection() {
               status={post.status}
               title={post.title}
               positions={post.tags}
+              author={post.author}
               views={post.views}
-              comments={post.comments}
               time={post.time}
               content={post.content}
             />
