@@ -103,6 +103,7 @@ export default function DetailTemplate({
               <path d="M15 18l-6-6 6-6" />
             </svg>
           </button>
+          {(onEdit || onDelete) && (
           <div className="relative shrink-0" ref={menuRef}>
             <button
               type="button"
@@ -124,34 +125,39 @@ export default function DetailTemplate({
                 <circle cx="12" cy="19" r="1" />
               </svg>
             </button>
-            {menuOpen && (
+            {menuOpen && (onEdit || onDelete) && (
               <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onEdit?.();
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  <Pencil size={18} className="shrink-0 text-gray-500" />
-                  수정
-                </button>
-                <div className="border-t border-gray-100 my-1" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDelete?.();
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 size={18} className="shrink-0" />
-                  삭제
-                </button>
+                {onEdit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onEdit();
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <Pencil size={18} className="shrink-0 text-gray-500" />
+                    수정
+                  </button>
+                )}
+                {onEdit && onDelete && <div className="border-t border-gray-100 my-1" />}
+                {onDelete && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDelete();
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 size={18} className="shrink-0" />
+                    삭제
+                  </button>
+                )}
               </div>
             )}
           </div>
+          )}
         </div>
 
         {/* 메인 컨텐츠 영역 */}
@@ -235,7 +241,14 @@ export default function DetailTemplate({
                   ol: (props) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
                   li: (props) => <li className="text-gray-700" {...props} />,
                   blockquote: (props) => <blockquote className="border-l-4 border-gray-200 pl-4 italic my-4 text-gray-600" {...props} />,
-                  code: ({ children, className, ...props }: any) => {
+                  code: ({
+                    children,
+                    className,
+                    ...props
+                  }: React.HTMLAttributes<HTMLElement> & {
+                    children?: React.ReactNode;
+                    className?: string;
+                  }) => {
                     const match = /language-(\w+)/.exec(className || "");
                     const isCodeBlock = !!match;
                     return isCodeBlock ? (
@@ -245,7 +258,7 @@ export default function DetailTemplate({
                         </code>
                       </pre>
                     ) : (
-                      <code className="bg-gray-100 text-[#ff4e4e] px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                      <code className="bg-gray-100 text-notice px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
                         {children}
                       </code>
                     );

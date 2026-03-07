@@ -13,15 +13,16 @@ type NormalizedList = {
   totalPages: number;
 };
 
-function normalizeList(raw: any): NormalizedList {
+function normalizeList(raw: unknown): NormalizedList {
   if (Array.isArray(raw)) {
-    return { items: raw, totalPages: 1 };
+    return { items: raw as ResourceItem[], totalPages: 1 };
   }
 
-  if (raw && Array.isArray(raw.content)) {
+  const obj = raw as { content?: ResourceItem[]; totalPages?: number } | null;
+  if (obj && Array.isArray(obj.content)) {
     return {
-      items: raw.content,
-      totalPages: typeof raw.totalPages === "number" ? raw.totalPages : 1,
+      items: obj.content,
+      totalPages: typeof obj.totalPages === "number" ? obj.totalPages : 1,
     };
   }
 
@@ -37,7 +38,11 @@ export function useResourceList({ page, size }: UseResourceListParams) {
         size,
       };
       const res = await resourcesApi.getList(params);
-      return normalizeList(res.data);
+      const payload =
+        res.data && typeof res.data === "object" && "data" in res.data
+          ? (res.data as { data?: unknown }).data
+          : res.data;
+      return normalizeList(payload);
     },
   });
 }

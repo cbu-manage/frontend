@@ -6,7 +6,10 @@ import { Pencil, Trash2 } from "lucide-react";
 import ArchiveCard from "@/components/archive/card";
 import Pagination from "@/components/shared/Pagination";
 import RequireMember from "@/components/auth/RequireMember";
-import { useResourceList, useDeleteResource } from "@/hooks/archive/useResourceList";
+import {
+  useResourceList,
+  useDeleteResource,
+} from "@/hooks/archive/useResourceList";
 
 export default function ArchivePage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,9 +40,8 @@ export default function ArchivePage() {
               </p>
             </div>
             <Link href="/archive/write">
-              <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
-                <Pencil size={18} />
-                글 작성하기
+              <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide">
+                <Pencil size={18} />글 작성하기
               </button>
             </Link>
           </div>
@@ -62,14 +64,15 @@ export default function ArchivePage() {
               {!isLoading &&
                 !isError &&
                 resources.map((item) => (
-                  <div key={item.id} className="relative group">
+                  <div key={item.resourceId} className="relative group">
                     <ArchiveCard
-                      id={String(item.id)}
+                      id={String(item.resourceId)}
                       title={item.title}
+                      link={item.link}
                       uploadedBy={
-                        (item.createdBy as string) ||
-                        (item.uploaderName as string) ||
-                        "씨부엉 멤버"
+                        item.generation && item.authorName
+                          ? `${item.generation}기 ${item.authorName}`
+                          : (item.authorName as string) || "씨부엉 멤버"
                       }
                       uploadedAt={
                         item.createdAt
@@ -82,13 +85,12 @@ export default function ArchivePage() {
                       type="button"
                       onClick={() => {
                         if (
-                          typeof item.id === "number" &&
                           window.confirm("이 자료를 삭제할까요?")
                         ) {
-                          deleteMutation.mutate(item.id);
+                          deleteMutation.mutate(item.resourceId);
                         }
                       }}
-                      className="absolute top-3 right-3 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Trash2 size={16} />
                     </button>
