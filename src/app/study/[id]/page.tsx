@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DetailTemplate from "@/components/detail/DetailTemplate";
+import ApplicantsModal from "@/components/detail/ApplicantsModal";
 import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
@@ -41,6 +42,7 @@ export default function StudyDetailPage() {
 
   const numericId = typeof id === "string" ? Number(id) : Number(id?.[0]);
   const [hasApplied, setHasApplied] = useState(false);
+  const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
 
   const { data: studyRes, isLoading, isError } = useQuery({
     queryKey: ["study", numericId],
@@ -123,16 +125,8 @@ export default function StudyDetailPage() {
     },
   });
 
-  const handleShowApplicants = async () => {
-    if (!groupId) return;
-    try {
-      const res = await groupApi.getApplicants(groupId);
-      console.log("신청자 목록", res.data);
-      alert("신청자 목록은 콘솔에서 확인할 수 있습니다.");
-    } catch (err) {
-      console.error(err);
-      alert("신청자 목록을 불러오지 못했습니다.");
-    }
+  const handleShowApplicants = () => {
+    if (groupId) setApplicantsModalOpen(true);
   };
 
   if (isLoading) {
@@ -259,6 +253,14 @@ export default function StudyDetailPage() {
           }
         />
       </div>
+      {groupId && (
+        <ApplicantsModal
+          open={applicantsModalOpen}
+          onClose={() => setApplicantsModalOpen(false)}
+          groupId={groupId}
+          title="스터디 신청 인원"
+        />
+      )}
       </main>
     </RequireMember>
   );
