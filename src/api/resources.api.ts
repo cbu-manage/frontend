@@ -13,6 +13,8 @@ export type ResourceItem = {
   resourceId: number;
   title: string;
   link: string;
+  /** 썸네일 이미지 URL (og:image 등, 백엔드에서 채우면 표시) */
+  thumbnailUrl?: string;
   authorName?: string;
   generation?: number;
   createdAt?: string;

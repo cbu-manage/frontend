@@ -1,11 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { Eye, FileText } from "lucide-react";
+
+/** 링크에서 도메인 추출 후 Google Favicon URL 반환 (썸네일 없을 때 대체) */
+function getFaviconUrl(link: string): string {
+  try {
+    const url = new URL(link);
+    const domain = url.hostname.replace(/^www\./, "");
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
+  } catch {
+    return "";
+  }
+}
 
 interface ArchiveCardProps {
   id: string;
   title: string;
   link?: string;
+  /** 썸네일 이미지 URL (API에서 og:image 등으로 채울 수 있음) */
   thumbnailUrl?: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -22,15 +35,21 @@ export default function ArchiveCard({
   uploadedAt,
   views = 0,
 }: ArchiveCardProps) {
+  const effectiveThumbnail =
+    thumbnailUrl || (link ? getFaviconUrl(link) : null);
+  const [thumbFailed, setThumbFailed] = useState(false);
+  const showThumb = effectiveThumbnail && !thumbFailed;
+
   const content = (
     <>
-      {/* 썸네일 영역 */}
+      {/* 썸네일 영역: API 썸네일 → 링크 도메인 favicon → 기본 아이콘 */}
       <div className="w-full aspect-video bg-gray-200 overflow-hidden">
-        {thumbnailUrl ? (
+        {showThumb ? (
           <img
-            src={thumbnailUrl}
+            src={effectiveThumbnail!}
             alt={title}
-            className="w-full h-full object-cover"
+            className={`w-full h-full ${thumbnailUrl ? "object-cover" : "object-contain p-8"}`}
+            onError={() => setThumbFailed(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
