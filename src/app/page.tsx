@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export default function Home() {
-  const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">("기획");
+  const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">(
+    "기획",
+  );
   const [showArrow, setShowArrow] = useState(true);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
 
@@ -23,25 +25,25 @@ export default function Home() {
       title: "기획",
       description: [
         "기획 파트는 사용자 문제를 발견하고, 이를 서비스의 목표와 구조로 정리하는 역할을 담당합니다.",
-        "즉, \"무엇을 만들 것인가?\", \"왜 필요한가?\", \"누구를 위한 서비스인가?\"를 정의합니다."
-      ]
+        '즉, "무엇을 만들 것인가?", "왜 필요한가?", "누구를 위한 서비스인가?"를 정의합니다.',
+      ],
     },
     개발: {
       label: "DEV",
       title: "개발",
       description: [
         "개발 파트는 기획된 서비스를 실제로 구현하는 역할을 담당합니다.",
-        "프론트엔드와 백엔드 개발을 통해 사용자에게 가치 있는 서비스를 제공합니다."
-      ]
+        "프론트엔드와 백엔드 개발을 통해 사용자에게 가치 있는 서비스를 제공합니다.",
+      ],
     },
     디자인: {
       label: "DESIGN",
       title: "디자인",
       description: [
         "디자인 파트는 사용자 경험과 인터페이스를 설계하는 역할을 담당합니다.",
-        "사용자가 직관적이고 편리하게 서비스를 이용할 수 있도록 시각적 요소를 구성합니다."
-      ]
-    }
+        "사용자가 직관적이고 편리하게 서비스를 이용할 수 있도록 시각적 요소를 구성합니다.",
+      ],
+    },
   };
 
   const activities = [
@@ -59,8 +61,7 @@ export default function Home() {
     },
     {
       title: "풍부한 자료방 공유",
-      detail:
-        "IT관련 공모전 및 대외활동 정보 \n자료방을 제공해요",
+      detail: "IT관련 공모전 및 대외활동 정보 \n자료방을 제공해요",
       icon: "📁",
     },
   ];
@@ -103,7 +104,9 @@ export default function Home() {
           >
             {/* 중앙 부엉이 아이콘 */}
             <Image
-              src={isHeroHovered ? "/assets/owl-icon.svg" : "/assets/main_icon.svg"}
+              src={
+                isHeroHovered ? "/assets/owl-icon.svg" : "/assets/main_icon.svg"
+              }
               alt="씨부엉"
               width={160}
               height={160}
@@ -267,7 +270,8 @@ export default function Home() {
               씨부엉에 오신 것을 환영합니다.
             </h2>
             <p className="text-[#F2F2F2] font-medium text-sm sm:text-base lg:text-lg tracking-tight opacity-70">
-              본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인 회원관리를 위한 웹사이트입니다.
+              본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인
+              회원관리를 위한 웹사이트입니다.
             </p>
             <a
               href="https://forms.gle/mjibpj7qBiKRrChm8"
@@ -314,9 +318,7 @@ export default function Home() {
         {/* CBU ACTIVITY 섹션 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              CBU ACTIVITY
-            </h2>
+            <h2 className="text-3xl font-bold text-white mb-2">CBU ACTIVITY</h2>
             <p className="text-lg text-zinc-300">
               각 분야별로 스터디와 프로젝트를 통해 함께 성장해 나가요.
             </p>
@@ -325,42 +327,45 @@ export default function Home() {
           {/* 활동 카드 그리드 */}
           <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
             {activities.map((activity, idx) => (
-             <div
-             key={idx}
-             className="group relative w-full max-w-80 h-80 rounded-3xl bg-[#212123] px-10 py-10 flex flex-col items-center justify-center text-center transition-all duration-300"
-           >
-             {/* 공통 헤더 (항상 보임) */}
-             <div className="flex flex-col items-center gap-6 z-10">
-               <div
-                 className="flex items-center justify-center text-white text-xs font-semibold rounded-full"
-                 style={{
-                   width: "33px",
-                   height: "33px",
-                   padding: "4.529px 0 3.471px 0",
-                   background:
-                     "linear-gradient(141deg, #90B97C 4.39%, #6CDAFF 95.61%)",
-                 }}
-               >
-                 {idx + 1}
-               </div>
-           
-               <h3 className="text-xl font-bold text-white">
-                 {activity.title}
-               </h3>
-           
-               {/* 기본 상태 아이콘 */}
-               <div className="text-7xl transition-opacity duration-300 group-hover:opacity-20">
-                 {activity.icon}
-               </div>
-             </div>
-           
-             {/* 호버 오버레이 (디테일만) */}
-             <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center px-8 pt-10 pb-20 text-center bg-[rgba(0,0,0,0.56)] backdrop-blur-[2px]">
-               <p className="text-sm sm:text-base text-zinc-200 leading-relaxed max-w-md mt-35" style={{ whiteSpace: 'pre-line' }}>
-                 {activity.detail}
-               </p>
-             </div>
-           </div>
+              <div
+                key={idx}
+                className="group relative w-full max-w-80 h-80 rounded-3xl bg-[#212123] px-10 py-10 flex flex-col items-center justify-center text-center transition-all duration-300"
+              >
+                {/* 공통 헤더 (항상 보임) */}
+                <div className="flex flex-col items-center gap-6 z-10">
+                  <div
+                    className="flex items-center justify-center text-white text-xs font-semibold rounded-full"
+                    style={{
+                      width: "33px",
+                      height: "33px",
+                      padding: "4.529px 0 3.471px 0",
+                      background:
+                        "linear-gradient(141deg, #90B97C 4.39%, #6CDAFF 95.61%)",
+                    }}
+                  >
+                    {idx + 1}
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white">
+                    {activity.title}
+                  </h3>
+
+                  {/* 기본 상태 아이콘 */}
+                  <div className="text-7xl transition-opacity duration-300 group-hover:opacity-20">
+                    {activity.icon}
+                  </div>
+                </div>
+
+                {/* 호버 오버레이 (디테일만) */}
+                <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center px-8 pt-10 pb-20 text-center bg-[rgba(0,0,0,0.56)] backdrop-blur-[2px]">
+                  <p
+                    className="text-sm sm:text-base text-zinc-200 leading-relaxed max-w-md mt-35"
+                    style={{ whiteSpace: "pre-line" }}
+                  >
+                    {activity.detail}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -421,7 +426,10 @@ export default function Home() {
                 </div>
                 <div className="space-y-2">
                   {tabContents[selectedTab].description.map((text, idx) => (
-                    <p key={idx} className="text-lg text-zinc-200 leading-relaxed">
+                    <p
+                      key={idx}
+                      className="text-lg text-zinc-200 leading-relaxed"
+                    >
                       {text}
                     </p>
                   ))}
@@ -430,49 +438,49 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* CBU STORY 섹션 */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-32">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">CBU STORY</h2>
-            <p className="text-lg text-zinc-300">
-              씨부엉은 이런 활동들을 하고 있어요.
-            </p>
-          </div>
+      {/* CBU STORY - px-[9.375%] 제외, 슬라이드만 풀 너비 */}
+      <div className="pb-32">
+        <div className="px-[9.375%] max-w-7xl mx-auto text-center mb-10">
+          <h2 className="text-3xl font-bold text-white mb-2">CBU STORY</h2>
+          <p className="text-lg text-zinc-300">
+            씨부엉은 이런 활동들을 하고 있어요.
+          </p>
+        </div>
 
-          <div className="relative overflow-hidden">
-            <div className="flex w-max gap-10 animate-[cbu-marquee_60s_linear_infinite]">
-              {[0, 1].map((loopIndex) => (
-                <div key={loopIndex} className="flex gap-10">
-                  {stories.map((story, idx) => (
-                    <div
-                      key={`${story.title}-${loopIndex}-${idx}`}
-                      className="shrink-0 w-[260px] sm:w-[360px] lg:w-[500px] xl:w-[649px] h-[220px] sm:h-[280px] lg:h-[360px] xl:h-[437px] rounded-[32px] relative overflow-hidden bg-[#737373]"
-                    >
-                      {/* 배경 사진 */}
-                      <Image
-                        src={story.image}
-                        alt={story.title}
-                        fill
-                        className="object-cover"
-                      />
-                      {/* 그라데이션 + 어둡게 오버레이 */}
-                      <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
-                      <div className="absolute inset-0 bg-zinc-900/35" />
+        <div className="w-full relative overflow-hidden">
+          <div className="flex w-max gap-10 animate-[cbu-marquee_60s_linear_infinite]">
+            {[0, 1].map((loopIndex) => (
+              <div key={loopIndex} className="flex gap-10">
+                {stories.map((story, idx) => (
+                  <div
+                    key={`${story.title}-${loopIndex}-${idx}`}
+                    className="shrink-0 w-[260px] sm:w-[360px] lg:w-[500px] xl:w-[649px] h-[220px] sm:h-[280px] lg:h-[360px] xl:h-[437px] rounded-[32px] relative overflow-hidden bg-[#737373]"
+                  >
+                    {/* 배경 사진 */}
+                    <Image
+                      src={story.image}
+                      alt={story.title}
+                      fill
+                      className="object-cover"
+                    />
+                    {/* 그라데이션 + 어둡게 오버레이 */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
+                    <div className="absolute inset-0 bg-zinc-900/35" />
 
-                      {/* 타이틀 */}
-                      <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
-                        <div>
-                          <p className="text-lg sm:text-xl font-semibold text-white">
-                            {story.title}
-                          </p>
-                        </div>
+                    {/* 타이틀 */}
+                    <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
+                      <div>
+                        <p className="text-lg sm:text-xl font-semibold text-white">
+                          {story.title}
+                        </p>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </div>

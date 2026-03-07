@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { authApi, type LoginResponse } from "@/api/auth.api";
+import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
 import { AxiosError } from "axios";
 
@@ -30,6 +31,7 @@ export function useLogin() {
   const router = useRouter();
   const setUser = useUserStore((s) => s.setUser);
   const setAuthStatus = useUserStore((s) => s.setAuthStatus);
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   const mutation = useMutation({
     mutationFn: async ({ studentId, password }: LoginParams) => {
@@ -42,6 +44,13 @@ export function useLogin() {
       };
     },
     onSuccess: ({ data, studentNumber, password }) => {
+      if (data.accessToken) {
+        setAccessToken(data.accessToken);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("accessToken", data.accessToken);
+        }
+      }
+
       const rawEmail = data.email === "null" ? null : data.email;
       const emailValue =
         rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
