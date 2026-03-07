@@ -101,7 +101,7 @@ export default function ChangePasswordSection() {
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full p-4 rounded-lg bg-white border border-[#95c674] text-[#95c674] text-lg font-semibold hover:bg-green-50 transition-colors"
+              className="w-full p-4 rounded-lg bg-white border border-brand text-brand text-lg font-semibold hover:bg-green-50 transition-colors"
             >
               취소
             </button>

@@ -41,9 +41,23 @@ export default function StudyPage() {
   const totalPages = data?.totalPages ?? 1;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-  const handleChangeStatus = (status: StudyStatus) => {
+    const handleChangeStatus = (status: StudyStatus) => {
     setStatusFilter(status);
     setCurrentPage(1);
+  };
+
+  const formatDateOnly = (iso?: string) => {
+    if (!iso) return "방금 전";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString("ko-KR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).replace(/\. /g, ". ");
+    } catch {
+      return iso;
+    }
   };
 
   return (
@@ -123,16 +137,37 @@ export default function StudyPage() {
 
                 {!isLoading &&
                   !isError &&
-                  studies.map((study) => (
-                    <SDC
-                      key={study.id}
-                      id={study.id}
-                      category={study.category as StudyCategory}
-                      status={study.status as StudyStatus}
-                      title={study.title}
-                      time={study.createdAt ?? "방금 전"}
-                    />
-                  ))}
+                  studies.map((study) => {
+                    const s = study as {
+                      id: number;
+                      title?: string;
+                      status?: string;
+                      category?: string;
+                      createdAt?: string;
+                      authorName?: string;
+                      authorGeneration?: number;
+                      viewCount?: number;
+                      studyTags?: string[];
+                    };
+                    const authorDisplay = s.authorName
+                      ? s.authorGeneration
+                        ? `${s.authorGeneration}기 ${s.authorName}`
+                        : s.authorName
+                      : "씨부엉 멤버";
+                    return (
+                      <SDC
+                        key={study.id}
+                        id={study.id}
+                        category={(s.category || s.studyTags?.[0]) as StudyCategory}
+                        status={study.status as StudyStatus}
+                        title={s.title ?? ""}
+                        time={formatDateOnly(s.createdAt)}
+                        authorDisplay={authorDisplay}
+                        viewCount={(s.viewCount as number) ?? 0}
+                        categories={s.studyTags}
+                      />
+                    );
+                  })}
 
                 {!isLoading && !isError && studies.length === 0 && (
                   <div className="col-span-full text-center py-12 text-gray-500">

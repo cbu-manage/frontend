@@ -135,7 +135,7 @@ export default function Home() {
             <div
               className={`pointer-events-none absolute top-5 -left-40 sm:-left-40 md:-left-40 transition-all duration-300 ${
                 isHeroHovered
-                  ? "opacity-100 -translate-x-0"
+                  ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-2"
               }`}
             >
@@ -169,7 +169,7 @@ export default function Home() {
             <div
               className={`pointer-events-none absolute -top-14 -right-10 sm:-top-16 sm:-right-10 md:-top-18 md:-right-10 transition-all duration-300 ${
                 isHeroHovered
-                  ? "opacity-100 -translate-y-0"
+                  ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-2"
               }`}
             >
