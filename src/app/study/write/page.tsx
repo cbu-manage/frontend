@@ -13,13 +13,8 @@ const RECRUIT_STATUS_OPTIONS = [
   { label: "모집 완료", value: "completed" },
 ];
 
-const STUDY_CATEGORY_CODE: Record<string, number> = {
-  "C++": 1,
-  Python: 2,
-  Java: 3,
-  알고리즘: 4,
-  기타: 5,
-};
+/** 스터디는 category 1 고정 (study_dev.json 기준) */
+const STUDY_CATEGORY = 1;
 
 export default function StudyWritePage() {
   const searchParams = useSearchParams();
@@ -28,9 +23,10 @@ export default function StudyWritePage() {
   const queryClient = useQueryClient();
 
   const [title, setTitle] = useState("");
+  const [studyName, setStudyName] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
-  const [recruitCount, setRecruitCount] = useState(0);
+  const [recruitCount, setRecruitCount] = useState(4);
   const [content, setContent] = useState("");
 
   // 상세 페이지에서 넘어온 수정 데이터 채우기
@@ -40,12 +36,14 @@ export default function StudyWritePage() {
     try {
       const data = JSON.parse(raw) as {
         title?: string;
+        studyName?: string;
         categories?: string[];
         recruitStatus?: string;
         recruitCount?: number;
         content?: string;
       };
       if (data.title) setTitle(data.title);
+      if (data.studyName) setStudyName(data.studyName);
       if (data.categories?.length) setCategories(data.categories);
       if (data.recruitStatus) setRecruitStatus(data.recruitStatus);
       if (typeof data.recruitCount === "number")
@@ -58,19 +56,31 @@ export default function StudyWritePage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const primaryCategory = categories[0];
-      const categoryCode =
-        STUDY_CATEGORY_CODE[primaryCategory as keyof typeof STUDY_CATEGORY_CODE] ??
-        0;
-
       await studyApi.create({
         title,
         content,
         studyTags: categories,
-        studyName: title,
+        studyName: studyName.trim() || title,
         recruiting: recruitStatus === "recruiting",
-        maxMembers: recruitCount || 5,
-        category: categoryCode,
+        maxMembers: Math.max(1, recruitCount),
+        category: STUDY_CATEGORY,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studies"] });
+      router.push("/study");
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!editId) return;
+      await studyApi.update(Number(editId), {
+        title,
+        content,
+        studyTags: categories,
+        studyName: studyName.trim() || title,
+        maxMembers: Math.max(1, recruitCount),
       });
     },
     onSuccess: () => {
@@ -83,17 +93,10 @@ export default function StudyWritePage() {
     e.preventDefault();
 
     if (!title.trim() || !content.trim() || categories.length === 0) return;
+    if (recruitCount < 1) return;
 
     if (editId) {
-      // TODO: 수정 API 연결 (studyApi.update)
-      console.log("스터디 수정 예정", {
-        editId,
-        title,
-        categories,
-        recruitStatus,
-        recruitCount,
-        content,
-      });
+      updateMutation.mutate();
       return;
     }
 
@@ -139,6 +142,26 @@ export default function StudyWritePage() {
               />
             </div>
 
+            {/* 스터디 이름 (studyName) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                스터디 이름
+              </label>
+              <input
+                type="text"
+                placeholder="예: 알고리즘 마스터"
+                value={studyName}
+                onChange={(e) => setStudyName(e.target.value)}
+                className="
+                  w-full px-4 py-3 text-base
+                  bg-gray-50 border border-gray-200 rounded-lg
+                  placeholder:text-gray-400
+                  transition-all duration-150
+                  focus:outline-none focus:bg-gray-50 focus:border-brand focus:ring-1 focus:ring-brand
+                "
+              />
+            </div>
+
             {/* 분류 / 모집인원 / 모집상태 (가로 한 줄) */}
             <div className="flex gap-8 items-end">
               {/* 분류: 가로 전체 사용 */}
@@ -163,7 +186,7 @@ export default function StudyWritePage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setRecruitCount((prev) => Math.max(0, prev - 1))
+                      setRecruitCount((prev) => Math.max(1, prev - 1))
                     }
                     className="
                       w-10 h-10 rounded-full text-gray-700
@@ -180,7 +203,7 @@ export default function StudyWritePage() {
                   <button
                     type="button"
                     onClick={() =>
-                      setRecruitCount((prev) => Math.max(0, prev + 1))
+                      setRecruitCount((prev) => Math.max(1, prev + 1))
                     }
                     className="
                       w-10 h-10 rounded-full text-gray-700

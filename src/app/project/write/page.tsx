@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar as CalendarIcon } from "lucide-react";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
@@ -24,6 +24,26 @@ const PROJECT_CATEGORIES = [
   "기타",
 ];
 
+/** 프로젝트 포지션 한글 → API enum 매핑 (category 2 고정) */
+const POSITION_TO_ENUM: Record<string, string> = {
+  백엔드: "BACKEND",
+  프론트엔드: "FRONTEND",
+  개발: "DEV",
+  기획: "PLANNING",
+  디자인: "DESIGN",
+  기타: "ETC",
+};
+/** API enum → 한글 (수정 시 폼 채우기용) */
+const ENUM_TO_LABEL: Record<string, string> = {
+  BACKEND: "백엔드",
+  FRONTEND: "프론트엔드",
+  DEV: "개발",
+  PLANNING: "기획",
+  DESIGN: "디자인",
+  ETC: "기타",
+};
+const PROJECT_CATEGORY = 2;
+
 export default function ProjectWritePage() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -38,41 +58,61 @@ export default function ProjectWritePage() {
   const [content, setContent] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
 
+  const numericEditId = editId ? Number(editId) : NaN;
+  const isValidEditId = !!editId && !Number.isNaN(numericEditId);
+
+  const { data: editRes } = useQuery({
+    queryKey: ["project", numericEditId],
+    queryFn: () => projectApi.getById(numericEditId),
+    enabled: isValidEditId,
+  });
+
+  const editData = editRes?.data;
+  const editPayload =
+    editData && typeof editData === "object" && "data" in editData
+      ? (editData as { data?: unknown }).data
+      : editData;
+
   useEffect(() => {
-    const raw = sessionStorage.getItem("editPost_project");
-    if (!raw) return;
-    try {
-      const data = JSON.parse(raw) as {
-        title?: string;
-        categories?: string[];
-        recruitStatus?: string;
-        recruitDeadline?: string;
-        recruitCount?: number;
-        content?: string;
-      };
-      if (data.title) setTitle(data.title);
-      if (data.categories?.length) setCategories(data.categories);
-      if (data.recruitStatus) setRecruitStatus(data.recruitStatus);
-      if (data.recruitDeadline)
-        setRecruitDeadline(new Date(data.recruitDeadline));
-      if (typeof data.recruitCount === "number")
-        setRecruitCount(data.recruitCount);
-      if (data.content) setContent(data.content);
-    } finally {
-      sessionStorage.removeItem("editPost_project");
-    }
-  }, []);
+    if (!isValidEditId || !editPayload || typeof editPayload !== "object") return;
+    const d = editPayload as {
+      title?: string;
+      content?: string;
+      recruitmentFields?: string[];
+      recruiting?: boolean;
+      deadline?: string;
+      maxMember?: number;
+    };
+    queueMicrotask(() => {
+      if (d.title) setTitle(d.title);
+      if (d.content) setContent(d.content);
+      if (d.recruitmentFields?.length) {
+        setCategories(
+          d.recruitmentFields.map((e) => ENUM_TO_LABEL[e] ?? e)
+        );
+      }
+      if (typeof d.recruiting === "boolean")
+        setRecruitStatus(d.recruiting ? "recruiting" : "completed");
+      if (d.deadline) setRecruitDeadline(new Date(d.deadline));
+      if (typeof d.maxMember === "number") setRecruitCount(d.maxMember);
+    });
+  }, [isValidEditId, editPayload]);
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      // TODO: 실제 프로젝트 생성 요청 스펙에 맞게 수정
+      const recruitmentFields = categories.map(
+        (c) => POSITION_TO_ENUM[c] ?? c
+      );
+      const deadline =
+        recruitDeadline?.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
       await projectApi.create({
         title,
         content,
-        positions: categories,
+        recruitmentFields,
         recruiting: recruitStatus === "recruiting",
-        recruitDeadline,
-        maxMembers: recruitCount || undefined,
+        deadline,
+        maxMember: Math.max(1, recruitCount),
+        category: PROJECT_CATEGORY,
       });
     },
     onSuccess: () => {
@@ -81,22 +121,37 @@ export default function ProjectWritePage() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async () => {
+      if (!numericEditId) return;
+      const recruitmentFields = categories.map(
+        (c) => POSITION_TO_ENUM[c] ?? c
+      );
+      const deadline =
+        recruitDeadline?.toISOString().slice(0, 10) ?? undefined;
+      await projectApi.update(numericEditId, {
+        title,
+        content,
+        recruitmentFields,
+        recruiting: recruitStatus === "recruiting",
+        deadline,
+        maxMember: Math.max(0, recruitCount),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project", numericEditId] });
+      router.push(`/project/${numericEditId}`);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !content.trim() || categories.length === 0) return;
 
-    if (editId) {
-      // TODO: projectApi.update 연결
-      console.log("프로젝트 수정 예정", {
-        editId,
-        title,
-        categories,
-        recruitStatus,
-        recruitDeadline,
-        recruitCount,
-        content,
-      });
+    if (editId && isValidEditId) {
+      updateMutation.mutate();
       return;
     }
 
