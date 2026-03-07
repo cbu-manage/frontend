@@ -2,18 +2,28 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
+import { authApi } from "@/api";
 
 export default function Header() {
   const pathname = usePathname();
   const name = useUserStore((s) => s.name);
   const clearUser = useUserStore((s) => s.clearUser);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
   const isLoggedIn = !!name;
 
   const isBlockHeader = pathname === "/memberManage";
   const isHome = pathname === "/";
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // 무시
+    }
     clearUser();
+    clearAuth();
+    localStorage.removeItem("accessToken");
     alert("로그아웃 되었습니다.");
     window.location.href = "/";
   };

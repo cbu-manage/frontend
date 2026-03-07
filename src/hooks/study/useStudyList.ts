@@ -1,10 +1,28 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { studyApi, type StudyListParams } from "@/api";
 import type { StudyStatus } from "@/components/study/StudyCard";
 
-const PAGE_SIZE = 9;
+/** 화면 너비에 따른 페이지당 출력 개수: lg(1024px) 이상 12, md(768px) 이상 9, 미만 6 */
+function useResponsivePageSize(): number {
+  const [size, setSize] = useState(12);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      if (w >= 1024) setSize(12);
+      else if (w >= 768) setSize(9);
+      else setSize(6);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return size;
+}
 
 export interface StudyListItem {
   id: number;
@@ -48,12 +66,15 @@ function normalizeResponse(
   if (Array.isArray(raw)) {
     list = raw as StudyListItem[];
   } else if (raw && typeof raw === "object") {
-    const anyRaw = raw as any;
-    if (Array.isArray(anyRaw.content)) {
-      list = anyRaw.content as StudyListItem[];
+    const anyRaw = raw as unknown;
+    if (Array.isArray((anyRaw as { content: StudyListItem[] }).content)) {
+      list = (anyRaw as { content: StudyListItem[] }).content;
     }
-    if (typeof anyRaw.totalPages === "number" && anyRaw.totalPages > 0) {
-      totalPages = anyRaw.totalPages;
+    if (
+      typeof (anyRaw as { totalPages: number }).totalPages === "number" &&
+      (anyRaw as { totalPages: number }).totalPages > 0
+    ) {
+      totalPages = (anyRaw as { totalPages: number }).totalPages;
     }
   }
 
@@ -75,12 +96,14 @@ export function useStudyList({
   category,
   enabled = true,
 }: UseStudyListParams) {
+  const pageSize = useResponsivePageSize();
+
   return useQuery({
-    queryKey: ["studies", page, status, category],
+    queryKey: ["studies", page, status, category, pageSize],
     queryFn: async () => {
       const paging: StudyListParams = {
         page: Math.max(page - 1, 0),
-        size: PAGE_SIZE,
+        size: pageSize,
         category: CATEGORY_CODE_MAP[category] ?? CATEGORY_CODE_MAP["전체"],
       };
 
@@ -90,4 +113,3 @@ export function useStudyList({
     enabled,
   });
 }
-

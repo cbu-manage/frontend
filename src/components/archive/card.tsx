@@ -5,6 +5,7 @@ import { Eye, FileText } from 'lucide-react';
 interface ArchiveCardProps {
   id: string;
   title: string;
+  link?: string;
   thumbnailUrl?: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -15,13 +16,14 @@ interface ArchiveCardProps {
 export default function ArchiveCard({
   id,
   title,
+  link,
   thumbnailUrl,
   uploadedBy,
   uploadedAt,
   views = 0,
 }: ArchiveCardProps) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden flex flex-col h-full">
+  const content = (
+    <>
       {/* 썸네일 영역 */}
       <div className="w-full aspect-video bg-gray-200 overflow-hidden">
         {thumbnailUrl ? (
@@ -62,6 +64,25 @@ export default function ArchiveCard({
           )}
         </div>
       </div>
+    </>
+  );
+
+  if (link) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer overflow-hidden flex flex-col h-full">
+      {content}
     </div>
   );
 }
