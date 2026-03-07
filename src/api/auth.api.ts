@@ -8,6 +8,8 @@ export type LoginRequest = {
 export type LoginResponse = {
   name: string;
   email: string | null;
+  /** 로그인 성공 시 서버가 발급하는 JWT (있으면 저장 후 API 요청에 사용) */
+  accessToken?: string;
 };
 
 export type SignupRequest = {

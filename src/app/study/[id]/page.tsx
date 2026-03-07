@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DetailTemplate from "@/components/detail/DetailTemplate";
 import Sidebar from "@/components/shared/Sidebar";
+import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { studyApi, groupApi } from "@/api";
 
@@ -133,17 +134,21 @@ export default function StudyDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-500">로딩 중...</p>
-      </main>
+      <RequireMember>
+        <main className="min-h-screen bg-white flex items-center justify-center">
+          <p className="text-gray-500">로딩 중...</p>
+        </main>
+      </RequireMember>
     );
   }
 
   if (isError || !study) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-red-500">게시글을 불러올 수 없습니다.</p>
-      </main>
+      <RequireMember>
+        <main className="min-h-screen bg-white flex items-center justify-center">
+          <p className="text-red-500">게시글을 불러올 수 없습니다.</p>
+        </main>
+      </RequireMember>
     );
   }
 
@@ -154,7 +159,8 @@ export default function StudyDetailPage() {
   const statusKey = study.recruiting ? "recruiting" : "completed";
 
   return (
-    <main className="min-h-screen bg-white">
+    <RequireMember>
+      <main className="min-h-screen bg-white">
       <div className="flex">
         <Sidebar
           items={CATEGORIES}
@@ -250,6 +256,7 @@ export default function StudyDetailPage() {
           }
         />
       </div>
-    </main>
+      </main>
+    </RequireMember>
   );
 }
