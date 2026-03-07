@@ -28,7 +28,7 @@ export default function ArchivePage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-12 bg-white">
-        <div className="px-[9.375%]">
+        <div className="px-80">
           {/* 헤더 섹션 */}
           <div className="pt-12 flex items-start justify-between">
             <div>
@@ -84,9 +84,7 @@ export default function ArchivePage() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (
-                          window.confirm("이 자료를 삭제할까요?")
-                        ) {
+                        if (window.confirm("이 자료를 삭제할까요?")) {
                           deleteMutation.mutate(item.resourceId);
                         }
                       }}
