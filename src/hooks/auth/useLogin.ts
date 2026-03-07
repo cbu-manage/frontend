@@ -46,9 +46,7 @@ export function useLogin() {
     onSuccess: ({ data, studentNumber, password }) => {
       if (data.accessToken) {
         setAccessToken(data.accessToken);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("accessToken", data.accessToken);
-        }
+        // 토큰은 authStore persist로 쿠키에 저장됨
       }
 
       const rawEmail = data.email === "null" ? null : data.email;

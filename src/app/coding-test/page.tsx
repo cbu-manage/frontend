@@ -1,172 +1,36 @@
-/**
- * @file coding-test/page.tsx
- * @description 코딩테스트 준비 페이지
- *
- * 코딩테스트 문제 풀이 목록을 테이블 형태로 보여주는 페이지입니다.
- * - 필터: 상태(미해결/해결), 언어(Python/Java 등), 플랫폼(프로그래머스/백준 등)
- * - 테이블: 문제 목록 (상태, 문제, 언어, 플랫폼, 작성자, 댓글)
- * - 페이지네이션: 페이지 이동
- *
- * @todo [대기] 실제 API 연동 시 더미 데이터 제거
- * @todo [대기] 모바일 반응형 - 테이블 → 카드 레이아웃 변환 필요
- */
-
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import {
   CodingTestRow,
   SolveStatus,
-  Language,
-  Platform,
 } from "@/components/coding-test/CodingTestRow";
 import PGN from "@/components/shared/Pagination";
 import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import { codingTestApi } from "@/api";
+import { useCodingTestMetaStore } from "@/store/codingTestMetaStore";
+import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
 
 // ============================================
-// 상수 정의
+// FilterButton / SelectedFilterChip
 // ============================================
 
-/**
- * 페이지네이션용 페이지 번호 배열
- * @todo 실제 API 연동 시 동적으로 생성
- */
-const TOTAL_PAGES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-// ============================================
-// 더미 데이터
-// ============================================
-
-/**
- * 코딩테스트 문제 목록 더미 데이터
- * @todo 실제 API 연동 시 제거
- */
-const PROBLEMS = [
-  {
-    id: 1,
-    status: "미해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 2,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 3,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 4,
-    status: "미해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 5,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 6,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 7,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 8,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 9,
-    status: "미해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 10,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 11,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-  {
-    id: 12,
-    status: "해결" as SolveStatus,
-    title: "백준 12865번 ~.평범한 배낭 내용",
-    language: "Python" as Language,
-    platform: "프로그래머스" as Platform,
-  },
-];
-
-// ============================================
-// FilterButton 컴포넌트
-// ============================================
-
-/**
- * FilterButton Props 인터페이스
- */
 interface FilterButtonProps {
-  /** 버튼에 표시될 라벨 */
   label: string;
-  /** 드롭다운 열림 상태 */
   isOpen: boolean;
-  /** 클릭 핸들러 */
   onClick: () => void;
 }
 
-/**
- * 필터 드롭다운 버튼 컴포넌트
- *
- * @param props - FilterButtonProps
- * @returns 필터 버튼 JSX 요소
- */
 function FilterButton({ label, isOpen, onClick }: FilterButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="
-        inline-flex items-center gap-2
-        px-4 py-2
-        bg-[#EEEFF3]/80 hover:bg-[#EEEFF3]
-        rounded-xl
-        text-base font-semibold text-gray-900
-        transition-colors
-      "
+      className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEEFF3]/80 hover:bg-[#EEEFF3] rounded-xl text-base font-semibold text-gray-900 transition-colors"
     >
       {label}
-      {/* 드롭다운 화살표 아이콘 */}
       <svg
         className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
         fill="none"
@@ -189,7 +53,6 @@ interface SelectedFilterChipProps {
   onClear: () => void;
 }
 
-// 선택된 필터를 보여주는 칩 컴포넌트 (X 아이콘으로 해제 가능)
 function SelectedFilterChip({ label, onClear }: SelectedFilterChipProps) {
   return (
     <button
@@ -209,293 +72,441 @@ function SelectedFilterChip({ label, onClear }: SelectedFilterChipProps) {
 }
 
 // ============================================
-// CodingTestPage 컴포넌트
+// 응답 정규화
 // ============================================
 
-/**
- * 코딩테스트 준비 페이지 컴포넌트
- *
- * @returns 코딩테스트 준비 페이지 JSX 요소
- */
+function extractProblemList(raw: unknown): {
+  content: unknown[];
+  totalPages: number;
+} {
+  const obj =
+    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const data = obj.data ?? obj;
+  const content = Array.isArray(data)
+    ? data
+    : data && typeof data === "object" && "content" in data
+      ? ((data as { content?: unknown[] }).content ?? [])
+      : [];
+  const totalPages =
+    data &&
+    typeof data === "object" &&
+    "totalPages" in data &&
+    typeof (data as { totalPages?: number }).totalPages === "number"
+      ? (data as { totalPages: number }).totalPages
+      : 1;
+  return { content: content as unknown[], totalPages };
+}
+
+// ============================================
+// CodingTestPage
+// ============================================
+
+const PAGE_SIZE = 10;
+
 export default function CodingTestPage() {
-  // ========== 상태 관리 ==========
-
-  /** 현재 페이지 번호 */
   const [currentPage, setCurrentPage] = useState(1);
-
-  /** 상태 필터 (전체/미해결/해결) */
   const [statusFilter, setStatusFilter] = useState<string>("전체");
-
-  /** 언어 필터 (복수 선택 가능) */
-  const [languageFilter, setLanguageFilter] = useState<string[]>([]);
-
-  /** 플랫폼 필터 (복수 선택 가능) */
-  const [platformFilter, setPlatformFilter] = useState<string[]>([]);
-
-  /** 현재 열린 필터 드롭다운 */
+  const [languageFilterIds, setLanguageFilterIds] = useState<number[]>([]);
+  const [platformFilterIds, setPlatformFilterIds] = useState<number[]>([]);
+  const [categoryFilterIds, setCategoryFilterIds] = useState<number[]>([]);
   const [openFilter, setOpenFilter] = useState<string | null>(null);
 
-  // ========== 이벤트 핸들러 ==========
+  useCodingTestMeta();
+  const platforms = useCodingTestMetaStore((s) => s.platforms);
+  const languages = useCodingTestMetaStore((s) => s.languages);
+  const categories = useCodingTestMetaStore((s) => s.categories);
 
-  /**
-   * 필터 드롭다운 토글
-   * @param filter - 토글할 필터 이름
-   */
+  const pageIndex = Math.max(0, currentPage - 1);
+
+  const {
+    data: listRes,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: [
+      "codingTest",
+      "list",
+      pageIndex,
+      platformFilterIds,
+      categoryFilterIds,
+    ],
+    queryFn: () =>
+      codingTestApi.getList({
+        page: pageIndex,
+        size: PAGE_SIZE,
+        sort: ["post.createdAt,DESC"],
+        platformId:
+          platformFilterIds.length > 0 ? platformFilterIds : undefined,
+        categoryId:
+          categoryFilterIds.length > 0 ? categoryFilterIds : undefined,
+      }),
+  });
+
+  const { content: rawList, totalPages } = useMemo(() => {
+    const body = listRes?.data;
+    return extractProblemList(body ?? null);
+  }, [listRes?.data]);
+
+  const problems = useMemo(() => {
+    const list = rawList as import("@/api").ProblemListItem[];
+    return list.map((item) => ({
+      id: item.postId,
+      status: (item.problemStatus === "SOLVED"
+        ? "해결"
+        : "미해결") as SolveStatus,
+      title: item.title ?? "",
+      languageId: item.languageId,
+      platformId: item.platformId,
+      language: languages.find((l) => l.id === item.languageId)?.name ?? "기타",
+      platform: platforms.find((p) => p.id === item.platformId)?.name ?? "기타",
+      author:
+        item.authorName != null
+          ? item.authorGeneration != null
+            ? `${item.authorGeneration}기 ${item.authorName}`
+            : item.authorName
+          : undefined,
+    }));
+  }, [rawList, languages, platforms]);
+
+  const filteredByStatusAndLanguage = useMemo(() => {
+    return problems.filter((p) => {
+      const statusOk = statusFilter === "전체" || p.status === statusFilter;
+      const langOk =
+        languageFilterIds.length === 0 ||
+        (p.languageId != null && languageFilterIds.includes(p.languageId));
+      return statusOk && langOk;
+    });
+  }, [problems, statusFilter, languageFilterIds]);
+
+  const pageNumbers = Array.from(
+    { length: Math.max(1, totalPages) },
+    (_, i) => i + 1,
+  );
+
   const toggleFilter = (filter: string) => {
     setOpenFilter(openFilter === filter ? null : filter);
   };
 
-  // ========== 필터링 로직 ==========
-
-  /**
-   * 필터 조건에 맞는 문제 목록
-   */
-  const filteredProblems = PROBLEMS.filter((problem) => {
-    const statusMatch =
-      statusFilter === "전체" || problem.status === statusFilter;
-    const languageMatch =
-      languageFilter.length === 0 || languageFilter.includes(problem.language);
-    const platformMatch =
-      platformFilter.length === 0 || platformFilter.includes(problem.platform);
-    return statusMatch && languageMatch && platformMatch;
-  });
+  const toggleIdFilter = (
+    id: number,
+    list: number[],
+    setList: (next: number[]) => void,
+  ) => {
+    if (list.includes(id)) setList(list.filter((x) => x !== id));
+    else setList([...list, id]);
+  };
 
   return (
     <RequireMember>
-      {/* 페이지 컨테이너 - 전체 화면 배경색 */}
       <div className="w-full bg-gray-0 min-h-screen">
-        <main className="px-[9.375%] pt-8 sm:pt-12 pb-16">
-        {/* ========== 페이지 헤더 ========== */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            코딩테스트 준비
-          </h1>
-        </div>
+        <main className="px-80 pt-8 sm:pt-12 pb-16">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              코딩테스트 준비
+            </h1>
+          </div>
 
-        {/* ========== 필터 영역 + 작성 버튼 ========== */}
-        <div className="flex flex-col gap-3 mb-4 sm:mb-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* 필터 드롭다운 모음 */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {/* 상태 필터 드롭다운 */}
-              <div className="relative">
-                <FilterButton
-                  label="상태"
-                  isOpen={openFilter === "status"}
-                  onClick={() => toggleFilter("status")}
-                />
-                {openFilter === "status" && (
-                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
-                    {["전체", "미해결", "해결"].map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => {
-                          setStatusFilter(option);
-                          setOpenFilter(null);
-                        }}
-                        className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 언어 필터 드롭다운 */}
-              <div className="relative">
-                <FilterButton
-                  label="언어"
-                  isOpen={openFilter === "language"}
-                  onClick={() => toggleFilter("language")}
-                />
-                {openFilter === "language" && (
-                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
-                    {["Python", "Java", "C++", "JavaScript", "C"].map(
-                      (option) => (
+          <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {/* 상태 */}
+                <div className="relative">
+                  <FilterButton
+                    label="상태"
+                    isOpen={openFilter === "status"}
+                    onClick={() => toggleFilter("status")}
+                  />
+                  {openFilter === "status" && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[100px] sm:min-w-[120px]">
+                      {["전체", "미해결", "해결"].map((option) => (
                         <button
                           key={option}
-                          type="button"
                           onClick={() => {
-                            if (languageFilter.includes(option)) {
-                              setLanguageFilter(
-                                languageFilter.filter((lang) => lang !== option),
-                              );
-                            } else {
-                              setLanguageFilter([...languageFilter, option]);
-                            }
+                            setStatusFilter(option);
+                            setOpenFilter(null);
                           }}
-                          className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
-                            languageFilter.includes(option)
+                          className="w-full px-3 sm:px-4 py-2 text-left text-base sm:text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 언어 */}
+                <div className="relative">
+                  <FilterButton
+                    label="언어"
+                    isOpen={openFilter === "language"}
+                    onClick={() => toggleFilter("language")}
+                  />
+                  {openFilter === "language" && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
+                      {languages.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() =>
+                            toggleIdFilter(
+                              opt.id,
+                              languageFilterIds,
+                              setLanguageFilterIds,
+                            )
+                          }
+                          className={`w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm first:rounded-t-lg last:rounded-b-lg ${
+                            languageFilterIds.includes(opt.id)
                               ? "bg-brand/20 text-gray-900 font-medium"
                               : "text-gray-700 hover:bg-gray-50"
                           }`}
                         >
-                          {option}
+                          {opt.name ?? `ID ${opt.id}`}
                         </button>
-                      ),
-                    )}
-                  </div>
-                )}
-              </div>
+                      ))}
+                      {languages.length === 0 && (
+                        <div className="px-3 py-2 text-gray-400 text-sm">
+                          불러오는 중...
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
-              {/* 플랫폼 필터 드롭다운 */}
-              <div className="relative">
-                <FilterButton
-                  label="플랫폼"
-                  isOpen={openFilter === "platform"}
-                  onClick={() => toggleFilter("platform")}
-                />
-                {openFilter === "platform" && (
-                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
-                    {["프로그래머스", "백준", "LeetCode"].map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => {
-                          if (platformFilter.includes(option)) {
-                            setPlatformFilter(
-                              platformFilter.filter((plat) => plat !== option),
-                            );
-                          } else {
-                            setPlatformFilter([...platformFilter, option]);
+                {/* 플랫폼 */}
+                <div className="relative">
+                  <FilterButton
+                    label="플랫폼"
+                    isOpen={openFilter === "platform"}
+                    onClick={() => toggleFilter("platform")}
+                  />
+                  {openFilter === "platform" && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
+                      {platforms.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() =>
+                            toggleIdFilter(
+                              opt.id,
+                              platformFilterIds,
+                              setPlatformFilterIds,
+                            )
                           }
-                        }}
-                        className={`w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-left transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg ${
-                          platformFilter.includes(option)
-                            ? "bg-brand/20 text-gray-900 font-medium"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                          className={`w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm first:rounded-t-lg last:rounded-b-lg ${
+                            platformFilterIds.includes(opt.id)
+                              ? "bg-brand/20 text-gray-900 font-medium"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {opt.name ?? `ID ${opt.id}`}
+                        </button>
+                      ))}
+                      {platforms.length === 0 && (
+                        <div className="px-3 py-2 text-gray-400 text-sm">
+                          불러오는 중...
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 카테고리 */}
+                <div className="relative">
+                  <FilterButton
+                    label="카테고리"
+                    isOpen={openFilter === "category"}
+                    onClick={() => toggleFilter("category")}
+                  />
+                  {openFilter === "category" && (
+                    <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px] sm:min-w-[140px]">
+                      {categories.map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() =>
+                            toggleIdFilter(
+                              opt.id,
+                              categoryFilterIds,
+                              setCategoryFilterIds,
+                            )
+                          }
+                          className={`w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm first:rounded-t-lg last:rounded-b-lg ${
+                            categoryFilterIds.includes(opt.id)
+                              ? "bg-brand/20 text-gray-900 font-medium"
+                              : "text-gray-700 hover:bg-gray-50"
+                          }`}
+                        >
+                          {opt.name ?? `ID ${opt.id}`}
+                        </button>
+                      ))}
+                      {categories.length === 0 && (
+                        <div className="px-3 py-2 text-gray-400 text-sm">
+                          불러오는 중...
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
+
+              <Link href="/coding-test/write">
+                <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide">
+                  <Pencil size={18} />글 작성하기
+                </button>
+              </Link>
             </div>
-
-            {/* 글 작성하기 버튼 */}
-            <Link href="/coding-test/write">
-              <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 flex-shrink-0 whitespace-nowrap tracking-wide">
-                <Pencil size={18} />
-                글 작성하기
-              </button>
-            </Link>
           </div>
-        </div>
 
-        {/* 선택된 필터 표시 영역 */}
-        {(statusFilter !== "전체" ||
-          languageFilter.length > 0 ||
-          platformFilter.length > 0) && (
-          <div className="flex flex-wrap items-center gap-2 mb-6">
-            {statusFilter !== "전체" && (
-              <SelectedFilterChip
-                label={statusFilter}
-                onClear={() => setStatusFilter("전체")}
-              />
-            )}
-            {languageFilter.map((lang) => (
-              <SelectedFilterChip
-                key={lang}
-                label={lang}
-                onClear={() => setLanguageFilter(languageFilter.filter((l) => l !== lang))}
-              />
-            ))}
-            {platformFilter.map((plat) => (
-              <SelectedFilterChip
-                key={plat}
-                label={plat}
-                onClear={() => setPlatformFilter(platformFilter.filter((p) => p !== plat))}
-              />
-            ))}
-            
-            {/* 초기화 버튼 */}
-            <button
-              onClick={() => {
-                setStatusFilter("전체");
-                setLanguageFilter([]);
-                setPlatformFilter([]);
-              }}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <svg 
-                className="w-3.5 h-3.5" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+          {/* 선택된 필터 칩 */}
+          {(statusFilter !== "전체" ||
+            languageFilterIds.length > 0 ||
+            platformFilterIds.length > 0 ||
+            categoryFilterIds.length > 0) && (
+            <div className="flex flex-wrap items-center gap-2 mb-6">
+              {statusFilter !== "전체" && (
+                <SelectedFilterChip
+                  label={statusFilter}
+                  onClear={() => setStatusFilter("전체")}
                 />
-              </svg>
-              초기화
-            </button>
-          </div>
-        )}
-
-        {/* ========== 테이블 영역 ========== */}
-        {/*
-          모바일에서 가로 스크롤 지원
-          @todo [대기] 모바일에서 카드 레이아웃으로 변경 필요
-        */}
-        <div className="bg-white  border border-gray-200 overflow-x-auto">
-          <table className="w-full min-w-[37.5rem]">
-            {/* 테이블 헤더 - 초록색 배경 */}
-            <thead className="bg-[#95C674] text-white">
-              <tr>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[5rem] sm:w-[6.25rem]">
-                  상태
-                </th>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[15rem] sm:w-[20rem]">
-                  문제
-                </th>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
-                  언어
-                </th>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
-                  플랫폼
-                </th>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[8rem]">
-                  작성자
-                </th>
-                <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-[3.75rem] sm:w-[5rem]"></th>
-              </tr>
-            </thead>
-
-            {/* 테이블 바디 */}
-            <tbody>
-              {filteredProblems.map((problem) => (
-                <CodingTestRow
-                  key={problem.id}
-                  id={problem.id}
-                  status={problem.status}
-                  title={problem.title}
-                  language={problem.language}
-                  platform={problem.platform}
-                />
-              ))}
-
-              {/* 필터링 결과가 없는 경우 */}
-              {filteredProblems.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-500">
-                    해당 조건에 맞는 문제가 없습니다.
-                  </td>
-                </tr>
               )}
-            </tbody>
-          </table>
-        </div>
+              {languageFilterIds.map((id) => {
+                const opt = languages.find((l) => l.id === id);
+                return (
+                  <SelectedFilterChip
+                    key={`lang-${id}`}
+                    label={opt?.name ?? `ID ${id}`}
+                    onClear={() =>
+                      setLanguageFilterIds(
+                        languageFilterIds.filter((x) => x !== id),
+                      )
+                    }
+                  />
+                );
+              })}
+              {platformFilterIds.map((id) => {
+                const opt = platforms.find((p) => p.id === id);
+                return (
+                  <SelectedFilterChip
+                    key={`plat-${id}`}
+                    label={opt?.name ?? `ID ${id}`}
+                    onClear={() =>
+                      setPlatformFilterIds(
+                        platformFilterIds.filter((x) => x !== id),
+                      )
+                    }
+                  />
+                );
+              })}
+              {categoryFilterIds.map((id) => {
+                const opt = categories.find((c) => c.id === id);
+                return (
+                  <SelectedFilterChip
+                    key={`cat-${id}`}
+                    label={opt?.name ?? `ID ${id}`}
+                    onClear={() =>
+                      setCategoryFilterIds(
+                        categoryFilterIds.filter((x) => x !== id),
+                      )
+                    }
+                  />
+                );
+              })}
+              <button
+                onClick={() => {
+                  setStatusFilter("전체");
+                  setLanguageFilterIds([]);
+                  setPlatformFilterIds([]);
+                  setCategoryFilterIds([]);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                초기화
+              </button>
+            </div>
+          )}
 
-          {/* ========== 페이지네이션 ========== */}
+          <div className="bg-white border border-gray-200 overflow-x-auto">
+            <table className="w-full min-w-150">
+              <thead className="bg-brand text-white">
+                <tr>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-20 sm:w-25">
+                    상태
+                  </th>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-60 sm:w-80">
+                    문제
+                  </th>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-32">
+                    언어
+                  </th>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-32">
+                    플랫폼
+                  </th>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-32">
+                    작성자
+                  </th>
+                  <th className="py-2 sm:py-3 px-3 text-center text-base font-medium w-15 sm:w-20"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-gray-500">
+                      목록을 불러오는 중...
+                    </td>
+                  </tr>
+                )}
+                {isError && (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-red-500">
+                      목록을 불러오지 못했습니다.
+                    </td>
+                  </tr>
+                )}
+                {!isLoading &&
+                  !isError &&
+                  filteredByStatusAndLanguage.map((problem) => (
+                    <CodingTestRow
+                      key={problem.id}
+                      id={problem.id}
+                      status={problem.status}
+                      title={problem.title}
+                      language={problem.language}
+                      platform={problem.platform}
+                      author={problem.author}
+                    />
+                  ))}
+                {!isLoading &&
+                  !isError &&
+                  filteredByStatusAndLanguage.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-12 text-center text-gray-500"
+                      >
+                        해당 조건에 맞는 문제가 없습니다.
+                      </td>
+                    </tr>
+                  )}
+              </tbody>
+            </table>
+          </div>
+
           <PGN
             currentPage={currentPage}
-            totalPages={TOTAL_PAGES}
+            totalPages={pageNumbers}
             onPageChange={(num) => setCurrentPage(num)}
           />
         </main>
