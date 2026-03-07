@@ -1,38 +1,61 @@
 /**
  * 댓글 API
- * - 포스트 댓글: /api/v1/post/{postId}/comment
- * - 코딩테스트 댓글: /api/v1/problems/{problemId}/comment
- * - 답글: /api/v1/comment/{commentId}/reply
  */
 import { api } from "./client";
 
-// TODO: 세부 타입 추가
+export type CommentBody = { content: string };
+
+/** 댓글/답글 한 건 (목록 응답 - 1계층 트리) */
+export type CommentItem = {
+  commentId: number;
+  content: string;
+  authorName?: string;
+  authorGeneration?: number;
+  createdAt?: string;
+  replies?: CommentItem[];
+  deleted?: boolean;
+  [key: string]: unknown;
+};
+
+function extractCommentList(raw: unknown): CommentItem[] {
+  if (!raw || typeof raw !== "object") return [];
+  const obj = raw as Record<string, unknown>;
+  const body = obj.data ?? obj;
+  if (Array.isArray(body)) return body as CommentItem[];
+  if (body && typeof body === "object" && "data" in body) {
+    const inner = (body as { data?: unknown }).data;
+    return Array.isArray(inner) ? (inner as CommentItem[]) : [];
+  }
+  return [];
+}
 
 export const commentApi = {
-  /** 포스트 댓글 목록 조회 */
+  /** 포스트 댓글 목록 (1계층 트리) */
   getPostComments: (postId: number) =>
-    api.get(`/post/${postId}/comment`),
+    api.get<{ data?: CommentItem[] }>(`/post/${postId}/comment`),
 
   /** 포스트 댓글 작성 */
-  createPostComment: (postId: number, data: unknown) =>
+  createPostComment: (postId: number, data: CommentBody) =>
     api.post(`/post/${postId}/comment`, data),
 
-  /** 코딩테스트 문제 댓글 목록 조회 */
+  /** 코딩테스트 문제 댓글 목록 (1계층 트리) */
   getProblemComments: (problemId: number) =>
-    api.get(`/problems/${problemId}/comment`),
+    api.get<{ data?: CommentItem[] }>(`/problems/${problemId}/comment`),
 
   /** 코딩테스트 문제 댓글 작성 */
-  createProblemComment: (problemId: number, data: unknown) =>
+  createProblemComment: (problemId: number, data: CommentBody) =>
     api.post(`/problems/${problemId}/comment`, data),
 
-  /** 답글 추가 */
-  reply: (commentId: number, data: unknown) =>
+  /** 답글 추가 (commentId에 답글 달기, 답글에 달면 부모와 자동 연결) */
+  reply: (commentId: number, data: CommentBody) =>
     api.post(`/comment/${commentId}/reply`, data),
 
   /** 댓글 수정 */
-  update: (commentId: number, data: unknown) =>
+  update: (commentId: number, data: CommentBody) =>
     api.patch(`/comment/${commentId}`, data),
 
   /** 댓글 삭제 (softDelete) */
   delete: (commentId: number) => api.delete(`/comment/${commentId}`),
 };
+
+export { extractCommentList };

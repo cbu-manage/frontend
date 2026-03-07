@@ -7,7 +7,7 @@ import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
 import { StudyCard } from "@/components/study/StudyCard";
 import { ProjectCard } from "@/components/project/ProjectCard";
-import { CodingTestRow, Language } from "@/components/coding-test/CodingTestRow";
+import { CodingTestRow } from "@/components/coding-test/CodingTestRow";
 import ArchiveCard from "@/components/archive/card";
 import { postApi, POST_CATEGORY } from "@/api";
 import type { PostListItem } from "@/api";
@@ -296,7 +296,7 @@ export default function MyPostsSection() {
                 </thead>
                 <tbody>
                   {posts.map((post) => {
-                    const lang = (post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) || "Python") as Language;
+                    const lang = post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) || "Python";
                     return (
                       <CodingTestRow
                         key={post.id}

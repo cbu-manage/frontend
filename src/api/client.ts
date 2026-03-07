@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
+import { getAccessTokenFromCookie } from "@/lib/cookie";
 
 export const api = axios.create({
   baseURL:
-    process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== "undefined"
+    process.env.NEXT_PUBLIC_API_URL &&
+    process.env.NEXT_PUBLIC_API_URL !== "undefined"
       ? process.env.NEXT_PUBLIC_API_URL
       : "/api/v1",
   withCredentials: true,
@@ -13,13 +15,12 @@ export const api = axios.create({
   },
 });
 
-// 요청 인터셉터 (토큰 자동 - zustand store 우선, 없으면 localStorage)
+// 요청 인터셉터 (토큰: store → 쿠키 순으로 사용)
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token =
-      useAuthStore.getState().accessToken ??
-      localStorage.getItem("accessToken");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+      useAuthStore.getState().accessToken ?? getAccessTokenFromCookie();
+    if (token) config.headers.Authorization = `${token}`;
   }
   return config;
 });
@@ -30,5 +31,5 @@ api.interceptors.response.use(
   (err) => {
     console.error("API ERROR:", err.response?.data ?? err.message);
     return Promise.reject(err);
-  }
+  },
 );
