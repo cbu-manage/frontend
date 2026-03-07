@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { resourcesApi } from "@/api";
+import RequireMember from "@/components/auth/RequireMember";
 import InputBox from "@/components/common/InputBox";
 import LongBtn from "@/components/common/LongBtn";
 
@@ -31,6 +32,7 @@ export default function ArchiveWritePage() {
   };
 
   return (
+    <RequireMember>
     <main className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-full max-w-4xl bg-white rounded-4xl px-18 py-12">
         {/* 헤더 */}
@@ -72,5 +74,6 @@ export default function ArchiveWritePage() {
         </form>
       </div>
     </main>
+    </RequireMember>
   );
 }
