@@ -91,7 +91,12 @@ export default function ProjectDetailPage() {
   } | null | undefined;
 
   const groupId = projectData?.groupId;
-  const isLeader = projectData?.isLeader ?? false;
+  // 백엔드가 isLeader를 안 주거나 false면 authorName으로 fallback
+  const isLeader =
+    projectData?.isLeader ??
+    (!!currentUserName &&
+      !!projectData?.authorName &&
+      projectData.authorName === currentUserName);
   const hasAppliedFromApi = projectData?.hasApplied ?? false;
 
   const appliedStatus = useMemo(() => {

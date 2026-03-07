@@ -70,14 +70,24 @@ function normalizeResponse(
     }
   }
 
+  // API는 postId + recruiting, UI는 id + status 사용 → 매핑
+  const items = list.map((item) => {
+    const raw = item as { postId?: number; id?: number; recruiting?: boolean };
+    return {
+      ...item,
+      id: raw.postId ?? raw.id ?? 0,
+      status: raw.recruiting === true ? "모집 중" : raw.recruiting === false ? "모집 완료" : (item.status as string),
+    };
+  });
+
   // 프론트에서 상태 필터 1차 적용 (백엔드가 이미 필터링했더라도 안전하게)
-  list = list.filter((item) => {
+  const filtered = items.filter((item) => {
     const statusMatch = !item.status || (item.status as string) === status;
     return statusMatch;
   });
 
   return {
-    items: list,
+    items: filtered,
     totalPages,
   };
 }
@@ -103,7 +113,11 @@ export function useStudyList({
           size: pageSize,
           tag: category,
         });
-        return normalizeResponse(res.data, { status });
+        const payload =
+          res.data && typeof res.data === "object" && "data" in res.data
+            ? (res.data as { data?: unknown }).data
+            : res.data;
+        return normalizeResponse(payload, { status });
       }
 
       const res = await studyApi.getList({
@@ -111,7 +125,11 @@ export function useStudyList({
         size: pageSize,
         category: STUDY_BOARD_CATEGORY,
       });
-      return normalizeResponse(res.data, { status });
+      const payload =
+        res.data && typeof res.data === "object" && "data" in res.data
+          ? (res.data as { data?: unknown }).data
+          : res.data;
+      return normalizeResponse(payload, { status });
     },
     enabled,
   });
