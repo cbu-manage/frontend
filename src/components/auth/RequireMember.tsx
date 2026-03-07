@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 
 type RequireMemberProps = {
   children: ReactNode;
@@ -10,7 +11,12 @@ type RequireMemberProps = {
 
 export default function RequireMember({ children }: RequireMemberProps) {
   const name = useUserStore((s) => s.name);
-  const isMember = !!name;
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const token =
+    typeof window !== "undefined"
+      ? (accessToken ?? localStorage.getItem("accessToken"))
+      : accessToken;
+  const isMember = !!name && !!token;
 
   if (!isMember) {
     return (

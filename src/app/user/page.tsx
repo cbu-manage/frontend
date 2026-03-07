@@ -2,8 +2,13 @@
 // 정적 프리렌더링 대신 항상 동적 렌더링하도록 설정
 export const dynamic = "force-dynamic";
 
+import RequireMember from "@/components/auth/RequireMember";
 import UserPageClient from "@/components/user/UserPageClient";
 
 export default function UserPage() {
-  return <UserPageClient />;
+  return (
+    <RequireMember>
+      <UserPageClient />
+    </RequireMember>
+  );
 }

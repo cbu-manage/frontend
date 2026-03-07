@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { studyApi, type StudyListParams } from "@/api";
+import { studyApi } from "@/api";
 import type { StudyStatus } from "@/components/study/StudyCard";
 
 /** 화면 너비에 따른 페이지당 출력 개수: lg(1024px) 이상 12, md(768px) 이상 9, 미만 6 */
@@ -45,16 +45,8 @@ type UseStudyListParams = {
   enabled?: boolean;
 };
 
-// 백엔드 카테고리 enum과 프론트 카테고리 문자열 매핑
-// 추정 매핑: 0=전체, 1=C++, 2=Python, 3=Java, 4=알고리즘, 5=기타
-const CATEGORY_CODE_MAP: Record<string, number> = {
-  전체: 0,
-  "C++": 1,
-  Python: 2,
-  Java: 3,
-  알고리즘: 4,
-  기타: 5,
-};
+/** 스터디 게시판 category = 1 고정 (프로젝트=2) */
+const STUDY_BOARD_CATEGORY = 1;
 
 function normalizeResponse(
   raw: unknown,
@@ -98,16 +90,27 @@ export function useStudyList({
 }: UseStudyListParams) {
   const pageSize = useResponsivePageSize();
 
+  const isTagFilter = category !== "전체";
+
   return useQuery({
     queryKey: ["studies", page, status, category, pageSize],
     queryFn: async () => {
-      const paging: StudyListParams = {
-        page: Math.max(page - 1, 0),
-        size: pageSize,
-        category: CATEGORY_CODE_MAP[category] ?? CATEGORY_CODE_MAP["전체"],
-      };
+      const pageIndex = Math.max(page - 1, 0);
 
-      const res = await studyApi.getList(paging);
+      if (isTagFilter) {
+        const res = await studyApi.filterByTag({
+          page: pageIndex,
+          size: pageSize,
+          tag: category,
+        });
+        return normalizeResponse(res.data, { status });
+      }
+
+      const res = await studyApi.getList({
+        page: pageIndex,
+        size: pageSize,
+        category: STUDY_BOARD_CATEGORY,
+      });
       return normalizeResponse(res.data, { status });
     },
     enabled,
