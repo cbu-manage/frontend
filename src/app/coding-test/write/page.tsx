@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ function detectPlatformFromUrl(url: string): string | null {
   }
 }
 
-export default function CodingTestWritePage() {
+function CodingTestWriteContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -310,5 +310,17 @@ export default function CodingTestWritePage() {
         </form>
       </div>
     </main>
+  );
+}
+
+export default function CodingTestWritePage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen px-80 bg-gray-100 flex items-center justify-center">
+        <p className="text-gray-500">로딩 중...</p>
+      </main>
+    }>
+      <CodingTestWriteContent />
+    </Suspense>
   );
 }
