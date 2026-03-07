@@ -39,7 +39,17 @@ export {
 } from "./project.api";
 
 // Coding Test
-export { codingTestApi, type ProblemListParams } from "./codingTest.api";
+export {
+  codingTestApi,
+  type ProblemListParams,
+  type ProblemListItem,
+  type ProblemListResponse,
+  type PlatformItem,
+  type LanguageItem,
+  type CategoryItem,
+  type CreateProblemRequest,
+  type UpdateProblemRequest,
+} from "./codingTest.api";
 
 // Report
 export { reportApi, type ReportListParams } from "./report.api";

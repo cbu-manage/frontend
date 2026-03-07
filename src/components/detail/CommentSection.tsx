@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   MessageCircle,
   Clock,
@@ -12,7 +12,11 @@ import {
 interface CommentInputProps {
   placeholder?: string;
   depth?: number;
+  value?: string;
+  onChange?: (value: string) => void;
+  onSubmit?: (content: string) => void;
   onCancel?: () => void;
+  disabled?: boolean;
 }
 
 /**
@@ -21,10 +25,25 @@ interface CommentInputProps {
 export const CommentInput = ({
   placeholder = "더 나은 해결 방식이나 보완할 점이 있나요? 서로의 성장을 위해 따뜻한 피드백을 남겨주세요!",
   depth = 0,
+  value = "",
+  onChange,
+  onSubmit,
   onCancel,
+  disabled = false,
 }: CommentInputProps) => {
   const isReply = depth > 0;
   const marginLeft = isReply ? `${depth * 48}px` : "0px";
+  const isControlled = onChange !== undefined;
+  const [localValue, setLocalValue] = useState("");
+  const text = isControlled ? value : localValue;
+  const setText = isControlled ? (onChange ?? (() => {})) : setLocalValue;
+
+  const handleSubmit = () => {
+    const trimmed = text.trim();
+    if (!trimmed || disabled) return;
+    onSubmit?.(trimmed);
+    if (!isControlled) setLocalValue("");
+  };
 
   return (
     <div
@@ -33,18 +52,27 @@ export const CommentInput = ({
     >
       <textarea
         placeholder={placeholder}
-        className="w-full min-h-[100px] border-none outline-none resize-none text-gray-900 text-base font-medium leading-[26px] placeholder:text-gray-400"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        disabled={disabled}
+        className="w-full min-h-[100px] border-none outline-none resize-none text-gray-900 text-base font-medium leading-[26px] placeholder:text-gray-400 disabled:opacity-60"
       />
       <div className="self-end flex gap-2">
         {isReply && (
           <button
+            type="button"
             onClick={onCancel}
             className="px-5 py-2 rounded-full border border-gray-300 text-gray-600 text-base font-semibold hover:bg-gray-50 transition-colors"
           >
             취소
           </button>
         )}
-        <button className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full bg-[#3E434A] text-white text-base font-semibold hover:bg-gray-700 transition-colors">
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={disabled || !text.trim()}
+          className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full bg-[#3E434A] text-white text-base font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
+        >
           등록
         </button>
       </div>
@@ -58,6 +86,7 @@ interface ReplyData {
   content: string;
   date: string;
   replies?: ReplyData[];
+  deleted?: boolean;
 }
 
 interface CommentItemProps {
@@ -69,8 +98,11 @@ interface CommentItemProps {
   replies?: ReplyData[];
   activeReplyId: number | null;
   onReplyClick: (id: number | null) => void;
+  onReplySubmit?: (parentId: number, content: string) => void;
   onEditComment?: (id: number) => void;
   onDeleteComment?: (id: number) => void;
+  disabled?: boolean;
+  deleted?: boolean;
 }
 
 /**
@@ -85,14 +117,19 @@ export const CommentItem = ({
   replies = [],
   activeReplyId,
   onReplyClick,
+  onReplySubmit,
   onEditComment,
   onDeleteComment,
+  disabled = false,
+  deleted = false,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
   const isOpen = activeReplyId === id;
   const [menuOpen, setMenuOpen] = useState(false);
+  const [replyValue, setReplyValue] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+  const showActions = !deleted;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -115,42 +152,44 @@ export const CommentItem = ({
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-base">{author}</span>
-          <div className="relative shrink-0" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
-            >
-              <MoreHorizontal size={20} />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onEditComment?.(id);
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  <Pencil size={18} className="shrink-0 text-gray-500" />
-                  수정
-                </button>
-                <div className="border-t border-gray-100 my-1" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDeleteComment?.(id);
-                    setMenuOpen(false);
-                  }}
-                  className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 size={18} className="shrink-0" />
-                  삭제
-                </button>
-              </div>
-            )}
-          </div>
+          {showActions && (
+            <div className="relative shrink-0" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              >
+                <MoreHorizontal size={20} />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onEditComment?.(id);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <Pencil size={18} className="shrink-0 text-gray-500" />
+                    수정
+                  </button>
+                  <div className="border-t border-gray-100 my-1" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteComment?.(id);
+                      setMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 size={18} className="shrink-0" />
+                    삭제
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <p className="text-gray-800 text-base font-medium mb-4 leading-relaxed">
@@ -162,13 +201,16 @@ export const CommentItem = ({
             <Clock size={14} />
             <span>{date}</span>
           </div>
-          <button
-            onClick={() => onReplyClick(isOpen ? null : id)}
-            className={`flex items-center gap-1.5 transition-colors ${isOpen ? "text-gray-900" : "hover:text-gray-600"}`}
-          >
-            <MessageCircle size={14} />
-            <span>{isOpen ? "답글 취소" : "답글쓰기"}</span>
-          </button>
+          {showActions && (
+            <button
+              type="button"
+              onClick={() => onReplyClick(isOpen ? null : id)}
+              className={`flex items-center gap-1.5 transition-colors ${isOpen ? "text-gray-900" : "hover:text-gray-600"}`}
+            >
+              <MessageCircle size={14} />
+              <span>{isOpen ? "답글 취소" : "답글쓰기"}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -177,7 +219,15 @@ export const CommentItem = ({
         <CommentInput
           placeholder="답글을 입력해 주세요."
           depth={depth + 1}
+          value={replyValue}
+          onChange={setReplyValue}
+          onSubmit={(text) => {
+            onReplySubmit?.(id, text);
+            setReplyValue("");
+            onReplyClick(null);
+          }}
           onCancel={() => onReplyClick(null)}
+          disabled={disabled}
         />
       )}
 
@@ -191,8 +241,10 @@ export const CommentItem = ({
               depth={depth + 1}
               activeReplyId={activeReplyId}
               onReplyClick={onReplyClick}
+              onReplySubmit={onReplySubmit}
               onEditComment={onEditComment}
               onDeleteComment={onDeleteComment}
+              disabled={disabled}
             />
           ))}
         </div>

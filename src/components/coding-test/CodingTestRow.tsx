@@ -11,10 +11,10 @@
  * - 댓글 수
  */
 
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { MessageCircle } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 
 // ============================================
 // 타입 정의
@@ -25,20 +25,11 @@ import { MessageCircle } from 'lucide-react';
  * - '미해결': 빨간색 배지
  * - '해결': 초록색 배지
  */
-export type SolveStatus = '미해결' | '해결';
-
-/**
- * 프로그래밍 언어 타입
- */
-export type Language = 'Python' | 'Java' | 'C++' | 'JavaScript' | 'C' | '기타';
-
-/**
- * 코딩테스트 플랫폼 타입
- */
-export type Platform = '프로그래머스' | '백준' | 'LeetCode' | 'SWEA' | '기타';
+export type SolveStatus = "미해결" | "해결";
 
 /**
  * CodingTestRow 컴포넌트 Props 인터페이스
+ * - language, platform: GET /post/languages, /post/platforms 에서 불러온 name 표시
  */
 interface CodingTestRowProps {
   /** 고유 ID */
@@ -50,11 +41,11 @@ interface CodingTestRowProps {
   /** 문제 제목 */
   title: string;
 
-  /** 프로그래밍 언어 */
-  language: Language;
+  /** 프로그래밍 언어 (API 언어 목록에서 불러옴) */
+  language: string;
 
-  /** 플랫폼 */
-  platform: Platform;
+  /** 플랫폼 (API 플랫폼 목록에서 불러옴) */
+  platform: string;
 
   /** 작성자 */
   author?: string;
@@ -79,47 +70,45 @@ export function CodingTestRow({
   title,
   language,
   platform,
-  author = '34기 씨부엉',
-  comments = 333,
+  author,
+  comments = 0,
 }: CodingTestRowProps) {
   const router = useRouter();
-  const isSolved = status === '해결';
+  const isSolved = status === "해결";
 
   return (
-    <tr 
+    <tr
       onClick={() => router.push(`/coding-test/${id}`)}
       className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
     >
       {/* 상태 */}
-      <td className="py-5 px-3 text-center w-[5rem] sm:w-[6.25rem]">
-        <span className={`inline-flex items-center justify-center px-3.8 py-2.5 rounded-full text-sm font-medium text-white min-w-[65px] ${
-          isSolved
-            ? 'bg-[#45CD89]'  
-            : 'bg-[#FC5E6E]'    
-        }`}>
+      <td className="py-5 px-3 text-center w-20 sm:w-25">
+        <span
+          className={`inline-flex items-center justify-center px-3.8 py-2.5 rounded-full text-sm font-medium text-white min-w-[65px] ${
+            isSolved ? "bg-[#45CD89]" : "bg-[#FC5E6E]"
+          }`}
+        >
           {status}
         </span>
       </td>
 
       {/* 문제 */}
-      <td className="py-5 px-3 text-center text-gray-800 text-base w-[15rem] sm:w-[20rem]">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-60 sm:w-80">
         {title}
       </td>
 
       {/* 언어 */}
-      <td className="py-5 px-3 text-center text-gray-800 text-base w-[8rem]">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-32">
         {language}
       </td>
 
       {/* 플랫폼 */}
-      <td className="py-5 px-3 text-center w-[8rem]">
-        <span className="text-gray-800 text-base">
-          {platform}
-        </span>
+      <td className="py-5 px-3 text-center w-32">
+        <span className="text-gray-800 text-base">{platform}</span>
       </td>
 
       {/* 작성자 */}
-      <td className="py-5 px-3 text-center text-gray-800 text-base w-[8rem]">
+      <td className="py-5 px-3 text-center text-gray-800 text-base w-32">
         {author}
       </td>
 
