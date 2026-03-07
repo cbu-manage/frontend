@@ -466,7 +466,7 @@ export default function Home() {
                       className="object-cover"
                     />
                     {/* 그라데이션 + 어둡게 오버레이 */}
-                    <div className="absolute inset-0 bg-linear-gradient(to bottom, rgba(217,217,217,0), #737373)" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
                     <div className="absolute inset-0 bg-zinc-900/35" />
 
                     {/* 타이틀 */}
