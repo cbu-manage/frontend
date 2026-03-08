@@ -28,7 +28,7 @@ export default function ArchivePage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-12 bg-white">
-        <div className="px-80">
+        <div className="px-72">
           {/* 헤더 섹션 */}
           <div className="pt-12 flex items-start justify-between">
             <div>
