@@ -20,8 +20,6 @@ export default function RequireMember({ children }: RequireMemberProps) {
 
   const isMember = !!name;
 
-  console.log("[RequireMember]", { name, hasChecked, isMember });
-
   if (!hasChecked) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center">
