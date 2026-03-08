@@ -73,7 +73,8 @@ function CodingTestWriteContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["codingTest", "list"] });
       queryClient.invalidateQueries({ queryKey: ["codingTest", "detail", editId] });
-      router.push(`/coding-test/${editId}`);
+      if (editId) router.push(`/coding-test/${editId}`);
+      else router.push("/coding-test");
     },
   });
 

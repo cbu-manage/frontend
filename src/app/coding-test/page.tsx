@@ -150,7 +150,7 @@ export default function CodingTestPage() {
   const problems = useMemo(() => {
     const list = rawList as import("@/api").ProblemListItem[];
     return list.map((item) => ({
-      id: item.postId,
+      id: item.postId ?? item.id ?? 0,
       status: (item.problemStatus === "SOLVED"
         ? "해결"
         : "미해결") as SolveStatus,
@@ -199,7 +199,7 @@ export default function CodingTestPage() {
   return (
     <RequireMember>
       <div className="w-full bg-gray-0 min-h-screen">
-        <main className="px-80 pt-8 sm:pt-12 pb-16">
+        <main className="px-72 pt-8 sm:pt-12 pb-16">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               코딩테스트 준비
