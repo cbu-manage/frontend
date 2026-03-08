@@ -109,8 +109,9 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
         ? `${item.authorGeneration}기 ${item.authorName}`
         : item.authorName
       : undefined;
+  const postId = item.postId ?? (item as { id?: number }).id ?? 0;
   return {
-    id: item.postId,
+    id: postId,
     category,
     status: (item.recruiting === false ? "모집 완료" : "모집 중") as PostStatus,
     title: item.title ?? "",
@@ -120,7 +121,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     views: item.viewCount ?? 0,
     comments: item.comments ?? 0,
     time: formatTime(item.createdAt as string),
-    href: `${path}/${item.postId}`,
+    href: `${path}/${postId}`,
   };
 }
 

@@ -76,9 +76,14 @@ export function CodingTestRow({
   const router = useRouter();
   const isSolved = status === "해결";
 
+  const handleClick = () => {
+    const valid = id != null && !Number.isNaN(Number(id)) && Number(id) > 0;
+    if (valid) router.push(`/coding-test/${id}`);
+  };
+
   return (
     <tr
-      onClick={() => router.push(`/coding-test/${id}`)}
+      onClick={handleClick}
       className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
     >
       {/* 상태 */}
