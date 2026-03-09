@@ -109,7 +109,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
         ? `${item.authorGeneration}기 ${item.authorName}`
         : item.authorName
       : undefined;
-  const postId = item.postId ?? (item as { id?: number }).id ?? 0;
+  const postId = (item as { problemId?: number }).problemId ?? item.postId ?? (item as { id?: number }).id ?? 0;
   return {
     id: postId,
     category,
