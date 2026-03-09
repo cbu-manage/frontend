@@ -49,9 +49,18 @@ export type PostListResponse = {
   size?: number;
 };
 
+export type MyPostListParams = {
+  category?: number;
+  page?: number;
+  size?: number;
+};
+
 export const postApi = {
   /** 카테고리별 포스트 목록 페이징 조회 */
   getList: (params: PostListParams) => api.get("/post", { params }),
+
+  /** 나의 작성 목록 조회 (카테고리 필터 가능) */
+  getMyPosts: (params?: MyPostListParams) => api.get("/post/my", { params }),
 
   /** 포스트 메인테이블 단건 조회 */
   getById: (postId: number) => api.get(`/post/${postId}/post`),

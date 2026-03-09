@@ -134,7 +134,7 @@ export default function MarkdownEditor({
             placeholder="풀이 아이디어, 코드, 메모 등을 마크다운 형식으로 작성해 주세요."
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            rows={18}
+            rows={28}
             className="
               w-full px-4 py-3 text-sm
               bg-white border-none outline-none
@@ -144,7 +144,7 @@ export default function MarkdownEditor({
           />
         </div>
       ) : (
-        <div className="border-t border-gray-200 px-4 py-3 bg-gray-0 max-h-[480px] overflow-y-auto">
+        <div className="border-t border-gray-200 px-4 py-3 bg-gray-0 min-h-[600px] max-h-[700px] overflow-y-auto">
           <p className="text-xs text-gray-400 mb-2">미리보기</p>
           {value.trim() ? (
             <div className="max-w-none text-sm leading-relaxed space-y-3">

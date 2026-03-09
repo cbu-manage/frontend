@@ -52,9 +52,9 @@ export default function LoginPage() {
           <Link href="/signup">
             <OutlineBtn type="button">회원가입</OutlineBtn>
           </Link>
-          <Link href="/find-password">
+          {/* <Link href="/find-password">
             <OutlineBtn type="button">비밀번호 찾기</OutlineBtn>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </main>
