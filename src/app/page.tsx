@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">(
@@ -318,7 +325,11 @@ export default function Home() {
         {/* CBU ACTIVITY 섹션 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-2">CBU ACTIVITY</h2>
+            <h2
+              className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+            >
+              CBU ACTIVITY
+            </h2>
             <p className="text-lg text-zinc-300">
               각 분야별로 스터디와 프로젝트를 통해 함께 성장해 나가요.
             </p>
@@ -376,7 +387,9 @@ export default function Home() {
           className="max-w-7xl mx-auto px-4 sm:px-6 py-40 mt-4 sm:mt-10"
         >
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">
+            <h2
+              className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+            >
               CBU COMPOSITION
             </h2>
             <p className="text-lg text-zinc-300">
@@ -443,7 +456,11 @@ export default function Home() {
       {/* CBU STORY - px-[9.375%] 제외, 슬라이드만 풀 너비 */}
       <div className="pb-32">
         <div className="px-[9.375%] max-w-7xl mx-auto text-center mb-10">
-          <h2 className="text-3xl font-bold text-white mb-2">CBU STORY</h2>
+          <h2
+            className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+          >
+            CBU STORY
+          </h2>
           <p className="text-lg text-zinc-300">
             씨부엉은 이런 활동들을 하고 있어요.
           </p>

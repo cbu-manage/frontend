@@ -26,22 +26,30 @@ export type ProblemListParams = {
 };
 
 export type ProblemListItem = {
-  /** 포스트 ID (상세 조회 path에 사용 가능) */
+  problemId?: number;
   postId?: number;
-  /** 문제 ID (postId 대신 반환될 수 있음) */
   id?: number;
-  title: string;
+  title?: string;
   content?: string;
   problemStatus?: "SOLVED" | "UNSOLVED";
   problemUrl?: string;
   grade?: string;
+  /** 상세에서는 platformName, 목록에서는 platformId 가 내려올 수 있음 */
   platformId?: number;
+  platformName?: string;
+  /** 상세에서는 languageName, 목록에서는 languageId 가 내려올 수 있음 */
   languageId?: number;
+  languageName?: string;
+  /** 상세에서는 categories(string[]), 목록에서는 categoryIds(number[]) */
   categoryIds?: number[];
+  categories?: string[];
   authorName?: string;
   authorGeneration?: number;
   viewCount?: number;
+  commentCount?: number;
   createdAt?: string;
+  updatedAt?: string;
+  isAuthor?: boolean;
   [key: string]: unknown;
 };
 
@@ -76,15 +84,15 @@ export const codingTestApi = {
   /** 새 코딩테스트 문제 생성 */
   create: (data: CreateProblemRequest) => api.post("/post/problems", data),
 
-  /** 문제 상세 정보 조회 (조회수 증가). path param은 postId 또는 id 모두 사용 가능 */
-  getById: (idOrPostId: number) => api.get(`/post/problems/${idOrPostId}`),
+  /** 문제 상세 정보 조회 (problemId 사용) */
+  getById: (problemId: number) => api.get(`/post/problems/${problemId}`),
 
-  /** 문제 정보 수정 (postId 또는 id) */
-  update: (idOrPostId: number, data: UpdateProblemRequest) =>
-    api.patch(`/post/problems/${idOrPostId}`, data),
+  /** 문제 정보 수정 */
+  update: (problemId: number, data: UpdateProblemRequest) =>
+    api.patch(`/post/problems/${problemId}`, data),
 
-  /** 문제 삭제 (postId 또는 id) */
-  delete: (idOrPostId: number) => api.delete(`/post/problems/${idOrPostId}`),
+  /** 문제 삭제 */
+  delete: (problemId: number) => api.delete(`/post/problems/${problemId}`),
 
   /** 모든 플랫폼 목록 조회 */
   getPlatforms: () => api.get<{ data?: PlatformItem[] }>("/post/platforms"),
