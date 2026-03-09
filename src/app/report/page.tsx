@@ -28,11 +28,11 @@ export default function ReportPage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-12 bg-white">
-        <div className="px-72">
+        <div className="px-[15%]">
           {/* 헤더 섹션 */}
-          <div className="pt-12 flex items-start justify-between">
+          <div className="pt-16 flex items-start justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                 내 스터디/프로젝트
               </h1>
               <p className="text-base text-gray-600">

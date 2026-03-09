@@ -26,6 +26,8 @@ interface DetailTemplateProps {
   isMarkdown?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  recruitCount?: number;
+  deadline?: string;
 }
 
 export default function DetailTemplate({
@@ -46,6 +48,8 @@ export default function DetailTemplate({
   isMarkdown = false,
   onEdit,
   onDelete,
+  recruitCount,
+  deadline,
 }: DetailTemplateProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -82,7 +86,9 @@ export default function DetailTemplate({
   const statusDisplay = getStatusDisplay();
 
   return (
-    <div className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%]" : "px-[9.375%]"} py-16 min-h-screen`}>
+    <div
+      className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%]" : "px-[9.375%]"} py-16 min-h-screen`}
+    >
       <div className="w-full">
         {/* 상단 네비게이션 (뒤로가기, 메뉴) */}
         <div className="flex justify-between items-center mb-8">
@@ -104,59 +110,61 @@ export default function DetailTemplate({
             </svg>
           </button>
           {(onEdit || onDelete) && (
-          <div className="relative shrink-0" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className="flex items-center justify-center w-14 h-14 shrink-0 rounded-full hover:bg-gray-50 transition-all text-gray-400"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="relative shrink-0" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((prev) => !prev)}
+                className="flex items-center justify-center w-14 h-14 shrink-0 rounded-full hover:bg-gray-50 transition-all text-gray-400"
               >
-                <circle cx="12" cy="12" r="1" />
-                <circle cx="12" cy="5" r="1" />
-                <circle cx="12" cy="19" r="1" />
-              </svg>
-            </button>
-            {menuOpen && (onEdit || onDelete) && (
-              <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
-                {onEdit && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onEdit();
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    <Pencil size={18} className="shrink-0 text-gray-500" />
-                    수정
-                  </button>
-                )}
-                {onEdit && onDelete && <div className="border-t border-gray-100 my-1" />}
-                {onDelete && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onDelete();
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 size={18} className="shrink-0" />
-                    삭제
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="1" />
+                  <circle cx="12" cy="5" r="1" />
+                  <circle cx="12" cy="19" r="1" />
+                </svg>
+              </button>
+              {menuOpen && (onEdit || onDelete) && (
+                <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                  {onEdit && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEdit();
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      <Pencil size={18} className="shrink-0 text-gray-500" />
+                      수정
+                    </button>
+                  )}
+                  {onEdit && onDelete && (
+                    <div className="border-t border-gray-100 my-1" />
+                  )}
+                  {onDelete && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDelete();
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <Trash2 size={18} className="shrink-0" />
+                      삭제
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -178,16 +186,32 @@ export default function DetailTemplate({
 
           {/* 메타데이터 */}
           <div className="flex items-center text-sm text-gray-400 gap-4 mb-10">
-            <span className="font-semibold text-base text-gray-700">{author}</span>
+            <span className="font-semibold text-base text-gray-700">
+              {author}
+            </span>
             <div className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
               {date}
             </div>
             <div className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                 <circle cx="12" cy="12" r="3" />
               </svg>
@@ -202,27 +226,80 @@ export default function DetailTemplate({
           </div>
 
           {/* 필터 정보 박스 */}
-          <div className="flex items-center self-stretch pl-7 py-3 rounded-[20px] border-2 border-gray-100 mb-12">
-            <div className="flex items-center gap-6">
-              <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
-                {infoLabel}
-              </span>
-              
-              {/* 세로 구분선 */}
-              <div className="w-[2px] h-5 bg-gray-300" />
-
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <span
-                    key={cat}
-                    className="inline-flex items-center px-4 py-2 bg-gray-100 text-[#3E434A] rounded-full text-base font-medium font-['Inter']"
-                  >
-                    {cat}
+          {deadline ? (
+            <div className="flex flex-col gap-3 mb-12">
+              <div className="flex items-center self-stretch bg-gray-50 rounded-full px-7 py-3">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
+                    {infoLabel}
                   </span>
-                ))}
+                  <div className="w-[2px] h-5 bg-gray-300" />
+                  <div className="flex flex-wrap gap-2 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                    {categories.map((cat) => (
+                      <span
+                        key={cat}
+                        className="inline-flex items-center px-4 py-2 bg-gray-0 text-[#3E434A] rounded-full text-[16px] font-medium font-['Inter']"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-stretch gap-3">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
+                    모집 마감일
+                  </span>
+                  <div className="w-[2px] h-5 bg-gray-300" />
+                  <span className="text-[16px] font-medium text-[#3E434A]">
+                    {deadline}
+                  </span>
+                </div>
+                {recruitCount != null && (
+                  <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                    <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
+                      모집 인원
+                    </span>
+                    <div className="w-[2px] h-5 bg-gray-300" />
+                    <span className="text-base font-medium text-[#3E434A]">
+                      {recruitCount}명
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-stretch self-stretch bg-gray-50 rounded-[20px] px-7 py-3 mb-12 gap-4">
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
+                  {infoLabel}
+                </span>
+                <div className="w-[2px] h-5 bg-gray-300" />
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <span
+                      key={cat}
+                      className="inline-flex items-center px-4 py-2 bg-gray-100 text-[#3E434A] rounded-full text-[14px] font-medium font-['Inter']"
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              {recruitCount != null && (
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
+                    모집 인원
+                  </span>
+                  <div className="w-[2px] h-5 bg-gray-300" />
+                  <span className="text-base font-medium text-[#3E434A] shrink-0">
+                    {recruitCount}명
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 구분선 */}
           <div className="border-t border-gray-100 mb-8" />
@@ -233,14 +310,46 @@ export default function DetailTemplate({
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkBreaks]}
                 components={{
-                  h1: (props) => <h1 className="text-2xl font-bold mt-8 mb-4 text-gray-900" {...props} />,
-                  h2: (props) => <h2 className="text-xl font-bold mt-6 mb-3 text-gray-900" {...props} />,
-                  h3: (props) => <h3 className="text-lg font-bold mt-4 mb-2 text-gray-900" {...props} />,
-                  p: (props) => <p className="mb-4 text-gray-700 leading-relaxed" {...props} />,
-                  ul: (props) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-                  ol: (props) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+                  h1: (props) => (
+                    <h1
+                      className="text-2xl font-bold mt-8 mb-4 text-gray-900"
+                      {...props}
+                    />
+                  ),
+                  h2: (props) => (
+                    <h2
+                      className="text-xl font-bold mt-6 mb-3 text-gray-900"
+                      {...props}
+                    />
+                  ),
+                  h3: (props) => (
+                    <h3
+                      className="text-lg font-bold mt-4 mb-2 text-gray-900"
+                      {...props}
+                    />
+                  ),
+                  p: (props) => (
+                    <p
+                      className="mb-4 text-gray-700 leading-relaxed"
+                      {...props}
+                    />
+                  ),
+                  ul: (props) => (
+                    <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />
+                  ),
+                  ol: (props) => (
+                    <ol
+                      className="list-decimal pl-6 mb-4 space-y-2"
+                      {...props}
+                    />
+                  ),
                   li: (props) => <li className="text-gray-700" {...props} />,
-                  blockquote: (props) => <blockquote className="border-l-4 border-gray-200 pl-4 italic my-4 text-gray-600" {...props} />,
+                  blockquote: (props) => (
+                    <blockquote
+                      className="border-l-4 border-gray-200 pl-4 italic my-4 text-gray-600"
+                      {...props}
+                    />
+                  ),
                   code: ({
                     children,
                     className,
@@ -258,7 +367,10 @@ export default function DetailTemplate({
                         </code>
                       </pre>
                     ) : (
-                      <code className="bg-gray-100 text-notice px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                      <code
+                        className="bg-gray-100 text-notice px-1.5 py-0.5 rounded text-sm font-mono"
+                        {...props}
+                      >
                         {children}
                       </code>
                     );
@@ -284,9 +396,7 @@ export default function DetailTemplate({
           {/* 댓글 영역 */}
           {comments && (
             <div className="mt-16">
-              <div className="border-t border-gray-200">
-                {comments}
-              </div>
+              <div className="border-t border-gray-200">{comments}</div>
             </div>
           )}
         </div>

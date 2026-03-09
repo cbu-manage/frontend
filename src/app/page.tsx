@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { Poppins } from "next/font/google";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
 
 export default function Home() {
   const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">(
@@ -21,7 +28,10 @@ export default function Home() {
 
   const tabContents = {
     기획: {
-      label: "PM",
+      icon: "/assets/main-plan.svg",
+      iconSize: "w-11 h-11",
+      iconMb: "mb-2",
+      bg: "/assets/main-plan-container.svg",
       title: "기획",
       description: [
         "기획 파트는 사용자 문제를 발견하고, 이를 서비스의 목표와 구조로 정리하는 역할을 담당합니다.",
@@ -29,7 +39,10 @@ export default function Home() {
       ],
     },
     개발: {
-      label: "DEV",
+      icon: "/assets/main-dev.svg",
+      iconSize: "",
+      iconMb: "mb-3",
+      bg: "/assets/main-dev-container.svg",
       title: "개발",
       description: [
         "개발 파트는 기획된 서비스를 실제로 구현하는 역할을 담당합니다.",
@@ -37,7 +50,10 @@ export default function Home() {
       ],
     },
     디자인: {
-      label: "DESIGN",
+      icon: "/assets/main-design.svg",
+      iconSize: "",
+      iconMb: "mb-3",
+      bg: "/assets/main-de-container.svg",
       title: "디자인",
       description: [
         "디자인 파트는 사용자 경험과 인터페이스를 설계하는 역할을 담당합니다.",
@@ -51,18 +67,18 @@ export default function Home() {
       title: "스터디 운영",
       detail:
         "운영된 스터디를 바탕으로 \n6개월마다 우수 스터디를 \n시상하고 있어요!",
-      icon: "📚",
+      icon: "/assets/CBU_Activity_1.svg",
     },
     {
       title: "코딩 행사 및 이벤트",
       detail:
         "#알고리즘 챌린지, #모밤코 등 \n동아리 내에서 진행하는 코딩 행사 및 \n이벤트에 참여할 수 있어요 !",
-      icon: "💻",
+      icon: "/assets/CBU_Activity_2.svg",
     },
     {
       title: "풍부한 자료방 공유",
       detail: "IT관련 공모전 및 대외활동 정보 \n자료방을 제공해요",
-      icon: "📁",
+      icon: "/assets/CBU_Activity_3.svg",
     },
   ];
 
@@ -318,7 +334,11 @@ export default function Home() {
         {/* CBU ACTIVITY 섹션 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-white mb-2">CBU ACTIVITY</h2>
+            <h2
+              className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+            >
+              CBU ACTIVITY
+            </h2>
             <p className="text-lg text-zinc-300">
               각 분야별로 스터디와 프로젝트를 통해 함께 성장해 나가요.
             </p>
@@ -329,12 +349,12 @@ export default function Home() {
             {activities.map((activity, idx) => (
               <div
                 key={idx}
-                className="group relative w-full max-w-80 h-80 rounded-3xl bg-[#212123] px-10 py-10 flex flex-col items-center justify-center text-center transition-all duration-300"
+                className="group relative w-full max-w-80 h-80 rounded-3xl bg-[#212123] px-10 py-10 flex flex-col items-center justify-center text-center transition-all duration-300 border border-[rgba(255,255,255,0.19)]"
               >
                 {/* 공통 헤더 (항상 보임) */}
-                <div className="flex flex-col items-center gap-6 z-10">
+                <div className="flex flex-col items-center z-10">
                   <div
-                    className="flex items-center justify-center text-white text-xs font-semibold rounded-full"
+                    className="flex items-center justify-center text-white text-xs font-semibold rounded-full mb-3"
                     style={{
                       width: "33px",
                       height: "33px",
@@ -351,8 +371,13 @@ export default function Home() {
                   </h3>
 
                   {/* 기본 상태 아이콘 */}
-                  <div className="text-7xl transition-opacity duration-300 group-hover:opacity-20">
-                    {activity.icon}
+                  <div className="w-40 h-40 relative transition-opacity duration-300 group-hover:opacity-20">
+                    <Image
+                      src={activity.icon}
+                      alt={activity.title}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                 </div>
 
@@ -376,7 +401,9 @@ export default function Home() {
           className="max-w-7xl mx-auto px-4 sm:px-6 py-40 mt-4 sm:mt-10"
         >
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white mb-2">
+            <h2
+              className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+            >
               CBU COMPOSITION
             </h2>
             <p className="text-lg text-zinc-300">
@@ -386,7 +413,7 @@ export default function Home() {
 
           {/* 탭 네비게이션 */}
           <div className="flex justify-center mb-10">
-            <div className="inline-flex items-center gap-1 rounded-full bg-[#2F2F31] px-2 py-1">
+            <div className="inline-flex items-center gap-1 rounded-full bg-[#212123] px-2 py-1 border-[rgba(255,255,255,0.19)]">
               {(["기획", "개발", "디자인"] as const).map((tab) => (
                 <button
                   key={tab}
@@ -394,7 +421,7 @@ export default function Home() {
                   className={`px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all
                     ${
                       selectedTab === tab
-                        ? "bg-[#50CA73] text-black"
+                        ? "bg-[#50C38A] text-black"
                         : "bg-transparent text-zinc-300 hover:text-white"
                     }`}
                 >
@@ -407,9 +434,9 @@ export default function Home() {
           {/* 선택된 탭의 콘텐츠 카드 */}
           <div className="relative mt-10">
             <div
-              className="bg-white/5 rounded-2xl p-10 md:p-14 text-white border border-white/10 relative overflow-hidden"
+              className="bg-white/5 rounded-[40px] p-10 md:p-14 text-white border border-white/10 relative overflow-hidden"
               style={{
-                backgroundImage: "url('/assets/main_circles.svg')",
+                backgroundImage: `url('${tabContents[selectedTab].bg}')`,
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "right center",
                 backgroundSize: "auto 100%",
@@ -417,9 +444,16 @@ export default function Home() {
             >
               <div className="relative z-10">
                 <div className="mb-4">
-                  <span className="text-sm text-zinc-400 mb-2 block">
-                    {tabContents[selectedTab].label}
-                  </span>
+                  <div
+                    className={`${tabContents[selectedTab].iconSize || "w-10 h-10"} ${tabContents[selectedTab].iconMb || "mb-2"} relative`}
+                  >
+                    <Image
+                      src={tabContents[selectedTab].icon}
+                      alt={tabContents[selectedTab].title}
+                      fill
+                      className={`object-contain ${tabContents[selectedTab].iconSize ? "object-top" : ""}`}
+                    />
+                  </div>
                   <h3 className="text-5xl md:text-5xl font-bold mb-6">
                     {tabContents[selectedTab].title}
                   </h3>
@@ -443,7 +477,11 @@ export default function Home() {
       {/* CBU STORY - px-[9.375%] 제외, 슬라이드만 풀 너비 */}
       <div className="pb-32">
         <div className="px-[9.375%] max-w-7xl mx-auto text-center mb-10">
-          <h2 className="text-3xl font-bold text-white mb-2">CBU STORY</h2>
+          <h2
+            className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
+          >
+            CBU STORY
+          </h2>
           <p className="text-lg text-zinc-300">
             씨부엉은 이런 활동들을 하고 있어요.
           </p>
@@ -465,14 +503,13 @@ export default function Home() {
                       fill
                       className="object-cover"
                     />
-                    {/* 그라데이션 + 어둡게 오버레이 */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(217,217,217,0)] to-[#737373]" />
-                    <div className="absolute inset-0 bg-zinc-900/35" />
+                    {/* 그라데이션 + 흰색 오버레이 */}
+                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent via-50% to-white/90" />
 
                     {/* 타이틀 */}
                     <div className="relative z-10 flex h-full items-end px-6 sm:px-8 pb-6 sm:pb-8">
                       <div>
-                        <p className="text-lg sm:text-xl font-semibold text-white">
+                        <p className="text-2xl font-semibold text-gray-900">
                           {story.title}
                         </p>
                       </div>

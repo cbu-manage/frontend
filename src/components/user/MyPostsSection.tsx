@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { MessageCircle, Eye } from "lucide-react";
 import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
@@ -58,7 +58,13 @@ const CATEGORY_NUM_TO_PATH: Record<number, string> = {
   [POST_CATEGORY.ARCHIVE]: "/archive",
 };
 
-const PAGE_SIZE = 10;
+const TAB_PAGE_SIZE: Record<PostCategory, number> = {
+  "전체보기": 12,
+  "스터디 모집": 12,
+  "프로젝트 모집": 10,
+  "코딩테스트 준비": 10,
+  "자료방": 12,
+};
 
 function formatTime(iso?: string): string {
   if (!iso) return "-";
@@ -109,7 +115,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
         ? `${item.authorGeneration}기 ${item.authorName}`
         : item.authorName
       : undefined;
-  const postId = item.postId ?? (item as { id?: number }).id ?? 0;
+  const postId = (item as { problemId?: number }).problemId ?? item.postId ?? (item as { id?: number }).id ?? 0;
   return {
     id: postId,
     category,
@@ -132,71 +138,51 @@ const KNOWN_LANGUAGES = ["Python", "Java", "C++", "JavaScript", "C"];
 // MyPostsSection 컴포넌트
 // ============================================
 
+/** 탭 → API category 파라미터 */
+const TAB_TO_CATEGORY: Record<PostCategory, number | undefined> = {
+  "전체보기": undefined,
+  "스터디 모집": POST_CATEGORY.STUDY,
+  "프로젝트 모집": POST_CATEGORY.PROJECT,
+  "코딩테스트 준비": POST_CATEGORY.CODING_TEST,
+  "자료방": POST_CATEGORY.ARCHIVE,
+};
+
 export default function MyPostsSection() {
   const [activeTab, setActiveTab] = useState<PostCategory>("전체보기");
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = Math.max(0, currentPage - 1);
 
-  const categoryNumbers =
-    activeTab === "전체보기"
-      ? [POST_CATEGORY.STUDY, POST_CATEGORY.PROJECT, POST_CATEGORY.CODING_TEST, POST_CATEGORY.ARCHIVE]
-      : [
-          activeTab === "스터디 모집" && POST_CATEGORY.STUDY,
-          activeTab === "프로젝트 모집" && POST_CATEGORY.PROJECT,
-          activeTab === "코딩테스트 준비" && POST_CATEGORY.CODING_TEST,
-          activeTab === "자료방" && POST_CATEGORY.ARCHIVE,
-        ].filter(Boolean) as number[];
+  const categoryParam = TAB_TO_CATEGORY[activeTab];
+  const pageSize = TAB_PAGE_SIZE[activeTab];
 
-  const queries = useQueries({
-    queries: categoryNumbers.map((category) => ({
-      queryKey: ["post", "list", category, pageIndex, PAGE_SIZE],
-      queryFn: () =>
-        postApi.getList({
-          category,
-          page: pageIndex,
-          size: PAGE_SIZE,
-        }),
-      enabled: true,
-    })),
+  const { data: myPostsRes, isLoading, isError } = useQuery({
+    queryKey: ["post", "my", categoryParam, pageIndex, pageSize],
+    queryFn: () =>
+      postApi.getMyPosts({
+        category: categoryParam,
+        page: pageIndex,
+        size: pageSize,
+      }),
   });
 
-  const { posts, totalPages, totalCount, isLoading, isError } = useMemo(() => {
-    let posts: MyPost[] = [];
-    let totalPages = 1;
-    let totalCount = 0;
+  const { posts, totalPages, totalCount } = useMemo(() => {
+    const raw = myPostsRes?.data;
+    const content = extractContent(raw);
+    const tp = extractTotalPages(raw);
+    const data = raw as { totalElements?: number } | undefined;
+    const totalCount = data?.totalElements ?? content.length;
 
-    if (activeTab === "전체보기") {
-      queries.forEach((q, i) => {
-        const cat = categoryNumbers[i];
-        const raw = q.data?.data;
-        const content = extractContent(raw);
-        const tp = extractTotalPages(raw);
-        if (tp > totalPages) totalPages = tp;
-        totalCount += (q.data?.data as { totalElements?: number })?.totalElements ?? content.length;
-        posts = posts.concat(content.map((item) => toMyPost(item, cat)));
-      });
-      posts.sort((a, b) => (b.time > a.time ? 1 : -1));
-    } else {
-      const q = queries[0];
-      const raw = q?.data?.data;
-      const content = extractContent(raw);
-      totalPages = extractTotalPages(raw);
-      const data = raw as { totalElements?: number } | undefined;
-      totalCount = data?.totalElements ?? content.length;
-      posts = content.map((item) => toMyPost(item, categoryNumbers[0]));
-    }
-
-    const isLoading = queries.some((q) => q.isLoading);
-    const isError = queries.some((q) => q.isError);
+    const posts = content.map((item) => {
+      const cat = item.category ?? categoryParam ?? 0;
+      return toMyPost(item, cat);
+    });
 
     return {
       posts,
-      totalPages: Math.max(1, totalPages),
+      totalPages: Math.max(1, tp),
       totalCount,
-      isLoading,
-      isError,
     };
-  }, [activeTab, categoryNumbers, queries]);
+  }, [myPostsRes, categoryParam]);
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
