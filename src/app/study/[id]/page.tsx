@@ -187,6 +187,7 @@ export default function StudyDetailPage() {
             views={study.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={study.studyTags ?? []}
+            recruitCount={study.maxMembers}
             content={study.content}
             onEdit={
               isAuthor
