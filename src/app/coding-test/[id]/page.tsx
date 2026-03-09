@@ -9,7 +9,6 @@ import { CommentInput, CommentItem } from "@/components/detail/CommentSection";
 import { useUserStore } from "@/store/userStore";
 import RequireMember from "@/components/auth/RequireMember";
 import { codingTestApi } from "@/api";
-import { useCodingTestMetaStore } from "@/store/codingTestMetaStore";
 import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
 import { useProblemComments, type NormalizedComment } from "@/hooks/coding-test/useProblemComments";
 
@@ -43,9 +42,6 @@ export default function CodingTestDetailPage() {
   const isMember = !!name;
 
   useCodingTestMeta();
-  const platforms = useCodingTestMetaStore((s) => s.platforms);
-  const languages = useCodingTestMetaStore((s) => s.languages);
-  const categories = useCodingTestMetaStore((s) => s.categories);
 
   const queryClient = useQueryClient();
   const [mainCommentValue, setMainCommentValue] = useState("");
@@ -77,17 +73,20 @@ export default function CodingTestDetailPage() {
 
   const raw = res?.data as { data?: Record<string, unknown> } | Record<string, unknown> | undefined;
   const detail = (raw && typeof raw === "object" && "data" in raw ? (raw as { data?: Record<string, unknown> }).data : raw) as {
-    postId?: number;
+    problemId?: number;
     title?: string;
     content?: string;
     problemStatus?: string;
     authorName?: string;
     authorGeneration?: number;
     viewCount?: number;
+    commentCount?: number;
     createdAt?: string;
-    categoryIds?: number[];
-    platformId?: number;
-    languageId?: number;
+    updatedAt?: string;
+    categories?: string[];
+    platformName?: string;
+    languageName?: string;
+    grade?: string;
     problemUrl?: string;
     isAuthor?: boolean;
     [key: string]: unknown;
@@ -99,10 +98,7 @@ export default function CodingTestDetailPage() {
       : detail.authorName
     : "익명";
 
-  const categoryNames = (detail?.categoryIds ?? [])
-    .map((cid) => categories.find((c) => c.id === cid)?.name)
-    .filter(Boolean) as string[];
-
+  const categoryNames = detail?.categories ?? [];
   const statusKey = detail?.problemStatus === "SOLVED" ? "solved" : "unsolved";
 
   if (isLoading) {
@@ -141,18 +137,18 @@ export default function CodingTestDetailPage() {
           categories={categoryNames.length > 0 ? categoryNames : ["-"]}
           content={detail.content ?? ""}
           showCommentsCount={isMember}
-          commentsCount={comments.length}
+          commentsCount={detail.commentCount ?? comments.length}
           onEdit={
             detail.isAuthor
               ? () => {
                   const payload = {
                     id: String(params.id),
-                    postId: detail.postId,
+                    problemId: detail.problemId,
                     title: detail.title,
                     categories: categoryNames,
-                    categoryIds: detail.categoryIds,
-                    platformId: detail.platformId,
-                    languageId: detail.languageId,
+                    platformName: detail.platformName,
+                    languageName: detail.languageName,
+                    grade: detail.grade,
                     solveStatus: detail.problemStatus === "SOLVED" ? "solved" : "unsolved",
                     content: detail.content,
                     problemUrl: detail.problemUrl,

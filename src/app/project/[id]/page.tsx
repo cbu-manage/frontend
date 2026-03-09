@@ -230,6 +230,8 @@ export default function ProjectDetailPage() {
             views={projectData.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={categories}
+            recruitCount={projectData?.maxMember}
+            deadline={projectData?.deadline}
             content={projectData.content ?? ""}
             onEdit={
               isLeader

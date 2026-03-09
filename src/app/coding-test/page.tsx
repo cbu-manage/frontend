@@ -150,15 +150,21 @@ export default function CodingTestPage() {
   const problems = useMemo(() => {
     const list = rawList as import("@/api").ProblemListItem[];
     return list.map((item) => ({
-      id: item.postId ?? item.id ?? 0,
+      id: item.problemId ?? item.postId ?? item.id ?? 0,
       status: (item.problemStatus === "SOLVED"
         ? "해결"
         : "미해결") as SolveStatus,
       title: item.title ?? "",
       languageId: item.languageId,
       platformId: item.platformId,
-      language: languages.find((l) => l.id === item.languageId)?.name ?? "기타",
-      platform: platforms.find((p) => p.id === item.platformId)?.name ?? "기타",
+      language:
+        item.languageName ??
+        languages.find((l) => l.id === item.languageId)?.name ??
+        "기타",
+      platform:
+        item.platformName ??
+        platforms.find((p) => p.id === item.platformId)?.name ??
+        "기타",
       author:
         item.authorName != null
           ? item.authorGeneration != null
@@ -199,9 +205,9 @@ export default function CodingTestPage() {
   return (
     <RequireMember>
       <div className="w-full bg-gray-0 min-h-screen">
-        <main className="px-72 pt-8 sm:pt-12 pb-16">
+        <main className="px-[15%] pt-16 pb-16">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
               코딩테스트 준비
             </h1>
           </div>

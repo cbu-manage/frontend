@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/shared/Header";
 import Footer from "@/components/shared/Footer";
 import QueryProvider from "@/components/providers/QueryProvider";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "씨부엉 공식 홈페이지",
@@ -25,6 +26,7 @@ export default function RootLayout({
           {children}
           <Footer />
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );
