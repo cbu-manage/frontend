@@ -228,17 +228,17 @@ export default function DetailTemplate({
           {/* 필터 정보 박스 */}
           {deadline ? (
             <div className="flex flex-col gap-3 mb-12">
-              <div className="flex items-center self-stretch px-7 py-3 rounded-[20px] border-2 border-gray-100">
-                <div className="flex items-center gap-6">
-                  <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
+              <div className="flex items-center self-stretch bg-gray-50 rounded-full px-7 py-3">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     {infoLabel}
                   </span>
                   <div className="w-[2px] h-5 bg-gray-300" />
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 bg-gray-0 rounded-full px-6 py-2 flex-1">
                     {categories.map((cat) => (
                       <span
                         key={cat}
-                        className="inline-flex items-center px-4 py-2 bg-gray-100 text-[#3E434A] rounded-full text-base font-medium font-['Inter']"
+                        className="inline-flex items-center px-4 py-2 bg-gray-0 text-[#3E434A] rounded-full text-[16px] font-medium font-['Inter']"
                       >
                         {cat}
                       </span>
@@ -247,18 +247,18 @@ export default function DetailTemplate({
                 </div>
               </div>
               <div className="flex items-stretch gap-3">
-                <div className="flex items-center gap-6 flex-1 px-7 py-3 rounded-[20px] border-2 border-gray-100">
-                  <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     모집 마감일
                   </span>
                   <div className="w-[2px] h-5 bg-gray-300" />
-                  <span className="text-base font-medium text-[#3E434A]">
+                  <span className="text-[16px] font-medium text-[#3E434A]">
                     {deadline}
                   </span>
                 </div>
                 {recruitCount != null && (
-                  <div className="flex items-center gap-6 flex-1 px-7 py-3 rounded-[20px] border-2 border-gray-100">
-                    <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
+                  <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                    <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                       모집 인원
                     </span>
                     <div className="w-[2px] h-5 bg-gray-300" />
@@ -270,9 +270,9 @@ export default function DetailTemplate({
               </div>
             </div>
           ) : (
-            <div className="flex items-stretch self-stretch px-7 py-3 rounded-[20px] border-2 border-gray-100 mb-12 gap-4">
-              <div className="flex items-center gap-6 px-6 py-2 flex-1">
-                <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
+            <div className="flex items-stretch self-stretch bg-gray-50 rounded-[20px] px-7 py-3 mb-12 gap-4">
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                   {infoLabel}
                 </span>
                 <div className="w-[2px] h-5 bg-gray-300" />
@@ -280,7 +280,7 @@ export default function DetailTemplate({
                   {categories.map((cat) => (
                     <span
                       key={cat}
-                      className="inline-flex items-center px-4 py-2 bg-gray-100 text-[#3E434A] rounded-full text-base font-medium font-['Inter']"
+                      className="inline-flex items-center px-4 py-2 bg-gray-100 text-[#3E434A] rounded-full text-[14px] font-medium font-['Inter']"
                     >
                       {cat}
                     </span>
@@ -288,8 +288,8 @@ export default function DetailTemplate({
                 </div>
               </div>
               {recruitCount != null && (
-                <div className="flex items-center gap-6 px-6 py-2 flex-1">
-                  <span className="text-[18px] font-semibold text-[#54585E] shrink-0">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                  <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     모집 인원
                   </span>
                   <div className="w-[2px] h-5 bg-gray-300" />
