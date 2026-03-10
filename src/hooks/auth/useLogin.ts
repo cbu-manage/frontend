@@ -6,6 +6,7 @@ import { useCallback, useState } from "react";
 import { authApi, type LoginResponse } from "@/api/auth.api";
 import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
+import { setCookie } from "@/lib/cookie";
 import { AxiosError } from "axios";
 
 type LoginParams = {
@@ -46,14 +47,15 @@ export function useLogin() {
     onSuccess: ({ data, studentNumber, password }) => {
       if (data.accessToken) {
         setAccessToken(data.accessToken);
-        // 토큰은 authStore persist로 쿠키에 저장됨
+        setCookie("ACCESS_TOKEN", data.accessToken);
       }
 
       const rawEmail = data.email === "null" ? null : data.email;
       const emailValue =
         rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
 
-      const isDefaultPassword = password === "1234" || password === "1111";
+      const isDefaultPassword =
+        password === "12345678" || password === "11111111";
       const isEmailNull = !emailValue;
 
       setUser({
@@ -76,7 +78,7 @@ export function useLogin() {
       // 2순위: 기본 비밀번호(1234, 1111)인 경우 → 비밀번호 변경 페이지로 이동
       if (isDefaultPassword) {
         const shouldChangePassword = window.confirm(
-          "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?"
+          "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?",
         );
         router.push(shouldChangePassword ? "/user?tab=password" : "/");
       } else {
@@ -94,9 +96,13 @@ export function useLogin() {
         setErrorMessage("아이디와 비밀번호를 입력하세요.");
         return;
       }
+      if (!/^cbu\d+$/.test(params.studentId)) {
+        alert("아이디를 다시 확인해주세요!");
+        return;
+      }
       mutation.mutate(params);
     },
-    [mutation]
+    [mutation],
   );
 
   return { errorMessage, isLoggedIn: mutation.isSuccess, handleLogin };

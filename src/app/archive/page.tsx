@@ -6,12 +6,14 @@ import { Pencil, Trash2 } from "lucide-react";
 import ArchiveCard from "@/components/archive/card";
 import Pagination from "@/components/shared/Pagination";
 import RequireMember from "@/components/auth/RequireMember";
+import { useUserStore } from "@/store/userStore";
 import {
   useResourceList,
   useDeleteResource,
 } from "@/hooks/archive/useResourceList";
 
 export default function ArchivePage() {
+  const currentUserName = useUserStore((s) => s.name);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 16;
 
@@ -82,17 +84,19 @@ export default function ArchivePage() {
                       }
                       views={(item.views as number) ?? 0}
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm("이 자료를 삭제할까요?")) {
-                          deleteMutation.mutate(item.resourceId);
-                        }
-                      }}
-                      className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {currentUserName && item.authorName === currentUserName && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm("이 자료를 삭제할까요?")) {
+                            deleteMutation.mutate(item.resourceId);
+                          }
+                        }}
+                        className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 ))}
 

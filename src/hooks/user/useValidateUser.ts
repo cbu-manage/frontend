@@ -3,18 +3,18 @@
 import { useMutation } from "@tanstack/react-query";
 import { userApi, type UserInfo } from "@/api/user.api";
 
-type VerifyParams = {
+type ValidateUserParams = {
   studentNumber: string;
   nickName: string;
 };
 
-export function useVerifyUser() {
+export function useValidateUser() {
   const mutation = useMutation({
-    mutationFn: ({ studentNumber, nickName }: VerifyParams) => {
+    mutationFn: ({ studentNumber, nickName }: ValidateUserParams) => {
       if (!/^\d{10}$/.test(studentNumber)) {
         throw new Error("학번은 10자리 숫자여야 합니다.");
       }
-      return userApi.verify({
+      return userApi.validateUser({
         studentNumber: Number(studentNumber),
         nickName,
       });
@@ -32,9 +32,9 @@ export function useVerifyUser() {
     ? (mutation.error as Error).message
     : "";
 
-  const verifyUser = async (
+  const validateUser = async (
     studentNumber: string,
-    nickName: string
+    nickName: string,
   ): Promise<UserInfo | null> => {
     if (!studentNumber || !nickName) {
       alert("이름과 학번을 입력해주세요.");
@@ -49,5 +49,5 @@ export function useVerifyUser() {
     }
   };
 
-  return { verificationError, verificationErrorMessage, verifyUser };
+  return { verificationError, verificationErrorMessage, validateUser };
 }

@@ -102,18 +102,16 @@ export default function Sidebar({
       <div className="w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
 
       <aside className="w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] min-h-[36rem] rounded-r-3xl z-10">
-      <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
-        {/* ========== 카테고리 네비게이션 ========== */}
-        <nav className="space-y-2">
-          {items.map((item) => (
-            <button
-              key={item.value}
-              onClick={() => {
-                // 디버깅용 콘솔 로그
-                console.log(`[카테고리 선택] ${item.label} (${item.value})`);
-                onSelect(item.value);
-              }}
-              className={`
+        <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
+          {/* ========== 카테고리 네비게이션 ========== */}
+          <nav className="space-y-2">
+            {items.map((item) => (
+              <button
+                key={item.value}
+                onClick={() => {
+                  onSelect(item.value);
+                }}
+                className={`
                 w-full text-left px-4 py-3 rounded-xl border border-transparent
                 flex items-center gap-2
                 transition-all text-sm
@@ -127,41 +125,43 @@ export default function Sidebar({
                       "text-gray-900 hover:bg-gray-50"
                 }
               `}
-            >
-              {/* 코드 아이콘 (장식용) */}
-              <span className="text-gray-400 text-xs font-mono">&lt;/&gt;</span>
-              {/* 카테고리 라벨 */}
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
+              >
+                {/* 코드 아이콘 (장식용) */}
+                <span className="text-gray-400 text-xs font-mono">
+                  &lt;/&gt;
+                </span>
+                {/* 카테고리 라벨 */}
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
 
-        {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
-        {showWriteButton && writeLink && (
-          <div className="mt-auto pt-8">
-            <Link
-              href={writeLink}
-              className="
+          {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
+          {showWriteButton && writeLink && (
+            <div className="mt-auto pt-8">
+              <Link
+                href={writeLink}
+                className="
                 w-full
                 flex items-center justify-center gap-2
                 px-4 py-2.5
                 bg-gray-800 text-gray-0 hover:opacity-90 active:opacity-80 font-semibold
                 rounded-lg transition-all duration-200
               "
-            >
-              {/* 펜 아이콘 (assets/pencil) */}
-              <Image
-                src="/assets/pencil.svg"
-                alt="글 작성 아이콘"
-                width={16}
-                height={16}
-              />
-              {writeLabel}
-            </Link>
-          </div>
-        )}
-      </div>
-    </aside>
-  </>
+              >
+                {/* 펜 아이콘 (assets/pencil) */}
+                <Image
+                  src="/assets/pencil.svg"
+                  alt="글 작성 아이콘"
+                  width={16}
+                  height={16}
+                />
+                {writeLabel}
+              </Link>
+            </div>
+          )}
+        </div>
+      </aside>
+    </>
   );
 }

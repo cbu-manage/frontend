@@ -1,1 +1,1 @@
-export { useVerifyUser } from "./useVerifyUser";
+export type { UserInfo, ValidateUserRequest } from "@/api/user.api";

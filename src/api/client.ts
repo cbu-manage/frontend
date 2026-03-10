@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useAuthStore } from "@/store/authStore";
-import { getAccessTokenFromCookie } from "@/lib/cookie";
+import { getAccessTokenFromCookie, getCookie } from "@/lib/cookie";
 
 export const api = axios.create({
   baseURL:
@@ -15,21 +15,24 @@ export const api = axios.create({
   },
 });
 
-// 요청 인터셉터 (토큰: store → 쿠키 순으로 사용)
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token =
       useAuthStore.getState().accessToken ?? getAccessTokenFromCookie();
-    if (token) config.headers.Authorization = `${token}`;
+    if (token) {
+      config.headers.Authorization = `${token}`;
+      config.headers["ACCESS_TOKEN"] = token;
+    }
+    const directCookie = getCookie("ACCESS_TOKEN");
+    if (!token && directCookie) {
+      config.headers.Authorization = `${directCookie}`;
+      config.headers["ACCESS_TOKEN"] = directCookie;
+    }
   }
   return config;
 });
 
-// 응답 인터셉터 (에러 공통처리)
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
-    console.error("API ERROR:", err.response?.data ?? err.message);
-    return Promise.reject(err);
-  },
+  (err) => Promise.reject(err),
 );
