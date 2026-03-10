@@ -83,6 +83,7 @@ export const CommentInput = ({
 interface ReplyData {
   id: number;
   author: string;
+  authorName?: string;
   content: string;
   date: string;
   replies?: ReplyData[];
@@ -92,17 +93,17 @@ interface ReplyData {
 interface CommentItemProps {
   id: number;
   author: string;
+  authorName?: string;
   content: string;
   date: string;
   depth?: number;
   replies?: ReplyData[];
-  activeReplyId: number | null;
-  onReplyClick: (id: number | null) => void;
   onReplySubmit?: (parentId: number, content: string) => void;
   onEditComment?: (id: number) => void;
   onDeleteComment?: (id: number) => void;
   disabled?: boolean;
   deleted?: boolean;
+  currentUser?: string;
 }
 
 /**
@@ -111,25 +112,27 @@ interface CommentItemProps {
 export const CommentItem = ({
   id,
   author,
+  authorName,
   content,
   date,
   depth = 0,
   replies = [],
-  activeReplyId,
-  onReplyClick,
   onReplySubmit,
   onEditComment,
   onDeleteComment,
   disabled = false,
   deleted = false,
+  currentUser,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
-  const isOpen = activeReplyId === id;
+  const [replyOpen, setReplyOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [replyValue, setReplyValue] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
-  const showActions = !deleted;
+  const isLoggedIn = !!currentUser;
+  const isMine = isLoggedIn && !!authorName && authorName === currentUser;
+  const showReply = !deleted && isLoggedIn && depth < 4;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -145,14 +148,13 @@ export const CommentItem = ({
 
   return (
     <div className="w-full">
-      {/* 댓글 본체 - 댓글/답글 모두 아래쪽 구분선 */}
       <div
         style={{ marginLeft }}
         className={`group border-b border-gray-200 pb-6 ${isReply ? "pt-6" : "mt-10"}`}
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-base">{author}</span>
-          {showActions && (
+          {isMine && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 type="button"
@@ -201,21 +203,20 @@ export const CommentItem = ({
             <Clock size={14} />
             <span>{date}</span>
           </div>
-          {showActions && (
+          {showReply && (
             <button
               type="button"
-              onClick={() => onReplyClick(isOpen ? null : id)}
-              className={`flex items-center gap-1.5 transition-colors ${isOpen ? "text-gray-900" : "hover:text-gray-600"}`}
+              onClick={() => setReplyOpen((prev) => !prev)}
+              className={`flex items-center gap-1.5 transition-colors ${replyOpen ? "text-gray-900" : "hover:text-gray-600"}`}
             >
               <MessageCircle size={14} />
-              <span>{isOpen ? "답글 취소" : "답글쓰기"}</span>
+              <span>{replyOpen ? "답글 취소" : "답글쓰기"}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* 대댓글 입력창 - 댓글 본체와 기존 답글들 '사이'에 위치 */}
-      {isOpen && (
+      {replyOpen && (
         <CommentInput
           placeholder="답글을 입력해 주세요."
           depth={depth + 1}
@@ -224,14 +225,13 @@ export const CommentItem = ({
           onSubmit={(text) => {
             onReplySubmit?.(id, text);
             setReplyValue("");
-            onReplyClick(null);
+            setReplyOpen(false);
           }}
-          onCancel={() => onReplyClick(null)}
+          onCancel={() => setReplyOpen(false)}
           disabled={disabled}
         />
       )}
 
-      {/* 대댓글 리스트 (기존 답글들) */}
       {replies.length > 0 && (
         <div className="flex flex-col">
           {replies.map((reply) => (
@@ -239,12 +239,11 @@ export const CommentItem = ({
               key={reply.id}
               {...reply}
               depth={depth + 1}
-              activeReplyId={activeReplyId}
-              onReplyClick={onReplyClick}
               onReplySubmit={onReplySubmit}
               onEditComment={onEditComment}
               onDeleteComment={onDeleteComment}
               disabled={disabled}
+              currentUser={currentUser}
             />
           ))}
         </div>

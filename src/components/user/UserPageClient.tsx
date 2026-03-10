@@ -1,14 +1,27 @@
 "use client";
 
 import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
 import InputBox from "@/components/common/InputBox";
+import { memberApi } from "@/api";
+
+function getUserIdFromToken(token: string | null): number | null {
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.user_id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
@@ -28,10 +41,34 @@ export default function UserPageClient() {
     return "profile";
   });
 
-  // Zustand selector에서 매 렌더마다 새로운 객체를 만들면
-  // React(useSyncExternalStore)가 무한 루프 경고를 낼 수 있으므로
-  // 전체 상태를 그대로 가져와 구조 분해만 사용한다.
   const user = useUserStore();
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const userId = getUserIdFromToken(accessToken);
+
+  const { data: memberRes } = useQuery({
+    queryKey: ["member", userId],
+    queryFn: () => memberApi.getById(userId!),
+    enabled: !!userId,
+  });
+
+  const raw = memberRes?.data as Record<string, unknown> | undefined;
+  const memberData = (raw && "data" in raw ? raw.data : raw) as {
+    name?: string;
+    studentNumber?: number;
+    major?: string;
+    grade?: string;
+    generation?: number;
+    email?: string;
+  } | undefined;
+
+  const profile = {
+    name: memberData?.name ?? user.name,
+    studentNumber: memberData?.studentNumber ?? user.studentNumber,
+    major: memberData?.major ?? user.major,
+    grade: memberData?.grade ?? user.grade,
+    generation: memberData?.generation,
+    email: memberData?.email ?? user.email,
+  };
 
   const handleSelect = useCallback((value: string) => {
     setSelectedMenu(value as UserMenuValue);
@@ -89,30 +126,37 @@ export default function UserPageClient() {
                   <div className="grid grid-cols-2 gap-4">
                     <InputBox
                       label="이름"
-                      value={user.name}
+                      value={profile.name}
                       disabled
                     />
                     <InputBox
                       label="학번"
-                      value={String(user.studentNumber)}
+                      value={String(profile.studentNumber)}
                       disabled
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <InputBox
                       label="학과"
-                      value={user.major}
+                      value={profile.major}
                       disabled
                     />
-                    <InputBox
-                      label="학년"
-                      value={user.grade}
-                      disabled
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <InputBox
+                        label="학년"
+                        value={profile.grade}
+                        disabled
+                      />
+                      <InputBox
+                        label="기수"
+                        value={profile.generation != null ? `${profile.generation}기` : "-"}
+                        disabled
+                      />
+                    </div>
                   </div>
                   <InputBox
                     label="학교 이메일"
-                    value={user.email || "등록되지 않음"}
+                    value={profile.email || "등록되지 않음"}
                     disabled
                   />
                 </form>

@@ -16,7 +16,9 @@ function parseSignUpError(err: unknown): string {
     const data = err.response.data as { error?: string; message?: string };
     return data.error || data.message || "회원가입 요청 실패";
   }
-  return (err as Error).message || "회원가입 중 알 수 없는 오류가 발생했습니다.";
+  return (
+    (err as Error).message || "회원가입 중 알 수 없는 오류가 발생했습니다."
+  );
 }
 
 export function useSignUp() {
@@ -41,7 +43,7 @@ export function useSignUp() {
     email: string,
     studentNumber: number,
     name: string,
-    nickName: string
+    nickName: string,
   ): Promise<boolean> => {
     try {
       await mutation.mutateAsync({ email, studentNumber, name, nickName });
