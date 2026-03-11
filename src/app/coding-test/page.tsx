@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -111,6 +111,8 @@ export default function CodingTestPage() {
   const [categoryFilterIds, setCategoryFilterIds] = useState<number[]>([]);
   const [openFilter, setOpenFilter] = useState<string | null>(null);
 
+  const filterContainerRef = useRef<HTMLDivElement | null>(null);
+
   useCodingTestMeta();
   const platforms = useCodingTestMetaStore((s) => s.platforms);
   const languages = useCodingTestMetaStore((s) => s.languages);
@@ -155,12 +157,20 @@ export default function CodingTestPage() {
         ? "해결"
         : "미해결") as SolveStatus,
       title: item.title ?? "",
-      languageId: item.languageId,
+      languageId:
+        item.languageId ??
+        languages.find(
+          (l) =>
+            l.name &&
+            item.languageName &&
+            l.name.toLowerCase() === item.languageName.toLowerCase(),
+        )?.id,
       platformId: item.platformId,
       language:
         item.languageName ??
         languages.find((l) => l.id === item.languageId)?.name ??
         "기타",
+      categories: item.categories ?? [],
       platform:
         item.platformName ??
         platforms.find((p) => p.id === item.platformId)?.name ??
@@ -174,20 +184,55 @@ export default function CodingTestPage() {
     }));
   }, [rawList, languages, platforms]);
 
-  const filteredByStatusAndLanguage = useMemo(() => {
+  const filteredProblems = useMemo(() => {
+    const selectedCategoryNames =
+      categoryFilterIds.length === 0
+        ? []
+        : categories
+            .filter((c) => categoryFilterIds.includes(c.id))
+            .map((c) => c.name)
+            .filter((name): name is string => !!name);
+
     return problems.filter((p) => {
       const statusOk = statusFilter === "전체" || p.status === statusFilter;
       const langOk =
         languageFilterIds.length === 0 ||
         (p.languageId != null && languageFilterIds.includes(p.languageId));
-      return statusOk && langOk;
+      const categoryOk =
+        selectedCategoryNames.length === 0 ||
+        (Array.isArray(p.categories) &&
+          p.categories.some((name) => selectedCategoryNames.includes(name)));
+      return statusOk && langOk && categoryOk;
     });
-  }, [problems, statusFilter, languageFilterIds]);
+  }, [
+    problems,
+    statusFilter,
+    languageFilterIds,
+    categoryFilterIds,
+    categories,
+  ]);
 
   const pageNumbers = Array.from(
     { length: Math.max(1, totalPages) },
     (_, i) => i + 1,
   );
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!openFilter) return;
+      if (
+        filterContainerRef.current &&
+        !filterContainerRef.current.contains(event.target as Node)
+      ) {
+        setOpenFilter(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openFilter]);
 
   const toggleFilter = (filter: string) => {
     setOpenFilter(openFilter === filter ? null : filter);
@@ -213,7 +258,10 @@ export default function CodingTestPage() {
           </div>
 
           <div className="flex flex-col gap-3 mb-4 sm:mb-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div
+              className="flex flex-wrap items-center justify-between gap-3"
+              ref={filterContainerRef}
+            >
               <div className="flex flex-wrap gap-2 sm:gap-3">
                 {/* 상태 */}
                 <div className="relative">
@@ -483,7 +531,7 @@ export default function CodingTestPage() {
                 )}
                 {!isLoading &&
                   !isError &&
-                  filteredByStatusAndLanguage.map((problem) => (
+                  filteredProblems.map((problem) => (
                     <CodingTestRow
                       key={problem.id}
                       id={problem.id}
@@ -496,7 +544,7 @@ export default function CodingTestPage() {
                   ))}
                 {!isLoading &&
                   !isError &&
-                  filteredByStatusAndLanguage.length === 0 && (
+                  filteredProblems.length === 0 && (
                     <tr>
                       <td
                         colSpan={6}
