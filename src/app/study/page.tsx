@@ -41,7 +41,7 @@ export default function StudyPage() {
   const totalPages = data?.totalPages ?? 1;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-    const handleChangeStatus = (status: StudyStatus) => {
+  const handleChangeStatus = (status: StudyStatus) => {
     setStatusFilter(status);
     setCurrentPage(1);
   };
@@ -50,11 +50,13 @@ export default function StudyPage() {
     if (!iso) return "방금 전";
     try {
       const d = new Date(iso);
-      return d.toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      }).replace(/\. /g, ". ");
+      return d
+        .toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\. /g, ". ");
     } catch {
       return iso;
     }
@@ -92,9 +94,7 @@ export default function StudyPage() {
                       : "text-gray-400"
                   }`}
                 >
-                  {statusFilter === "모집 중" && (
-                    <Check className="w-4 h-4" />
-                  )}
+                  {statusFilter === "모집 중" && <Check className="w-4 h-4" />}
                   모집 중
                 </button>
 
@@ -102,10 +102,6 @@ export default function StudyPage() {
 
                 <button
                   onClick={() => {
-                    const isRecruiting = false;
-                    console.log(
-                      `[모집 상태 필터] isRecruiting: ${isRecruiting}`,
-                    );
                     handleChangeStatus("모집 완료");
                   }}
                   className={`flex items-center gap-1 transition-colors ${
@@ -158,7 +154,9 @@ export default function StudyPage() {
                       <SDC
                         key={study.id}
                         id={study.id}
-                        category={(s.category || s.studyTags?.[0]) as StudyCategory}
+                        category={
+                          (s.category || s.studyTags?.[0]) as StudyCategory
+                        }
                         status={study.status as StudyStatus}
                         title={s.title ?? ""}
                         time={formatDateOnly(s.createdAt)}
@@ -189,4 +187,3 @@ export default function StudyPage() {
     </RequireMember>
   );
 }
-

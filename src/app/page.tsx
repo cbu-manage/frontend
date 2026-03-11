@@ -241,7 +241,7 @@ export default function Home() {
               }`}
             >
               <Image
-                src="/assets/ler'scbu.svg"
+                src="/assets/lets_cbu.svg"
                 alt="Let's CBU"
                 width={140}
                 height={44}

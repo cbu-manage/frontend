@@ -6,6 +6,7 @@ import { commentApi, extractCommentList, type CommentItem } from "@/api/comment.
 export type NormalizedComment = {
   id: number;
   author: string;
+  authorName?: string;
   content: string;
   date: string;
   replies: NormalizedComment[];
@@ -32,10 +33,17 @@ function toAuthor(item: CommentItem): string {
   return gen != null ? `${gen}기 ${name}` : name;
 }
 
+function extractId(item: CommentItem): number {
+  const raw = item as Record<string, unknown>;
+  const val = item.commentId ?? raw.id ?? raw.replyId;
+  return typeof val === "number" ? val : Number(val) || 0;
+}
+
 function normalize(item: CommentItem): NormalizedComment {
   return {
-    id: item.commentId,
+    id: extractId(item),
     author: toAuthor(item),
+    authorName: item.authorName ?? undefined,
     content: item.deleted ? "(삭제된 댓글입니다.)" : (item.content ?? ""),
     date: formatDate(item.createdAt as string),
     replies: (item.replies ?? []).map(normalize),

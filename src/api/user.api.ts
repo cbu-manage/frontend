@@ -1,6 +1,6 @@
 import { api } from "./client";
 
-export type VerifyUserRequest = {
+export type ValidateUserRequest = {
   studentNumber: number;
   nickName: string;
 };
@@ -16,6 +16,6 @@ export type UserInfo = {
 };
 
 export const userApi = {
-  verify: (data: VerifyUserRequest) =>
-    api.post<UserInfo>("/verify", data),
+  validateUser: (data: ValidateUserRequest) =>
+    api.post<UserInfo>("/validate", data),
 };

@@ -70,7 +70,7 @@ export default function ProjectDetailPage() {
   const { data: myGroupsRes } = useQuery({
     queryKey: ["myGroups"],
     queryFn: () => groupApi.getMyGroups(),
-    enabled: !!currentUserName,
+    enabled: !!currentUserName && !!projectRes?.data,
   });
 
   const rawData = projectRes?.data;

@@ -10,10 +10,15 @@ export {
 } from "./auth.api";
 
 // Mail
-export { mailApi, type MailSendResponse, type MailVerifyResponse, type MailUpdateRequest } from "./mail.api";
+export {
+  mailApi,
+  type MailSendResponse,
+  type MailVerifyResponse,
+  type MailUpdateRequest,
+} from "./mail.api";
 
 // User
-export { userApi, type UserInfo, type VerifyUserRequest } from "./user.api";
+export { userApi, type UserInfo, type ValidateUserRequest } from "./user.api";
 
 // Study
 export { studyApi, type StudyListParams } from "./study.api";
@@ -68,6 +73,9 @@ export {
   type PostListItem,
   type PostListResponse,
 } from "./post.api";
+
+// Member
+export { memberApi, type MemberInfo } from "./member.api";
 
 // Image
 export { imageApi } from "./image.api";
