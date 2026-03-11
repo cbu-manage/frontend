@@ -3,17 +3,6 @@
 import { useState } from "react";
 import { Eye, FileText } from "lucide-react";
 
-/** 링크에서 도메인 추출 후 Google Favicon URL 반환 (썸네일 없을 때 대체) */
-function getFaviconUrl(link: string): string {
-  try {
-    const url = new URL(link);
-    const domain = url.hostname.replace(/^www\./, "");
-    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=128`;
-  } catch {
-    return "";
-  }
-}
-
 interface ArchiveCardProps {
   id: string;
   title: string;
@@ -35,14 +24,13 @@ export default function ArchiveCard({
   uploadedAt,
   views = 0,
 }: ArchiveCardProps) {
-  const effectiveThumbnail =
-    thumbnailUrl || (link ? getFaviconUrl(link) : null);
+  const effectiveThumbnail = thumbnailUrl || null;
   const [thumbFailed, setThumbFailed] = useState(false);
   const showThumb = effectiveThumbnail && !thumbFailed;
 
   const content = (
     <>
-      {/* 썸네일 영역: API 썸네일 → 링크 도메인 favicon → 기본 아이콘 */}
+      {/* 썸네일 영역: API 썸네일 → 기본 아이콘 */}
       <div className="w-full aspect-video bg-gray-200 overflow-hidden">
         {showThumb ? (
           <img

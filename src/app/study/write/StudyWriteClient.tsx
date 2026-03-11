@@ -82,13 +82,17 @@ export default function StudyWriteClient() {
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!editId) return;
-      await studyApi.update(Number(editId), {
+      const id = Number(editId);
+      await studyApi.update(id, {
         title,
         content,
         studyTags: categories,
         studyName: studyName.trim() || title,
         maxMembers: Math.max(1, recruitCount),
       });
+      if (recruitStatus === "completed") {
+        await studyApi.close(id);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });

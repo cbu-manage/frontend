@@ -45,7 +45,6 @@ export default function CodingTestDetailPage() {
 
   const queryClient = useQueryClient();
   const [mainCommentValue, setMainCommentValue] = useState("");
-  const [activeReplyId, setActiveReplyId] = useState<number | null>(null);
 
   const {
     comments,
@@ -168,15 +167,6 @@ export default function CodingTestDetailPage() {
           comments={
             isMember ? (
               <div className="space-y-12">
-                <CommentInput
-                  value={mainCommentValue}
-                  onChange={setMainCommentValue}
-                  onSubmit={async (content) => {
-                    await createComment(content);
-                    setMainCommentValue("");
-                  }}
-                  disabled={isCreating}
-                />
                 {commentsLoading ? (
                   <div className="flex justify-center py-12">
                     <p className="text-gray-500">댓글 로딩 중...</p>
@@ -188,11 +178,10 @@ export default function CodingTestDetailPage() {
                         key={c.id}
                         id={c.id}
                         author={c.author}
+                        authorName={c.authorName}
                         content={c.content}
                         date={c.date}
                         replies={c.replies}
-                        activeReplyId={activeReplyId}
-                        onReplyClick={setActiveReplyId}
                         onReplySubmit={replyComment}
                         onEditComment={async (commentId) => {
                           const comment = findCommentById(comments, commentId);
@@ -204,6 +193,7 @@ export default function CodingTestDetailPage() {
                           if (window.confirm("이 댓글을 삭제할까요?")) await deleteComment(commentId);
                         }}
                         deleted={c.deleted}
+                        currentUser={name ?? undefined}
                       />
                     ))}
                   </div>
@@ -215,6 +205,15 @@ export default function CodingTestDetailPage() {
                     </p>
                   </div>
                 )}
+                <CommentInput
+                  value={mainCommentValue}
+                  onChange={setMainCommentValue}
+                  onSubmit={async (content) => {
+                    await createComment(content);
+                    setMainCommentValue("");
+                  }}
+                  disabled={isCreating}
+                />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16">
