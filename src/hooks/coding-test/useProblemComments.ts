@@ -7,6 +7,7 @@ export type NormalizedComment = {
   id: number;
   author: string;
   authorName?: string;
+  userId?: number;
   content: string;
   date: string;
   replies: NormalizedComment[];
@@ -28,8 +29,8 @@ function formatDate(iso?: string): string {
 
 function toAuthor(item: CommentItem): string {
   if (item.deleted) return "(삭제된 댓글)";
-  const name = item.authorName ?? "익명";
-  const gen = item.authorGeneration;
+  const name = item.userName ?? item.authorName ?? "익명";
+  const gen = item.generation ?? item.authorGeneration;
   return gen != null ? `${gen}기 ${name}` : name;
 }
 
@@ -40,10 +41,12 @@ function extractId(item: CommentItem): number {
 }
 
 function normalize(item: CommentItem): NormalizedComment {
+  const raw = item as Record<string, unknown>;
   return {
     id: extractId(item),
     author: toAuthor(item),
-    authorName: item.authorName ?? undefined,
+    authorName: (item.userName ?? item.authorName) ?? undefined,
+    userId: typeof raw.userId === "number" ? (raw.userId as number) : undefined,
     content: item.deleted ? "(삭제된 댓글입니다.)" : (item.content ?? ""),
     date: formatDate(item.createdAt as string),
     replies: (item.replies ?? []).map(normalize),

@@ -7,6 +7,7 @@ import DetailTemplate from "@/components/detail/DetailTemplate";
 import Image from "next/image";
 import { CommentInput, CommentItem } from "@/components/detail/CommentSection";
 import { useUserStore } from "@/store/userStore";
+import { useAuthStore } from "@/store/authStore";
 import RequireMember from "@/components/auth/RequireMember";
 import { codingTestApi } from "@/api";
 import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
@@ -49,6 +50,17 @@ export default function CodingTestDetailPage() {
     typeof params.id === "string" ? Number(params.id) : Number(params.id?.[0]);
   const name = useUserStore((s) => s.name);
   const isMember = !!name;
+
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const currentUserId = (() => {
+    if (!accessToken) return null;
+    try {
+      const payload = JSON.parse(atob(accessToken.split(".")[1]));
+      return (payload.user_id as number) ?? null;
+    } catch {
+      return null;
+    }
+  })();
 
   useCodingTestMeta();
 
@@ -262,6 +274,7 @@ export default function CodingTestDetailPage() {
                         id={c.id}
                         author={c.author}
                         authorName={c.authorName}
+                        userId={c.userId}
                         content={c.content}
                         date={c.date}
                         replies={c.replies}
@@ -281,7 +294,7 @@ export default function CodingTestDetailPage() {
                             await deleteComment(commentId);
                         }}
                         deleted={c.deleted}
-                        currentUser={name ?? undefined}
+                        currentUserId={currentUserId}
                       />
                     ))}
                   </div>

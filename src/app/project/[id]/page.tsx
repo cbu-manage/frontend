@@ -89,6 +89,7 @@ export default function ProjectDetailPage() {
         createdAt?: string;
         deadline?: string;
         maxMember?: number;
+        currentMember?: number;
         groupId?: number;
         authorGeneration?: number;
         authorName?: string;
@@ -211,6 +212,12 @@ export default function ProjectDetailPage() {
     (e) => ENUM_TO_LABEL[e] ?? e,
   );
 
+  const currentCount =
+    (projectData as { currentMember?: number })?.currentMember ??
+    (projectData as { currentMembers?: number })?.currentMembers ??
+    (projectData as { currentMemberCount?: number })?.currentMemberCount ??
+    0;
+
   return (
     <RequireMember>
       <main className="min-h-screen bg-white">
@@ -230,6 +237,8 @@ export default function ProjectDetailPage() {
             views={projectData.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={categories}
+            currentCount={currentCount}
+            maxCount={projectData?.maxMember}
             recruitCount={projectData?.maxMember}
             deadline={projectData?.deadline}
             content={projectData.content ?? ""}

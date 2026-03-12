@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Pencil, Trash2, User2 } from "lucide-react";
 
 interface DetailTemplateProps {
   title: string;
@@ -26,6 +26,9 @@ interface DetailTemplateProps {
   isMarkdown?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  /** 모집 인원 정보 (현재/최대) */
+  currentCount?: number;
+  maxCount?: number;
   recruitCount?: number;
   deadline?: string;
   /** 기본 필터 박스를 완전히 교체하고 싶을 때 사용 (예: 코테 URL/플랫폼/언어/문제정보 한 박스) */
@@ -50,6 +53,8 @@ export default function DetailTemplate({
   isMarkdown = false,
   onEdit,
   onDelete,
+  currentCount,
+  maxCount,
   recruitCount,
   deadline,
   infoContentOverride,
@@ -173,13 +178,19 @@ export default function DetailTemplate({
 
         {/* 메인 컨텐츠 영역 */}
         <div>
-          {/* 상태 배지 */}
-          <div className="mb-6">
+          {/* 상태 배지 + 인원 태그 */}
+          <div className="mb-6 flex items-center gap-3">
             <span
-              className={`text-center py-3 px-4 rounded-full text-xs font-semibold ${statusDisplay.className}`}
+              className={`text-center py-2 px-3 rounded-full text-xs font-semibold ${statusDisplay.className}`}
             >
               {statusDisplay.text}
             </span>
+            {typeof currentCount === "number" && typeof maxCount === "number" && (
+              <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                <User2 size={14} className="text-gray-900" />
+                {currentCount}/{maxCount}
+              </span>
+            )}
           </div>
 
           {/* 제목 */}

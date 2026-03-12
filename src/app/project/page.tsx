@@ -140,6 +140,8 @@ export default function ProjectPage() {
                       views={project.viewCount}
                       time={formatDate(project.deadline)}
                       content={project.content}
+                      currentCount={project.currentCount}
+                      maxCount={project.maxCount}
                     />
                   ))}
 

@@ -65,6 +65,12 @@ export default function StudyDetailPage() {
   const study = studyRes?.data?.data;
   const groupId = study?.groupId;
 
+  const currentCount =
+    (study as { currentMembers?: number })?.currentMembers ??
+    (study as { currentMember?: number })?.currentMember ??
+    (study as { currentMemberCount?: number })?.currentMemberCount ??
+    0;
+
   // 백엔드가 isAuthor를 안 주거나 false면 authorName으로 fallback
   const isAuthor =
     study?.isAuthor ??
@@ -187,6 +193,8 @@ export default function StudyDetailPage() {
             views={study.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={study.studyTags ?? []}
+            currentCount={currentCount}
+            maxCount={study.maxMembers}
             recruitCount={study.maxMembers}
             content={study.content}
             onEdit={
