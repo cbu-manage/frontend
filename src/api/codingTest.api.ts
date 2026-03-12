@@ -1,7 +1,3 @@
-/**
- * 코딩테스트 문제 API
- * @see GET/POST /api/v1/post/problems, /api/v1/post/platforms, /api/v1/post/languages, /api/v1/post/categories
- */
 import { api } from "./client";
 
 // ========== 메타 (필터/폼용) ==========

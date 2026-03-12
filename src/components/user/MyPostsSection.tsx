@@ -339,6 +339,8 @@ export default function MyPostsSection() {
 
 function PostCard({ post }: { post: MyPost }) {
   const isCompleted = post.status === "모집 완료";
+  const isCodingTest = post.category === "코딩테스트 준비";
+  const hasComments = (post.comments ?? 0) > 0;
 
   return (
     <Link
@@ -378,10 +380,12 @@ function PostCard({ post }: { post: MyPost }) {
           <span className="flex items-center gap-1">
             <Eye size={14} /> {post.views}
           </span>
-          <span className="flex items-center gap-1">
-            <MessageCircle size={14} />
-            {post.comments}
-          </span>
+          {isCodingTest && hasComments && (
+            <span className="flex items-center gap-1">
+              <MessageCircle size={14} />
+              {post.comments}
+            </span>
+          )}
         </div>
       </div>
     </Link>

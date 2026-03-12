@@ -12,7 +12,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Eye } from "lucide-react";
+import { Clock, Eye, User2 } from "lucide-react";
 
 // ============================================
 // 타입 정의
@@ -80,6 +80,9 @@ interface StudyCardProps {
 
   /** 카테고리 태그 배열 (studyTags) */
   categories?: string[];
+  /** 현재 인원 / 최대 인원 (상세와 동일 태그) */
+  currentCount?: number;
+  maxCount?: number;
 }
 
 // ============================================
@@ -110,6 +113,8 @@ export function StudyCard({
   authorDisplay = "씨부엉 멤버",
   viewCount = 0,
   categories: categoriesProp,
+  currentCount,
+  maxCount,
 }: StudyCardProps) {
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === "모집 완료";
@@ -122,24 +127,30 @@ export function StudyCard({
     >
       {/* 카드 상단: 모집 상태, 제목, 카테고리 태그 */}
       <div className="p-4 sm:p-6 flex flex-col gap-3 sm:gap-4 flex-1">
-        {/* 상단 행: 모집 상태 배지 + 작성 시간 */}
-        <div className="justify-between items-center flex">
-          {/* 모집 상태 배지 - 타원형, 고정 너비 */}
-          <span
-            className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
-              isCompleted
-                ? "bg-[#FC5E6E]" // 모집 완료
-                : "bg-[#45CD89]" // 모집 중
-            }`}
-          >
-            {status}
-          </span>
+        {/* 상단 행: 모집 상태 배지 + 인원 태그 + 작성 시간 */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            {/* 모집 상태 배지 */}
+            <span
+              className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
+                isCompleted
+                  ? "bg-[#FC5E6E]" // 모집 완료
+                  : "bg-[#45CD89]" // 모집 중
+              }`}
+            >
+              {status}
+            </span>
+            {typeof currentCount === "number" &&
+              typeof maxCount === "number" &&
+              maxCount > 0 && (
+                <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                  <User2 size={14} className="text-gray-900" />
+                  {currentCount}/{maxCount}
+                </span>
+              )}
+          </div>
 
-          {/* 작성 시간 */}
-          <span className="text-gray-400 text-xs font-light flex items-center gap-0.5">
-            <Clock size={12} />
-            {time}
-          </span>
+          
         </div>
 
         {/* 중간 영역: 제목 + 카테고리 태그 */}
@@ -168,7 +179,6 @@ export function StudyCard({
       {/* 카드 하단: 작성자 정보 + 조회수 */}
       <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-200 rounded-full shrink-0" />
           <span className="text-xs sm:text-sm text-gray-700 font-medium">
             {authorDisplay}
           </span>
@@ -177,7 +187,13 @@ export function StudyCard({
           <Eye size={14} className="shrink-0" />
           <span>{viewCount}</span>
         </div>
+        {/* 작성 시간 */}
+        <span className="text-gray-400 text-xs font-light flex items-center gap-0.5">
+            <Clock size={12} />
+            {time}
+          </span>
       </div>
+      
     </Link>
   );
 }

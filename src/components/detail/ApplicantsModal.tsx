@@ -157,7 +157,7 @@ export default function ApplicantsModal({
         </div>
 
         {/* 테이블: 헤더 + 행 */}
-        <div className="flex-1 overflow-y-auto flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto flex flex-col min-h-0 px-6">
           <div className="flex flex-col">
             {/* 헤더 */}
             <div className="flex px-5 py-3 bg-[rgba(149,198,116,0.22)] border-t border-b border-[#95C674] items-center gap-9">

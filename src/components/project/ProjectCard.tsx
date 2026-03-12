@@ -18,7 +18,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Clock } from "lucide-react";
+import { Eye, Clock, User2, UserCircle } from "lucide-react";
 
 // ============================================
 // 타입 정의
@@ -71,6 +71,9 @@ interface ProjectCardProps {
 
   /** 프로젝트 내용 (호버 시 미리보기) */
   content?: string;
+  /** 현재 인원 / 최대 인원 (상세와 동일 태그) */
+  currentCount?: number;
+  maxCount?: number;
 }
 
 // ============================================
@@ -109,6 +112,8 @@ export function ProjectCard({
   views = 0,
   time = "-",
   content,
+  currentCount,
+  maxCount,
 }: ProjectCardProps) {
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === "모집 완료";
@@ -120,15 +125,25 @@ export function ProjectCard({
     >
       {/* ========== 카드 상단: 모집 상태 + 마감일 + 제목 + 내용 미리보기 ========== */}
       <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
-        {/* 상단 행: 모집 상태 배지 + 마감일 */}
+        {/* 상단 행: 모집 상태 배지 + 인원 태그 + 마감일 */}
         <div className="flex justify-between items-center">
-          <span
-            className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
-              isCompleted ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
-            }`}
-          >
-            {status}
-          </span>
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
+                isCompleted ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
+              }`}
+            >
+              {status}
+            </span>
+            {typeof currentCount === "number" &&
+              typeof maxCount === "number" &&
+              maxCount > 0 && (
+                <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                  <User2 size={14} className="text-gray-500" />
+                  {currentCount}/{maxCount}
+                </span>
+              )}
+          </div>
           <span className="bg-gray-100 text-gray-700 text-xs font-medium flex items-center gap-1 px-3 py-1 rounded-full">
             <Clock size={12} />
             마감일 {time ?? "-"}
@@ -166,12 +181,12 @@ export function ProjectCard({
         </div>
 
         {/* 조회수 + 작성자 */}
-        <div className="flex items-center gap-12 sm:gap-14 text-xs text-gray-400">
+        <div className="flex items-center gap-6 text-xs text-gray-400">
           <span className="flex items-center gap-1">
             <Eye size={14} /> {views ?? 0}
           </span>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+            <UserCircle size={18} className="text-gray-400" />
             <span className="text-gray-600 text-xs">{author}</span>
           </div>
         </div>
@@ -249,7 +264,7 @@ export function ProjectRow({
         {/* 상단: 상태 및 포지션 배지 */}
         <div className="flex items-center gap-2 flex-wrap">
           <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold text-white ${
+            className={`px-3 py-2 rounded-full text-[10px] font-bold text-white ${
               isCompleted
                 ? "bg-red-400" // 모집 완료: 빨강 배경
                 : "bg-[#6ECA8F]" // 모집 중: 초록 배경
@@ -284,7 +299,7 @@ export function ProjectRow({
       <div className="hidden sm:grid sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-13 text-center items-center">
         <div className="col-span-1 md:col-span-2">
           <span
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold text-white inline-block ${
+            className={`px-3 py-2 rounded-full text-[10px] font-bold text-white inline-block ${
               isCompleted
                 ? "bg-red-400" // 모집 완료: 빨강 배경
                 : "bg-[#6ECA8F]" // 모집 중: 초록 배경

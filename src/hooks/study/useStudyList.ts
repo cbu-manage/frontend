@@ -30,6 +30,9 @@ export interface StudyListItem {
   status: StudyStatus | string;
   category?: string;
   createdAt?: string;
+  /** 현재 인원 / 최대 인원 (리스트 카드용) */
+  activeMembers?: number;
+  maxMembers?: number;
   [key: string]: unknown;
 }
 
@@ -72,11 +75,19 @@ function normalizeResponse(
 
   // API는 postId + recruiting, UI는 id + status 사용 → 매핑
   const items = list.map((item) => {
-    const raw = item as { postId?: number; id?: number; recruiting?: boolean };
+    const raw = item as {
+      postId?: number;
+      id?: number;
+      recruiting?: boolean;
+      activeMembers?: number;
+      maxMembers?: number;
+    };
     return {
       ...item,
       id: raw.postId ?? raw.id ?? 0,
       status: raw.recruiting === true ? "모집 중" : raw.recruiting === false ? "모집 완료" : (item.status as string),
+      activeMembers: raw.activeMembers,
+      maxMembers: raw.maxMembers,
     };
   });
 

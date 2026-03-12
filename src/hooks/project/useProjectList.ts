@@ -47,6 +47,8 @@ export interface ProjectListResult {
   items: (ProjectListItem & {
     status: ProjectStatus;
     positions: string[];
+    currentCount?: number;
+    maxCount?: number;
   })[];
   totalPages: number;
 }
@@ -76,11 +78,28 @@ function normalizeResponse(raw: unknown): ProjectListResult {
   }
 
   return {
-    items: list.map((item) => ({
-      ...item,
-      status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
-      positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
-    })),
+    items: list.map((item) => {
+      const raw = item as {
+        currentMember?: number;
+        currentMembers?: number;
+        currentMemberCount?: number;
+        maxMember?: number;
+      };
+      const currentCount =
+        raw.currentMember ??
+        raw.currentMembers ??
+        raw.currentMemberCount ??
+        0;
+      const maxCount = raw.maxMember ?? 0;
+
+      return {
+        ...item,
+        status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
+        positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
+        currentCount,
+        maxCount,
+      };
+    }),
     totalPages,
   };
 }

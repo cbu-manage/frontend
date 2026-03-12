@@ -144,12 +144,21 @@ export default function StudyPage() {
                       authorGeneration?: number;
                       viewCount?: number;
                       studyTags?: string[];
+                      maxMembers?: number;
+                      currentMembers?: number;
+                      currentMember?: number;
+                      currentMemberCount?: number;
                     };
                     const authorDisplay = s.authorName
                       ? s.authorGeneration
                         ? `${s.authorGeneration}기 ${s.authorName}`
                         : s.authorName
                       : "씨부엉 멤버";
+                    const currentCount =
+                      s.currentMembers ??
+                      s.currentMember ??
+                      s.currentMemberCount ??
+                      0;
                     return (
                       <SDC
                         key={study.id}
@@ -163,6 +172,8 @@ export default function StudyPage() {
                         authorDisplay={authorDisplay}
                         viewCount={(s.viewCount as number) ?? 0}
                         categories={s.studyTags}
+                        currentCount={currentCount}
+                        maxCount={s.maxMembers}
                       />
                     );
                   })}
