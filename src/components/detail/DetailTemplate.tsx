@@ -28,6 +28,8 @@ interface DetailTemplateProps {
   onDelete?: () => void;
   recruitCount?: number;
   deadline?: string;
+  /** 기본 필터 박스를 완전히 교체하고 싶을 때 사용 (예: 코테 URL/플랫폼/언어/문제정보 한 박스) */
+  infoContentOverride?: React.ReactNode;
 }
 
 export default function DetailTemplate({
@@ -50,6 +52,7 @@ export default function DetailTemplate({
   onDelete,
   recruitCount,
   deadline,
+  infoContentOverride,
 }: DetailTemplateProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -225,10 +228,13 @@ export default function DetailTemplate({
             )}
           </div>
 
-          {/* 필터 정보 박스 */}
-          {deadline ? (
-            <div className="flex flex-col gap-3 bg-gray-50 rounded-[20px] px-7 py-5 mb-12">
-              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2">
+          {/* 필터 정보 박스 (페이지별 완전 커스텀 우선) */}
+          {infoContentOverride ? (
+            <div className="mb-12">{infoContentOverride}</div>
+          ) : deadline ? (
+            <div className="flex flex-col gap-3 bg-gray-50 rounded-[20px] px-5 py-5 mb-12">
+              {/* 모집 분야 등 태그가 많은 필드 */}
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full">
                 <span className="text-[16px] font-semibold text-[#54585E] shrink-0 min-w-[5em] text-center">
                   {infoLabel}
                 </span>
@@ -268,8 +274,8 @@ export default function DetailTemplate({
               </div>
             </div>
           ) : (
-            <div className="flex items-stretch self-stretch bg-gray-50 rounded-[20px] px-7 py-3 mb-12 gap-4">
-              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+            <div className="flex flex-col lg:flex-row items-stretch self-stretch bg-gray-50 rounded-[20px] px-3 py-3 mb-12 gap-3 lg:gap-4">
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full lg:flex-2 min-h-[64px]">
                 <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                   {infoLabel}
                 </span>
@@ -286,7 +292,7 @@ export default function DetailTemplate({
                 </div>
               </div>
               {recruitCount != null && (
-                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full lg:flex-1 min-h-[64px]">
                   <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     모집 인원
                   </span>

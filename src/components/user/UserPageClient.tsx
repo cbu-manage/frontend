@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
+import MyApplicationsSection from "@/components/user/MyApplicationsSection";
 import InputBox from "@/components/common/InputBox";
 import { memberApi } from "@/api";
 
@@ -27,6 +28,7 @@ const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
   { label: "비밀번호 수정", value: "password" },
   { label: "내 작성글", value: "posts" },
+  { label: "내 신청목록", value: "applications" },
 ] as const;
 
 type UserMenuValue = (typeof USER_MENU_ITEMS)[number]["value"];
@@ -175,6 +177,8 @@ export default function UserPageClient() {
           {selectedMenu === "password" && <ChangePasswordSection />}
 
           {selectedMenu === "posts" && <MyPostsSection />}
+
+          {selectedMenu === "applications" && <MyApplicationsSection />}
         </div>
       </div>
     </main>
