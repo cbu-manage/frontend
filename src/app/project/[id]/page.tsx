@@ -94,6 +94,7 @@ export default function ProjectDetailPage() {
         authorGeneration?: number;
         authorName?: string;
         viewCount?: number;
+        leader?: boolean;
         isLeader?: boolean;
         hasApplied?: boolean;
       }
@@ -101,8 +102,9 @@ export default function ProjectDetailPage() {
     | undefined;
 
   const groupId = projectData?.groupId;
-  // 백엔드가 isLeader를 안 주거나 false면 authorName으로 fallback
+  // leader(isLeader) - API 필드 우선, fallback authorName 비교
   const isLeader =
+    projectData?.leader ??
     projectData?.isLeader ??
     (!!currentUserName &&
       !!projectData?.authorName &&
@@ -122,11 +124,13 @@ export default function ProjectDetailPage() {
     return found ? (found as { status?: string }).status : null;
   }, [groupId, myGroupsRes]);
 
-  const isApplied =
+  // PENDING만 신청 취소 가능 (DELETE API가 가입 대기 취소 전용)
+  const canCancelApply =
     hasApplied ||
     hasAppliedFromApi ||
-    appliedStatus === "PENDING" ||
-    appliedStatus === "ACTIVE";
+    appliedStatus === "PENDING";
+  const isJoined = appliedStatus === "ACTIVE";
+  const isRejected = appliedStatus === "REJECTED";
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -268,12 +272,20 @@ export default function ProjectDetailPage() {
                     신청 인원 확인
                   </button>
                 </div>
+              ) : isJoined ? (
+                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-600 text-base font-semibold">
+                  가입됨
+                </span>
+              ) : isRejected ? (
+                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-500 text-base font-semibold">
+                  거절됨
+                </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => {
                     if (!groupId) return;
-                    if (isApplied) {
+                    if (canCancelApply) {
                       if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
                         cancelApplyMutation.mutate();
                       }
@@ -285,7 +297,7 @@ export default function ProjectDetailPage() {
                   }}
                   className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
                 >
-                  {isApplied ? "신청 취소" : "신청하기"}
+                  {canCancelApply ? "신청 취소" : "신청하기"}
                 </button>
               )
             }

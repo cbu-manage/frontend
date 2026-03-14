@@ -39,6 +39,11 @@ export type StudyDetailResponse = {
     authorGeneration?: number;
     authorName?: string;
     viewCount?: number;
+    /** 작성자(팀장) 여부 - 신청 인원 확인 버튼 노출 */
+    leader?: boolean;
+    /** 신청 여부 - 신청하기/취소하기/가입완료 분기 */
+    hasApplied?: boolean;
+    /** @deprecated leader 사용 */
     isAuthor?: boolean;
   };
 };

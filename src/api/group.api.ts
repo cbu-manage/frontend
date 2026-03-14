@@ -68,6 +68,12 @@ export const groupApi = {
       "/groups/my"
     ),
 
+  /** 내가 신청한 그룹(스터디/프로젝트) 목록 - 모든 상태(PENDING/APPROVED/REJECTED) */
+  getMyApplications: () =>
+    api.get<{ code: string; message: string; data: unknown }>(
+      "/groups/my/applications"
+    ),
+
   /** 그룹 전체 조회 (관리자 전용) */
   getAll: () => api.get("/groups/admin"),
 };

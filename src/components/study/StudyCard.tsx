@@ -12,7 +12,8 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Eye, User2 } from "lucide-react";
+import { Clock, Eye } from "lucide-react";
+import { PersonIcon } from "@/components/icons/PersonIcon";
 
 // ============================================
 // 타입 정의
@@ -144,7 +145,7 @@ export function StudyCard({
               typeof maxCount === "number" &&
               maxCount > 0 && (
                 <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                  <User2 size={14} className="text-gray-900" />
+                  <PersonIcon size={14} className="text-gray-900 shrink-0" />
                   {currentCount}/{maxCount}
                 </span>
               )}
@@ -176,22 +177,21 @@ export function StudyCard({
         </div>
       </div>
 
-      {/* 카드 하단: 작성자 정보 + 조회수 */}
+      {/* 카드 하단: 작성자(왼쪽) | 조회수 + 작성시간(오른쪽, 간격) */}
       <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-xs sm:text-sm text-gray-700 font-medium">
-            {authorDisplay}
+        <span className="text-xs sm:text-sm text-gray-700 font-medium">
+          {authorDisplay}
+        </span>
+        <div className="flex items-center gap-4 sm:gap-6 text-xs text-gray-400">
+          <span className="flex items-center gap-1">
+            <Eye size={14} className="shrink-0" />
+            {viewCount}
           </span>
-        </div>
-        <div className="flex items-center gap-1 text-xs text-gray-400">
-          <Eye size={14} className="shrink-0" />
-          <span>{viewCount}</span>
-        </div>
-        {/* 작성 시간 */}
-        <span className="text-gray-400 text-xs font-light flex items-center gap-0.5">
+          <span className="flex items-center gap-0.5">
             <Clock size={12} />
             {time}
           </span>
+        </div>
       </div>
       
     </Link>
