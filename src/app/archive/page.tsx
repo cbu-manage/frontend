@@ -71,7 +71,7 @@ export default function ArchivePage() {
                       id={String(item.resourceId)}
                       title={item.title}
                       link={item.link}
-                      thumbnailUrl={item.thumbnailUrl}
+                      thumbnailUrl={item.ogImage}
                       uploadedBy={
                         item.generation && item.authorName
                           ? `${item.generation}기 ${item.authorName}`
