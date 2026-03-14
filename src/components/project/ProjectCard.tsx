@@ -18,7 +18,8 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Clock, User2, UserCircle } from "lucide-react";
+import { Eye, Clock, UserCircle } from "lucide-react";
+import { PersonIcon } from "@/components/icons/PersonIcon";
 
 // ============================================
 // 타입 정의
@@ -135,11 +136,10 @@ export function ProjectCard({
             >
               {status}
             </span>
-            {typeof currentCount === "number" &&
-              typeof maxCount === "number" &&
+            {typeof maxCount === "number" &&
               maxCount > 0 && (
                 <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                  <User2 size={14} className="text-gray-500" />
+                  <PersonIcon size={14} className="text-gray-500 shrink-0" />
                   {currentCount}/{maxCount}
                 </span>
               )}

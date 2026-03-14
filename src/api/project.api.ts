@@ -78,10 +78,12 @@ export type ProjectDetailData = {
   authorGeneration?: number;
   authorName?: string;
   viewCount?: number;
-  /** 작성자(팀장) 여부 - 버튼 분기용 */
-  isLeader?: boolean;
-  /** 신청 여부 - 버튼 분기용 */
+  /** 작성자(팀장) 여부 - 신청 인원 확인 버튼 노출 */
+  leader?: boolean;
+  /** 신청 여부 - 신청하기/취소하기/가입완료 분기 */
   hasApplied?: boolean;
+  /** @deprecated leader 사용 */
+  isLeader?: boolean;
 };
 export const projectApi = {
   /** 프로젝트 게시글 전체 목록 페이징 조회 */

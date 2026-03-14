@@ -77,20 +77,16 @@ function normalizeResponse(raw: unknown): ProjectListResult {
     totalPages = data.totalPages;
   }
 
+  // 백엔드: activeMemberCount(현재 활동인원), maxMembers(최대 모집인원) 통일
   return {
     items: list.map((item) => {
       const raw = item as {
-        currentMember?: number;
-        currentMembers?: number;
-        currentMemberCount?: number;
-        maxMember?: number;
+        activeMemberCount?: number;
+        maxMembers?: number;
+        maxMember?: number; // 프로젝트 예전 필드명 fallback
       };
-      const currentCount =
-        raw.currentMember ??
-        raw.currentMembers ??
-        raw.currentMemberCount ??
-        0;
-      const maxCount = raw.maxMember ?? 0;
+      const currentCount = raw.activeMemberCount ?? 0;
+      const maxCount = raw.maxMembers ?? raw.maxMember ?? 0;
 
       return {
         ...item,

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { MessageCircle, Pencil, Trash2, User2 } from "lucide-react";
+import { MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { PersonIcon } from "@/components/icons/PersonIcon";
 
 interface DetailTemplateProps {
   title: string;
@@ -187,7 +188,7 @@ export default function DetailTemplate({
             </span>
             {typeof currentCount === "number" && typeof maxCount === "number" && (
               <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                <User2 size={14} className="text-gray-900" />
+                <PersonIcon size={14} className="text-gray-900 shrink-0" />
                 {currentCount}/{maxCount}
               </span>
             )}
