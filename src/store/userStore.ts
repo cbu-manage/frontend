@@ -64,7 +64,7 @@ export const useUserStore = create<UserStore>()(
           const name = info.name ?? s.name;
           const email = info.email ?? s.email;
           const studentNumber = info.studentNumber ?? s.studentNumber;
-          const isAdmin = studentNumber === 8001202011;
+          const isAdmin = name === '관리자';
           return {
             ...s,
             name,
