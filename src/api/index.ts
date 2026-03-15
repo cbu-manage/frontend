@@ -63,7 +63,11 @@ export { reportApi, type ReportListParams } from "./report.api";
 export { commentApi } from "./comment.api";
 
 // Group
-export { groupApi } from "./group.api";
+export {
+  groupApi,
+  type MyGroupItem,
+  type GroupMemberItem,
+} from "./group.api";
 
 // Post (공통)
 export {
