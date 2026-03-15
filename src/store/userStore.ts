@@ -63,7 +63,8 @@ export const useUserStore = create<UserStore>()(
         set((s) => {
           const name = info.name ?? s.name;
           const email = info.email ?? s.email;
-          const isAdmin = name === '관리자' && email === 'cbuAdmin@tukorea.ac.kr';
+          const studentNumber = info.studentNumber ?? s.studentNumber;
+          const isAdmin = name === '관리자';
           return {
             ...s,
             name,

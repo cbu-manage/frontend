@@ -331,6 +331,29 @@ export default function Home() {
           )}
         </div>
 
+        {/* 홈페이지 가이드 바로가기 */}
+        <div className="w-full flex flex-col items-center justify-center gap-9 py-40">
+          <h2
+            className="text-center text-white text-2xl font-medium wrap-break-word"
+            style={{ fontFamily: "Pretendard, sans-serif" }}
+          >
+            씨부엉 동아리 홈페이지, 어떻게 사용할까요?
+          </h2>
+          <a
+            href="https://reflective-brush-deb.notion.site/GUIDE-31f096f283e28062a3c9eb9707293347"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#151517] rounded-full text-[#50C38A] text-lg font-medium wrap-break-word hover:opacity-90 transition-opacity"
+            style={{
+              fontFamily: "Pretendard, sans-serif",
+              outline: "2px #50C38A solid",
+              outlineOffset: "-2px",
+            }}
+          >
+            홈페이지 가이드 바로가기
+          </a>
+        </div>
+
         {/* CBU ACTIVITY 섹션 */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-14">

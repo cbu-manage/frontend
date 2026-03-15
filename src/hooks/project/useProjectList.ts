@@ -47,6 +47,8 @@ export interface ProjectListResult {
   items: (ProjectListItem & {
     status: ProjectStatus;
     positions: string[];
+    activeMemberCount?: number;
+    maxMembers?: number;
   })[];
   totalPages: number;
 }
@@ -75,12 +77,22 @@ function normalizeResponse(raw: unknown): ProjectListResult {
     totalPages = data.totalPages;
   }
 
+  // 백엔드: activeMemberCount(현재 활동인원), maxMembers(최대 모집인원) 통일
   return {
-    items: list.map((item) => ({
-      ...item,
-      status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
-      positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
-    })),
+    items: list.map((item) => {
+      const raw = item as {
+        activeMemberCount?: number;
+        maxMembers?: number;
+        maxMember?: number; // 프로젝트 예전 필드명 fallback
+      };
+      return {
+        ...item,
+        status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
+        positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
+        activeMemberCount: raw.activeMemberCount ?? 0,
+        maxMembers: raw.maxMembers ?? raw.maxMember ?? 0,
+      };
+    }),
     totalPages,
   };
 }

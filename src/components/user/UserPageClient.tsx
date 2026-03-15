@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
+import MyApplicationsSection from "@/components/user/MyApplicationsSection";
 import InputBox from "@/components/common/InputBox";
 import { memberApi } from "@/api";
 
@@ -27,6 +28,7 @@ const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
   { label: "비밀번호 수정", value: "password" },
   { label: "내 작성글", value: "posts" },
+  { label: "나의 신청 목록", value: "applications" },
 ] as const;
 
 type UserMenuValue = (typeof USER_MENU_ITEMS)[number]["value"];
@@ -35,7 +37,11 @@ export default function UserPageClient() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [selectedMenu, setSelectedMenu] = useState<UserMenuValue>(() => {
-    if (tabParam === "password" || tabParam === "posts") {
+    if (
+      tabParam === "password" ||
+      tabParam === "posts" ||
+      tabParam === "applications"
+    ) {
       return tabParam as UserMenuValue;
     }
     return "profile";
@@ -52,14 +58,16 @@ export default function UserPageClient() {
   });
 
   const raw = memberRes?.data as Record<string, unknown> | undefined;
-  const memberData = (raw && "data" in raw ? raw.data : raw) as {
-    name?: string;
-    studentNumber?: number;
-    major?: string;
-    grade?: string;
-    generation?: number;
-    email?: string;
-  } | undefined;
+  const memberData = (raw && "data" in raw ? raw.data : raw) as
+    | {
+        name?: string;
+        studentNumber?: number;
+        major?: string;
+        grade?: string;
+        generation?: number;
+        email?: string;
+      }
+    | undefined;
 
   const profile = {
     name: memberData?.name ?? user.name,
@@ -79,9 +87,7 @@ export default function UserPageClient() {
       <main className="min-h-screen bg-gray-50">
         <div className="py-16">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold text-gray-900 mb-8">
-              내 정보
-            </h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-8">내 정보</h1>
             <div className="text-center py-16">
               <p className="text-gray-600 mb-6">
                 로그인 후 내 정보를 확인하세요.
@@ -99,14 +105,21 @@ export default function UserPageClient() {
   }
 
   return (
-    <main className={`min-h-screen bg-gray-50`}>
-      <div className="flex py-12">
+    <main
+      className={`min-h-screen ${selectedMenu === "applications" ? "bg-gray-0" : "bg-gray-50"}`}
+    >
+      <div className="flex pt-14 pb-12">
         <Sidebar
           items={USER_MENU_ITEMS}
           selected={selectedMenu}
           onSelect={handleSelect}
         />
         <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] min-w-0">
+          {selectedMenu === "applications" && (
+            <div className="min-h-screen">
+              <MyApplicationsSection />
+            </div>
+          )}
           {selectedMenu === "profile" && (
             <div className="flex justify-center">
               <div className="w-full max-w-2xl bg-white rounded-2xl border border-gray-200 shadow-sm px-14 py-12">
@@ -118,17 +131,11 @@ export default function UserPageClient() {
                     height={64}
                     className="mb-4"
                   />
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    내 정보
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900">내 정보</h2>
                 </div>
                 <form className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <InputBox
-                      label="이름"
-                      value={profile.name}
-                      disabled
-                    />
+                    <InputBox label="이름" value={profile.name} disabled />
                     <InputBox
                       label="학번"
                       value={String(profile.studentNumber)}
@@ -136,20 +143,16 @@ export default function UserPageClient() {
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <InputBox
-                      label="학과"
-                      value={profile.major}
-                      disabled
-                    />
+                    <InputBox label="학과" value={profile.major} disabled />
                     <div className="grid grid-cols-2 gap-4">
-                      <InputBox
-                        label="학년"
-                        value={profile.grade}
-                        disabled
-                      />
+                      <InputBox label="학년" value={profile.grade} disabled />
                       <InputBox
                         label="기수"
-                        value={profile.generation != null ? `${profile.generation}기` : "-"}
+                        value={
+                          profile.generation != null
+                            ? `${profile.generation}기`
+                            : "-"
+                        }
                         disabled
                       />
                     </div>
@@ -180,4 +183,3 @@ export default function UserPageClient() {
     </main>
   );
 }
-

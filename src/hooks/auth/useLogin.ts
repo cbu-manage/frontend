@@ -69,6 +69,13 @@ export function useLogin() {
       });
       setErrorMessage(null);
 
+      const isAdmin = data.name === '관리자';
+
+      if (isAdmin) {
+        router.push("/");
+        return;
+      }
+
       // 1순위: 이메일이 없거나 학교 메일이 아닌 경우 → 이메일 등록 페이지로 이동
       if (isEmailNull) {
         router.push("/private");
