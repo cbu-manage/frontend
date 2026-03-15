@@ -30,10 +30,8 @@ export interface StudyListItem {
   status: StudyStatus | string;
   category?: string;
   createdAt?: string;
-  /** activeMemberCount → 현재 활동인원 */
-  currentCount?: number;
-  /** maxMembers → 최대 모집인원 */
-  maxCount?: number;
+  activeMemberCount?: number;
+  maxMembers?: number;
   [key: string]: unknown;
 }
 
@@ -87,8 +85,8 @@ function normalizeResponse(
       ...item,
       id: raw.postId ?? raw.id ?? 0,
       status: raw.recruiting === true ? "모집 중" : raw.recruiting === false ? "모집 완료" : (item.status as string),
-      currentCount: raw.activeMemberCount ?? 0,
-      maxCount: raw.maxMembers ?? 0,
+      activeMemberCount: raw.activeMemberCount ?? 0,
+      maxMembers: raw.maxMembers ?? 0,
     };
   });
 

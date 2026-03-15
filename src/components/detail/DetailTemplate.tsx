@@ -27,10 +27,8 @@ interface DetailTemplateProps {
   isMarkdown?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
-  /** 모집 인원 정보 (현재/최대) */
-  currentCount?: number;
-  maxCount?: number;
-  recruitCount?: number;
+  activeMemberCount?: number;
+  maxMembers?: number;
   deadline?: string;
   /** 기본 필터 박스를 완전히 교체하고 싶을 때 사용 (예: 코테 URL/플랫폼/언어/문제정보 한 박스) */
   infoContentOverride?: React.ReactNode;
@@ -54,9 +52,8 @@ export default function DetailTemplate({
   isMarkdown = false,
   onEdit,
   onDelete,
-  currentCount,
-  maxCount,
-  recruitCount,
+  activeMemberCount,
+  maxMembers,
   deadline,
   infoContentOverride,
 }: DetailTemplateProps) {
@@ -186,10 +183,10 @@ export default function DetailTemplate({
             >
               {statusDisplay.text}
             </span>
-            {typeof currentCount === "number" && typeof maxCount === "number" && (
+            {typeof activeMemberCount === "number" && typeof maxMembers === "number" && (
               <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
                 <PersonIcon size={14} className="text-gray-900 shrink-0" />
-                {currentCount}/{maxCount}
+                {activeMemberCount}/{maxMembers}
               </span>
             )}
           </div>
@@ -272,14 +269,14 @@ export default function DetailTemplate({
                     {deadline}
                   </span>
                 </div>
-                {recruitCount != null && (
+                {maxMembers != null && (
                   <div className="flex items-center gap-6 flex-1 bg-gray-0 rounded-full px-6 py-4">
                     <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                       모집 인원
                     </span>
                     <div className="w-[2px] h-5 bg-gray-300" />
                     <span className="text-base font-medium text-[#3E434A]">
-                      {recruitCount}명
+                      {maxMembers}명
                     </span>
                   </div>
                 )}
@@ -303,14 +300,14 @@ export default function DetailTemplate({
                   ))}
                 </div>
               </div>
-              {recruitCount != null && (
+              {maxMembers != null && (
                 <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full lg:flex-1 min-h-[64px]">
                   <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     모집 인원
                   </span>
                   <div className="w-[2px] h-5 bg-gray-300" />
                   <span className="text-base font-medium text-[#3E434A] shrink-0">
-                    {recruitCount}명
+                    {maxMembers}명
                   </span>
                 </div>
               )}

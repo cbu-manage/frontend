@@ -47,8 +47,8 @@ export interface ProjectListResult {
   items: (ProjectListItem & {
     status: ProjectStatus;
     positions: string[];
-    currentCount?: number;
-    maxCount?: number;
+    activeMemberCount?: number;
+    maxMembers?: number;
   })[];
   totalPages: number;
 }
@@ -85,15 +85,12 @@ function normalizeResponse(raw: unknown): ProjectListResult {
         maxMembers?: number;
         maxMember?: number; // 프로젝트 예전 필드명 fallback
       };
-      const currentCount = raw.activeMemberCount ?? 0;
-      const maxCount = raw.maxMembers ?? raw.maxMember ?? 0;
-
       return {
         ...item,
         status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
         positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
-        currentCount,
-        maxCount,
+        activeMemberCount: raw.activeMemberCount ?? 0,
+        maxMembers: raw.maxMembers ?? raw.maxMember ?? 0,
       };
     }),
     totalPages,
