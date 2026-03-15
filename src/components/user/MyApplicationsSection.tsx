@@ -240,18 +240,6 @@ function ApplicationRow({ item }: { item: ApplicationItem }) {
         <span className="font-semibold text-gray-900 line-clamp-1">
           {item.title}
         </span>
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {item.tags.map((t) => (
-              <span
-                key={t}
-                className="px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
       </Link>
       <div className="col-span-2 flex items-center justify-center text-sm text-gray-700">
         {item.activeMemberCount}/{item.maxMembers}

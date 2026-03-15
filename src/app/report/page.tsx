@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+
 import RequireMember from "@/components/auth/RequireMember";
 import { groupApi, type MyGroupItem } from "@/api";
 
@@ -23,7 +23,9 @@ export default function ReportPage() {
     queryFn: () => groupApi.getMyGroups(),
   });
 
-  const groups = extractMyGroups(res?.data ?? null);
+  const allGroups = extractMyGroups(res?.data ?? null);
+  const activeGroups = allGroups.filter((g) => g.groupStatus === "ACTIVE");
+  const pendingGroups = allGroups.filter((g) => g.groupStatus !== "ACTIVE");
 
   return (
     <RequireMember>
@@ -54,28 +56,35 @@ export default function ReportPage() {
               )}
               {!isLoading &&
                 !isError &&
-                groups.map((g) => {
-                  const postId = g.postId ?? g.groupId;
-                  const href =
-                    g.postType === "PROJECT"
-                      ? `/project/${postId}`
-                      : `/study/${postId}`;
-                  return (
-                    <Link
-                      key={g.groupId}
-                      href={href}
-                      className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow block"
-                    >
-                      <p className="text-gray-900 font-medium line-clamp-2 mb-2">
+                activeGroups.map((g) => (
+                  <div
+                    key={g.groupId}
+                    className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+                  >
+                    <p className="text-gray-900 font-medium line-clamp-2 mb-2">
+                      {g.groupName}
+                    </p>
+                  
+                  </div>
+                ))}
+              {!isLoading &&
+                !isError &&
+                pendingGroups.map((g) => (
+                  <div
+                    key={g.groupId}
+                    className="rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 block opacity-70"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-gray-700 font-medium line-clamp-2 flex-1">
                         {g.groupName}
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {g.activeMemberCount}/{g.maxActiveMembers}명
-                      </p>
-                    </Link>
-                  );
-                })}
-              {!isLoading && !isError && groups.length === 0 && (
+                      <span className="shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+                        승인 대기 중
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              {!isLoading && !isError && allGroups.length === 0 && (
                 <div className="col-span-full text-center py-12 text-gray-500">
                   가입한 스터디/프로젝트가 없습니다.
                 </div>

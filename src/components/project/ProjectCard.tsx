@@ -72,9 +72,8 @@ interface ProjectCardProps {
 
   /** 프로젝트 내용 (호버 시 미리보기) */
   content?: string;
-  /** 현재 인원 / 최대 인원 (상세와 동일 태그) */
-  currentCount?: number;
-  maxCount?: number;
+  activeMemberCount?: number;
+  maxMembers?: number;
 }
 
 // ============================================
@@ -113,8 +112,8 @@ export function ProjectCard({
   views = 0,
   time = "-",
   content,
-  currentCount,
-  maxCount,
+  activeMemberCount,
+  maxMembers,
 }: ProjectCardProps) {
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === "모집 완료";
@@ -136,11 +135,11 @@ export function ProjectCard({
             >
               {status}
             </span>
-            {typeof maxCount === "number" &&
-              maxCount > 0 && (
+            {typeof maxMembers === "number" &&
+              maxMembers > 0 && (
                 <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
                   <PersonIcon size={14} className="text-gray-500 shrink-0" />
-                  {currentCount}/{maxCount}
+                  {activeMemberCount}/{maxMembers}
                 </span>
               )}
           </div>

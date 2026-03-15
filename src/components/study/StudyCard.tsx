@@ -81,9 +81,8 @@ interface StudyCardProps {
 
   /** 카테고리 태그 배열 (studyTags) */
   categories?: string[];
-  /** 현재 인원 / 최대 인원 (상세와 동일 태그) */
-  currentCount?: number;
-  maxCount?: number;
+  activeMemberCount?: number;
+  maxMembers?: number;
 }
 
 // ============================================
@@ -114,8 +113,8 @@ export function StudyCard({
   authorDisplay = "씨부엉 멤버",
   viewCount = 0,
   categories: categoriesProp,
-  currentCount,
-  maxCount,
+  activeMemberCount,
+  maxMembers,
 }: StudyCardProps) {
   // 모집 완료 여부에 따라 배지 색상 결정
   const isCompleted = status === "모집 완료";
@@ -141,12 +140,12 @@ export function StudyCard({
             >
               {status}
             </span>
-            {typeof currentCount === "number" &&
-              typeof maxCount === "number" &&
-              maxCount > 0 && (
+            {typeof activeMemberCount === "number" &&
+              typeof maxMembers === "number" &&
+              maxMembers > 0 && (
                 <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
                   <PersonIcon size={14} className="text-gray-900 shrink-0" />
-                  {currentCount}/{maxCount}
+                  {activeMemberCount}/{maxMembers}
                 </span>
               )}
           </div>

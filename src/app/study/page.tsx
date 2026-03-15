@@ -144,8 +144,8 @@ export default function StudyPage() {
                       authorGeneration?: number;
                       viewCount?: number;
                       studyTags?: string[];
-                      currentCount?: number;
-                      maxCount?: number;
+                      activeMemberCount?: number;
+                      maxMembers?: number;
                     };
                     const authorDisplay = s.authorName
                       ? s.authorGeneration
@@ -165,8 +165,8 @@ export default function StudyPage() {
                         authorDisplay={authorDisplay}
                         viewCount={(s.viewCount as number) ?? 0}
                         categories={s.studyTags}
-                        currentCount={s.currentCount}
-                        maxCount={s.maxCount}
+                        activeMemberCount={s.activeMemberCount}
+                        maxMembers={s.maxMembers}
                       />
                     );
                   })}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DetailTemplate from "@/components/detail/DetailTemplate";
@@ -54,8 +54,9 @@ export default function ProjectDetailPage() {
   const queryClient = useQueryClient();
 
   const numericId = typeof id === "string" ? Number(id) : Number(id?.[0]);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [justApplied, setJustApplied] = useState(false);
   const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
+  const [membersModalOpen, setMembersModalOpen] = useState(false);
 
   const {
     data: projectRes,
@@ -65,12 +66,6 @@ export default function ProjectDetailPage() {
     queryKey: ["project", numericId],
     queryFn: () => projectApi.getById(numericId),
     enabled: !!numericId && !Number.isNaN(numericId),
-  });
-
-  const { data: myGroupsRes } = useQuery({
-    queryKey: ["myGroups"],
-    queryFn: () => groupApi.getMyGroups(),
-    enabled: !!currentUserName && !!projectRes?.data,
   });
 
   const rawData = projectRes?.data;
@@ -88,8 +83,9 @@ export default function ProjectDetailPage() {
         recruiting?: boolean;
         createdAt?: string;
         deadline?: string;
+        activeMemberCount?: number;
+        maxMembers?: number;
         maxMember?: number;
-        currentMember?: number;
         groupId?: number;
         authorGeneration?: number;
         authorName?: string;
@@ -102,7 +98,6 @@ export default function ProjectDetailPage() {
     | undefined;
 
   const groupId = projectData?.groupId;
-  // leader(isLeader) - API 필드 우선, fallback authorName 비교
   const isLeader =
     projectData?.leader ??
     projectData?.isLeader ??
@@ -110,27 +105,6 @@ export default function ProjectDetailPage() {
       !!projectData?.authorName &&
       projectData.authorName === currentUserName);
   const hasAppliedFromApi = projectData?.hasApplied ?? false;
-
-  const appliedStatus = useMemo(() => {
-    if (!groupId || !myGroupsRes?.data) return null;
-    const raw = myGroupsRes.data;
-    const list = Array.isArray(raw)
-      ? raw
-      : ((raw as { data?: unknown[] })?.data ?? []);
-    const found = list.find(
-      (g: { groupId?: number }) =>
-        (g as { groupId?: number }).groupId === groupId,
-    );
-    return found ? (found as { status?: string }).status : null;
-  }, [groupId, myGroupsRes]);
-
-  // PENDING만 신청 취소 가능 (DELETE API가 가입 대기 취소 전용)
-  const canCancelApply =
-    hasApplied ||
-    hasAppliedFromApi ||
-    appliedStatus === "PENDING";
-  const isJoined = appliedStatus === "ACTIVE";
-  const isRejected = appliedStatus === "REJECTED";
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -145,8 +119,8 @@ export default function ProjectDetailPage() {
 
   const closeMutation = useMutation({
     mutationFn: async () => {
-      if (!numericId) return;
-      await projectApi.close(numericId);
+      if (!groupId) return;
+      await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
@@ -161,10 +135,13 @@ export default function ProjectDetailPage() {
       await groupApi.join(groupId);
     },
     onSuccess: () => {
-      setHasApplied(true);
-      queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
       alert("프로젝트 신청이 완료되었습니다.");
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", numericId] });
+      alert("이미 들어간 프로젝트입니다.");
     },
   });
 
@@ -174,8 +151,7 @@ export default function ProjectDetailPage() {
       await groupApi.leave(groupId);
     },
     onSuccess: () => {
-      setHasApplied(false);
-      queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
       alert("프로젝트 신청이 취소되었습니다.");
     },
@@ -216,11 +192,8 @@ export default function ProjectDetailPage() {
     (e) => ENUM_TO_LABEL[e] ?? e,
   );
 
-  const currentCount =
-    (projectData as { currentMember?: number })?.currentMember ??
-    (projectData as { currentMembers?: number })?.currentMembers ??
-    (projectData as { currentMemberCount?: number })?.currentMemberCount ??
-    0;
+  const activeMemberCount =
+    (projectData as { activeMemberCount?: number })?.activeMemberCount ?? 0;
 
   return (
     <RequireMember>
@@ -241,9 +214,8 @@ export default function ProjectDetailPage() {
             views={projectData.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={categories}
-            currentCount={currentCount}
-            maxCount={projectData?.maxMember}
-            recruitCount={projectData?.maxMember}
+            activeMemberCount={activeMemberCount}
+            maxMembers={projectData?.maxMembers ?? projectData?.maxMember}
             deadline={projectData?.deadline}
             content={projectData.content ?? ""}
             onEdit={
@@ -271,46 +243,65 @@ export default function ProjectDetailPage() {
                   >
                     신청 인원 확인
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => groupId && setMembersModalOpen(true)}
+                    className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-700 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                  >
+                    현재 인원 확인
+                  </button>
                 </div>
-              ) : isJoined ? (
+              ) : justApplied ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!groupId) return;
+                    if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
+                      cancelApplyMutation.mutate();
+                    }
+                  }}
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                >
+                  신청 취소
+                </button>
+              ) : hasAppliedFromApi ? (
                 <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-600 text-base font-semibold">
-                  가입됨
-                </span>
-              ) : isRejected ? (
-                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-500 text-base font-semibold">
-                  거절됨
+                  신청 완료
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => {
                     if (!groupId) return;
-                    if (canCancelApply) {
-                      if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
-                        cancelApplyMutation.mutate();
-                      }
-                    } else {
-                      if (window.confirm("이 프로젝트에 신청하시겠습니까?")) {
-                        applyMutation.mutate();
-                      }
+                    if (window.confirm("이 프로젝트에 신청하시겠습니까?")) {
+                      applyMutation.mutate();
                     }
                   }}
                   className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
                 >
-                  {canCancelApply ? "신청 취소" : "신청하기"}
+                  신청하기
                 </button>
               )
             }
           />
         </div>
         {groupId && (
-          <ApplicantsModal
-            open={applicantsModalOpen}
-            onClose={() => setApplicantsModalOpen(false)}
-            groupId={groupId}
-            recruiting={projectData.recruiting}
-            onCloseRecruitment={() => closeMutation.mutate()}
-          />
+          <>
+            <ApplicantsModal
+              open={applicantsModalOpen}
+              onClose={() => setApplicantsModalOpen(false)}
+              groupId={groupId}
+              mode="applicants"
+              recruiting={projectData.recruiting}
+              onCloseRecruitment={() => closeMutation.mutate()}
+            />
+            <ApplicantsModal
+              open={membersModalOpen}
+              onClose={() => setMembersModalOpen(false)}
+              groupId={groupId}
+              mode="members"
+            />
+          </>
         )}
       </main>
     </RequireMember>
