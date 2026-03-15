@@ -9,6 +9,8 @@ export interface ApplicantItem {
   groupMemberId?: number;
   id?: number;
   memberId?: number;
+  userId?: number;
+  userName?: string;
   memberName?: string;
   authorName?: string;
   authorGeneration?: number;
@@ -18,8 +20,10 @@ export interface ApplicantItem {
   major?: string;
   /** 학년 (API에 있으면 표시) */
   grade?: number;
+  groupMemberStatus?: string;
   status?: string;
   appliedAt?: string;
+  createdAt?: string;
   [key: string]: unknown;
 }
 
@@ -33,17 +37,17 @@ interface ApplicantsModalProps {
   onCloseRecruitment?: () => void;
 }
 
-/** 응답에서 신청자 배열 추출 */
+/** 응답에서 신청자 배열 추출 (null/undefined/빈 구조 방어) */
 function extractApplicants(raw: unknown): ApplicantItem[] {
-  if (!raw || typeof raw !== "object") return [];
+  if (raw == null || typeof raw !== "object") return [];
   const obj = raw as Record<string, unknown>;
-  const data = obj.data;
+  const data = obj.data ?? obj.content ?? obj;
+  if (data == null) return [];
   if (Array.isArray(data)) return data as ApplicantItem[];
-  if (data && typeof data === "object" && "content" in data) {
+  if (typeof data === "object" && "content" in data) {
     const arr = (data as { content?: unknown }).content;
     return Array.isArray(arr) ? (arr as ApplicantItem[]) : [];
   }
-  if (Array.isArray(obj.content)) return obj.content as ApplicantItem[];
   return [];
 }
 
@@ -57,7 +61,7 @@ function getGrade(item: ApplicantItem): string {
 }
 
 function getName(item: ApplicantItem): string {
-  return (item.memberName ?? item.authorName ?? item.name ?? "익명") as string;
+  return (item.userName ?? item.memberName ?? item.authorName ?? item.name ?? "익명") as string;
 }
 
 export default function ApplicantsModal({
@@ -101,9 +105,10 @@ export default function ApplicantsModal({
     },
   });
 
-  const applicants = res?.data ? extractApplicants(res.data) : [];
+  const applicants = extractApplicants(res?.data ?? res ?? null);
+  const status = (a: ApplicantItem) => a.groupMemberStatus ?? a.status;
   const pendingApplicants = applicants.filter(
-    (a) => !a.status || a.status === "PENDING" || a.status === "APPLIED",
+    (a) => !status(a) || status(a) === "PENDING" || status(a) === "APPLIED",
   );
 
   const handleCloseRecruitment = () => {
@@ -196,7 +201,7 @@ export default function ApplicantsModal({
             )}
             {!isLoading && !isError && pendingApplicants.length === 0 && (
               <div className="py-12 text-center text-gray-500">
-                대기 중인 신청자가 없습니다.
+                신청 인원이 없습니다.
               </div>
             )}
             {!isLoading &&
