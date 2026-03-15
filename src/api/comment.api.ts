@@ -5,24 +5,24 @@ import { api } from "./client";
 
 export type CommentBody = { content: string };
 
-/** 댓글/답글 한 건 (목록 응답 - 1계층 트리) */
+/** 댓글/답글 한 건 */
 export type CommentItem = {
   commentId: number;
   content: string;
-  // 백엔드 최신 스펙 필드
+  parentCommentId?: number | null;
   userId?: number;
   generation?: number;
   userName?: string;
-  // 구버전/다른 엔드포인트 호환 필드
   authorName?: string;
   authorGeneration?: number;
   createdAt?: string;
+  updatedAt?: string;
   replies?: CommentItem[];
   deleted?: boolean;
   [key: string]: unknown;
 };
 
-function extractCommentList(raw: unknown): CommentItem[] {
+function extractFlatList(raw: unknown): CommentItem[] {
   if (!raw || typeof raw !== "object") return [];
   const obj = raw as Record<string, unknown>;
   const body = obj.data ?? obj;
@@ -32,6 +32,37 @@ function extractCommentList(raw: unknown): CommentItem[] {
     return Array.isArray(inner) ? (inner as CommentItem[]) : [];
   }
   return [];
+}
+
+/** flat 리스트를 parentCommentId 기반 트리로 변환 */
+function buildCommentTree(flat: CommentItem[]): CommentItem[] {
+  const map = new Map<number, CommentItem>();
+  const roots: CommentItem[] = [];
+
+  for (const item of flat) {
+    map.set(item.commentId, { ...item, replies: [] });
+  }
+
+  for (const item of flat) {
+    const node = map.get(item.commentId)!;
+    if (item.parentCommentId != null) {
+      const parent = map.get(item.parentCommentId);
+      if (parent) {
+        parent.replies!.push(node);
+      } else {
+        roots.push(node);
+      }
+    } else {
+      roots.push(node);
+    }
+  }
+
+  return roots;
+}
+
+function extractCommentList(raw: unknown): CommentItem[] {
+  const flat = extractFlatList(raw);
+  return buildCommentTree(flat);
 }
 
 export const commentApi = {

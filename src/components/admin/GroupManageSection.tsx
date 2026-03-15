@@ -138,25 +138,25 @@ export default function GroupManageSection() {
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   그룹명
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   팀장
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   인원
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   모집 상태
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   생성일
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   상태
                 </th>
-                <th className="p-3 text-left font-medium text-gray-700">
+                <th className="p-3 text-center font-medium text-gray-700">
                   관리
                 </th>
               </tr>
@@ -176,22 +176,24 @@ export default function GroupManageSection() {
                     key={group.groupId}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
-                    <td className="p-3 font-medium max-w-[200px] truncate">
+                    <td className="p-3 text-left font-medium max-w-[200px] truncate">
                       {group.groupName}
                     </td>
-                    <td className="p-3 text-gray-600">{leaderDisplay}</td>
-                    <td className="p-3">
+                    <td className="p-3 text-center text-gray-600">
+                      {leaderDisplay}
+                    </td>
+                    <td className="p-3 text-center">
                       {group.activeMemberCount}/{group.maxMembers}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
                         모집 마감
                       </span>
                     </td>
-                    <td className="p-3 text-gray-500">
+                    <td className="p-3 text-center text-gray-500">
                       {formatDate(group.createdAt)}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       {isInactive && (
                         <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
                           승인 대기 중
@@ -208,9 +210,9 @@ export default function GroupManageSection() {
                         </span>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="p-3 text-center">
                       {isInactive ? (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
                             disabled={approveMutation.isPending}
