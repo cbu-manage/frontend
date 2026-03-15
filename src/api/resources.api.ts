@@ -13,12 +13,20 @@ export type ResourceItem = {
   resourceId: number;
   title: string;
   link: string;
-  /** 썸네일 이미지 URL (og:image 등, 백엔드에서 채우면 표시) */
-  thumbnailUrl?: string;
   authorName?: string;
   generation?: number;
   createdAt?: string;
+  /** OG 파싱 결과 (og:image) */
+  ogImage?: string;
+  /** OG 파싱 결과 (og:description) */
+  ogDescription?: string;
   [key: string]: unknown;
+};
+
+export type OgPreviewResponse = {
+  ogTitle: string | null;
+  ogImage: string | null;
+  ogDescription: string | null;
 };
 
 export type ResourceListResponse = {
@@ -39,9 +47,15 @@ export const resourcesApi = {
       params: { sort: ["post.createdAt,DESC"], ...params },
     }),
 
-  /** 자료 등록 (제목, 링크 필수) */
-  create: (data: { title: string; link: string }) =>
+  /** 자료 등록 (링크 필수, 제목 생략 시 OG 파싱으로 자동 설정) */
+  create: (data: { title?: string; link: string }) =>
     api.post("/resources", data),
+
+  /** OG 데이터 미리보기 (URL에서 og:title, og:image, og:description 추출) */
+  getOgPreview: (url: string) =>
+    api.get<{ data: OgPreviewResponse }>("/resources/og-preview", {
+      params: { url },
+    }),
 
   /** 자료 삭제 (작성자 본인만) */
   delete: (id: number) => api.delete(`/resources/${id}`),

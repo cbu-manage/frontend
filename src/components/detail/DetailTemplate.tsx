@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { MessageCircle, Pencil, Trash2 } from "lucide-react";
+import { PersonIcon } from "@/components/icons/PersonIcon";
 
 interface DetailTemplateProps {
   title: string;
@@ -26,8 +27,11 @@ interface DetailTemplateProps {
   isMarkdown?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
-  recruitCount?: number;
+  activeMemberCount?: number;
+  maxMembers?: number;
   deadline?: string;
+  /** 기본 필터 박스를 완전히 교체하고 싶을 때 사용 (예: 코테 URL/플랫폼/언어/문제정보 한 박스) */
+  infoContentOverride?: React.ReactNode;
 }
 
 export default function DetailTemplate({
@@ -48,8 +52,10 @@ export default function DetailTemplate({
   isMarkdown = false,
   onEdit,
   onDelete,
-  recruitCount,
+  activeMemberCount,
+  maxMembers,
   deadline,
+  infoContentOverride,
 }: DetailTemplateProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -170,13 +176,19 @@ export default function DetailTemplate({
 
         {/* 메인 컨텐츠 영역 */}
         <div>
-          {/* 상태 배지 */}
-          <div className="mb-6">
+          {/* 상태 배지 + 인원 태그 */}
+          <div className="mb-6 flex items-center gap-3">
             <span
-              className={`text-center py-3 px-4 rounded-full text-xs font-semibold ${statusDisplay.className}`}
+              className={`text-center py-2 px-3 rounded-full text-xs font-semibold ${statusDisplay.className}`}
             >
               {statusDisplay.text}
             </span>
+            {typeof activeMemberCount === "number" && typeof maxMembers === "number" && (
+              <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                <PersonIcon size={14} className="text-gray-900 shrink-0" />
+                {activeMemberCount}/{maxMembers}
+              </span>
+            )}
           </div>
 
           {/* 제목 */}
@@ -225,10 +237,13 @@ export default function DetailTemplate({
             )}
           </div>
 
-          {/* 필터 정보 박스 */}
-          {deadline ? (
-            <div className="flex flex-col gap-3 bg-gray-50 rounded-[20px] px-7 py-5 mb-12">
-              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2">
+          {/* 필터 정보 박스 (페이지별 완전 커스텀 우선) */}
+          {infoContentOverride ? (
+            <div className="mb-12">{infoContentOverride}</div>
+          ) : deadline ? (
+            <div className="flex flex-col gap-3 bg-gray-50 rounded-[20px] px-5 py-5 mb-12">
+              {/* 모집 분야 등 태그가 많은 필드 */}
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full">
                 <span className="text-[16px] font-semibold text-[#54585E] shrink-0 min-w-[5em] text-center">
                   {infoLabel}
                 </span>
@@ -254,22 +269,22 @@ export default function DetailTemplate({
                     {deadline}
                   </span>
                 </div>
-                {recruitCount != null && (
+                {maxMembers != null && (
                   <div className="flex items-center gap-6 flex-1 bg-gray-0 rounded-full px-6 py-4">
                     <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                       모집 인원
                     </span>
                     <div className="w-[2px] h-5 bg-gray-300" />
                     <span className="text-base font-medium text-[#3E434A]">
-                      {recruitCount}명
+                      {maxMembers}명
                     </span>
                   </div>
                 )}
               </div>
             </div>
           ) : (
-            <div className="flex items-stretch self-stretch bg-gray-50 rounded-[20px] px-7 py-3 mb-12 gap-4">
-              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+            <div className="flex flex-col lg:flex-row items-stretch self-stretch bg-gray-50 rounded-[20px] px-3 py-3 mb-12 gap-3 lg:gap-4">
+              <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full lg:flex-2 min-h-[64px]">
                 <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                   {infoLabel}
                 </span>
@@ -285,14 +300,14 @@ export default function DetailTemplate({
                   ))}
                 </div>
               </div>
-              {recruitCount != null && (
-                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 flex-1">
+              {maxMembers != null && (
+                <div className="flex items-center gap-6 bg-gray-0 rounded-full px-6 py-2 w-full lg:flex-1 min-h-[64px]">
                   <span className="text-[16px] font-semibold text-[#54585E] shrink-0">
                     모집 인원
                   </span>
                   <div className="w-[2px] h-5 bg-gray-300" />
                   <span className="text-base font-medium text-[#3E434A] shrink-0">
-                    {recruitCount}명
+                    {maxMembers}명
                   </span>
                 </div>
               )}

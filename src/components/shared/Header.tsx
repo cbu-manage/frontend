@@ -8,6 +8,7 @@ import { authApi } from "@/api";
 export default function Header() {
   const pathname = usePathname();
   const name = useUserStore((s) => s.name);
+  const isAdmin = useUserStore((s) => s.isAdmin);
   const clearUser = useUserStore((s) => s.clearUser);
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const isLoggedIn = !!name;
@@ -85,12 +86,14 @@ export default function Header() {
           ) : (
             <>
               <Link
-                href="/user"
+                href={isAdmin ? "/manage" : "/user"}
                 className={`transition-colors hover:text-brand ${
-                  pathname.startsWith("/user") ? "text-brand font-semibold" : isHome ? "text-white font-medium" : "text-gray-700 font-medium"
+                  (isAdmin ? pathname.startsWith("/manage") : pathname.startsWith("/user"))
+                    ? "text-brand font-semibold"
+                    : isHome ? "text-white font-medium" : "text-gray-700 font-medium"
                 }`}
               >
-                마이페이지
+                {isAdmin ? "관리자 페이지" : "마이페이지"}
               </Link>
               <button
                 onClick={handleLogout}

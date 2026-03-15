@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DetailTemplate from "@/components/detail/DetailTemplate";
@@ -43,8 +43,9 @@ export default function StudyDetailPage() {
   const queryClient = useQueryClient();
 
   const numericId = typeof id === "string" ? Number(id) : Number(id?.[0]);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [justApplied, setJustApplied] = useState(false);
   const [applicantsModalOpen, setApplicantsModalOpen] = useState(false);
+  const [membersModalOpen, setMembersModalOpen] = useState(false);
 
   const {
     data: studyRes,
@@ -56,36 +57,20 @@ export default function StudyDetailPage() {
     enabled: !!numericId && !Number.isNaN(numericId),
   });
 
-  const { data: myGroupsRes } = useQuery({
-    queryKey: ["myGroups"],
-    queryFn: () => groupApi.getMyGroups(),
-    enabled: !!currentUserName && !!studyRes?.data?.data?.groupId,
-  });
-
   const study = studyRes?.data?.data;
   const groupId = study?.groupId;
 
-  // 백엔드가 isAuthor를 안 주거나 false면 authorName으로 fallback
+  const activeMemberCount =
+    (study as { activeMemberCount?: number })?.activeMemberCount ?? 0;
+
   const isAuthor =
+    study?.leader ??
     study?.isAuthor ??
     (!!currentUserName &&
       !!study?.authorName &&
       study.authorName === currentUserName);
 
-  const appliedStatus = useMemo(() => {
-    if (!groupId || !myGroupsRes?.data) return null;
-    const raw = myGroupsRes.data;
-    const list = Array.isArray(raw)
-      ? raw
-      : ((raw as { data?: unknown[] })?.data ?? []);
-    const found = (list as { groupId?: number; status?: string }[]).find(
-      (g) => g.groupId === groupId,
-    );
-    return found?.status ?? null;
-  }, [groupId, myGroupsRes]);
-
-  const isApplied =
-    hasApplied || appliedStatus === "PENDING" || appliedStatus === "ACTIVE";
+  const hasAppliedFromApi = study?.hasApplied ?? false;
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -100,8 +85,8 @@ export default function StudyDetailPage() {
 
   const closeMutation = useMutation({
     mutationFn: async () => {
-      if (!numericId) return;
-      await studyApi.close(numericId);
+      if (!groupId) return;
+      await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
@@ -116,10 +101,13 @@ export default function StudyDetailPage() {
       await groupApi.join(groupId);
     },
     onSuccess: () => {
-      setHasApplied(true);
-      queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       alert("스터디 신청이 완료되었습니다.");
+    },
+    onError: () => {
+      queryClient.invalidateQueries({ queryKey: ["study", numericId] });
+      alert("이미 들어간 스터디입니다.");
     },
   });
 
@@ -129,8 +117,7 @@ export default function StudyDetailPage() {
       await groupApi.leave(groupId);
     },
     onSuccess: () => {
-      setHasApplied(false);
-      queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       alert("스터디 신청이 취소되었습니다.");
     },
@@ -187,7 +174,8 @@ export default function StudyDetailPage() {
             views={study.viewCount ?? 0}
             infoLabel="모집 분야"
             categories={study.studyTags ?? []}
-            recruitCount={study.maxMembers}
+            activeMemberCount={activeMemberCount}
+            maxMembers={study.maxMembers}
             content={study.content}
             onEdit={
               isAuthor
@@ -231,38 +219,65 @@ export default function StudyDetailPage() {
                   >
                     신청 인원 확인
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => groupId && setMembersModalOpen(true)}
+                    className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-700 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                  >
+                    현재 인원 확인
+                  </button>
                 </div>
+              ) : justApplied ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!groupId) return;
+                    if (window.confirm("이 스터디 신청을 취소할까요?")) {
+                      cancelApplyMutation.mutate();
+                    }
+                  }}
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                >
+                  신청 취소
+                </button>
+              ) : hasAppliedFromApi ? (
+                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-600 text-base font-semibold">
+                  신청 완료
+                </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => {
                     if (!groupId) return;
-                    if (isApplied) {
-                      if (window.confirm("이 스터디 신청을 취소할까요?")) {
-                        cancelApplyMutation.mutate();
-                      }
-                    } else {
-                      if (window.confirm("이 스터디에 신청하시겠습니까?")) {
-                        applyMutation.mutate();
-                      }
+                    if (window.confirm("이 스터디에 신청하시겠습니까?")) {
+                      applyMutation.mutate();
                     }
                   }}
                   className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
                 >
-                  {isApplied ? "신청 취소" : "신청하기"}
+                  신청하기
                 </button>
               )
             }
           />
         </div>
         {groupId && (
-          <ApplicantsModal
-            open={applicantsModalOpen}
-            onClose={() => setApplicantsModalOpen(false)}
-            groupId={groupId}
-            recruiting={study.recruiting}
-            onCloseRecruitment={() => closeMutation.mutate()}
-          />
+          <>
+            <ApplicantsModal
+              open={applicantsModalOpen}
+              onClose={() => setApplicantsModalOpen(false)}
+              groupId={groupId}
+              mode="applicants"
+              recruiting={study.recruiting}
+              onCloseRecruitment={() => closeMutation.mutate()}
+            />
+            <ApplicantsModal
+              open={membersModalOpen}
+              onClose={() => setMembersModalOpen(false)}
+              groupId={groupId}
+              mode="members"
+            />
+          </>
         )}
       </main>
     </RequireMember>

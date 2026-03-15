@@ -16,18 +16,22 @@ export type GroupMemberItem = {
   createdAt: string;
 };
 
-/** GET /groups/my 응답의 그룹 한 건 */
+/** GET /groups/my 응답의 그룹 한 건 (가입 완료 ACTIVE) */
 export type MyGroupItem = {
   groupId: number;
   groupName: string;
-  createdAt: string;
-  updatedAt: string;
-  groupRecruitmentStatus: string;
-  groupStatus: string;
+  /** 연결된 게시글 ID - 스터디/프로젝트 상세 이동용 */
+  postId?: number;
+  /** STUDY | PROJECT - 상세 경로 분기용 */
+  postType?: "STUDY" | "PROJECT";
+  createdAt?: string;
+  updatedAt?: string;
+  groupRecruitmentStatus?: string;
+  groupStatus?: string;
   activeMemberCount: number;
   maxActiveMembers: number;
-  minActiveMembers: number;
-  members: GroupMemberItem[];
+  minActiveMembers?: number;
+  members?: GroupMemberItem[];
 };
 
 export const groupApi = {
@@ -50,9 +54,9 @@ export const groupApi = {
   updateStatus: (groupId: number, data: unknown) =>
     api.patch(`/groups/${groupId}/admin/status`, data),
 
-  /** 신청 인원 확인 (팀장 전용) */
+  /** 신청 인원 상태 전체 보기 (팀장 전용) */
   getApplicants: (groupId: number) =>
-    api.get(`/groups/${groupId}/applicants`),
+    api.get(`/groups/${groupId}/applicants/overview`),
 
   /** 가입 신청 수락/거부 (팀장 전용) */
   updateApplicant: (groupMemberId: number, data: unknown) =>
@@ -66,6 +70,12 @@ export const groupApi = {
   getMyGroups: () =>
     api.get<{ code: string; message: string; data: MyGroupItem[] }>(
       "/groups/my"
+    ),
+
+  /** 내가 신청한 그룹(스터디/프로젝트) 목록 - 모든 상태(PENDING/APPROVED/REJECTED) */
+  getMyApplications: () =>
+    api.get<{ code: string; message: string; data: unknown }>(
+      "/groups/my/applications"
     ),
 
   /** 그룹 전체 조회 (관리자 전용) */

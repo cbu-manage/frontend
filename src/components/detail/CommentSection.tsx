@@ -84,6 +84,7 @@ interface ReplyData {
   id: number;
   author: string;
   authorName?: string;
+  userId?: number;
   content: string;
   date: string;
   replies?: ReplyData[];
@@ -94,6 +95,7 @@ interface CommentItemProps {
   id: number;
   author: string;
   authorName?: string;
+  userId?: number;
   content: string;
   date: string;
   depth?: number;
@@ -103,7 +105,7 @@ interface CommentItemProps {
   onDeleteComment?: (id: number) => void;
   disabled?: boolean;
   deleted?: boolean;
-  currentUser?: string;
+  currentUserId?: number | null;
 }
 
 /**
@@ -113,6 +115,7 @@ export const CommentItem = ({
   id,
   author,
   authorName,
+  userId,
   content,
   date,
   depth = 0,
@@ -122,7 +125,7 @@ export const CommentItem = ({
   onDeleteComment,
   disabled = false,
   deleted = false,
-  currentUser,
+  currentUserId,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
@@ -130,8 +133,8 @@ export const CommentItem = ({
   const [menuOpen, setMenuOpen] = useState(false);
   const [replyValue, setReplyValue] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
-  const isLoggedIn = !!currentUser;
-  const isMine = isLoggedIn && !!authorName && authorName === currentUser;
+  const isLoggedIn = currentUserId != null;
+  const isMine = isLoggedIn && userId != null && currentUserId === userId;
   const showReply = !deleted && isLoggedIn && depth < 4;
 
   useEffect(() => {
@@ -243,7 +246,7 @@ export const CommentItem = ({
               onEditComment={onEditComment}
               onDeleteComment={onDeleteComment}
               disabled={disabled}
-              currentUser={currentUser}
+              currentUserId={currentUserId}
             />
           ))}
         </div>

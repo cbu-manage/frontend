@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { MessageCircle, Eye } from "lucide-react";
 import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
@@ -11,13 +11,19 @@ import { CodingTestRow } from "@/components/coding-test/CodingTestRow";
 import ArchiveCard from "@/components/archive/card";
 import { postApi, POST_CATEGORY } from "@/api";
 import type { PostListItem } from "@/api";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 // ============================================
 // 타입 정의
 // ============================================
 
 /** 카테고리 필터 키 */
-type PostCategory = "전체보기" | "스터디 모집" | "프로젝트 모집" | "코딩테스트 준비" | "자료방";
+type PostCategory =
+  | "전체보기"
+  | "스터디 모집"
+  | "프로젝트 모집"
+  | "코딩테스트 준비"
+  | "자료방";
 
 type PostStatus = "모집 중" | "모집 완료";
 
@@ -43,7 +49,10 @@ const CATEGORY_LIST: Exclude<PostCategory, "전체보기">[] = [
 ];
 
 /** API 카테고리 번호 → 탭 라벨 */
-const CATEGORY_NUM_TO_LABEL: Record<number, Exclude<PostCategory, "전체보기">> = {
+const CATEGORY_NUM_TO_LABEL: Record<
+  number,
+  Exclude<PostCategory, "전체보기">
+> = {
   [POST_CATEGORY.STUDY]: "스터디 모집",
   [POST_CATEGORY.PROJECT]: "프로젝트 모집",
   [POST_CATEGORY.CODING_TEST]: "코딩테스트 준비",
@@ -59,11 +68,11 @@ const CATEGORY_NUM_TO_PATH: Record<number, string> = {
 };
 
 const TAB_PAGE_SIZE: Record<PostCategory, number> = {
-  "전체보기": 12,
+  전체보기: 12,
   "스터디 모집": 12,
   "프로젝트 모집": 10,
   "코딩테스트 준비": 10,
-  "자료방": 12,
+  자료방: 12,
 };
 
 function formatTime(iso?: string): string {
@@ -108,14 +117,21 @@ function extractTotalPages(raw: unknown): number {
 function toMyPost(item: PostListItem, categoryNum: number): MyPost {
   const category = CATEGORY_NUM_TO_LABEL[categoryNum] ?? "스터디 모집";
   const path = CATEGORY_NUM_TO_PATH[categoryNum] ?? "/study";
-  const tags = (item.studyTags ?? item.recruitmentFields ?? item.tags ?? []) as string[];
+  const tags = (item.studyTags ??
+    item.recruitmentFields ??
+    item.tags ??
+    []) as string[];
   const author =
     item.authorName != null
       ? item.authorGeneration != null
         ? `${item.authorGeneration}기 ${item.authorName}`
         : item.authorName
       : undefined;
-  const postId = (item as { problemId?: number }).problemId ?? item.postId ?? (item as { id?: number }).id ?? 0;
+  const postId =
+    (item as { problemId?: number }).problemId ??
+    item.postId ??
+    (item as { id?: number }).id ??
+    0;
   return {
     id: postId,
     category,
@@ -140,12 +156,25 @@ const KNOWN_LANGUAGES = ["Python", "Java", "C++", "JavaScript", "C"];
 
 /** 탭 → API category 파라미터 */
 const TAB_TO_CATEGORY: Record<PostCategory, number | undefined> = {
-  "전체보기": undefined,
+  전체보기: undefined,
   "스터디 모집": POST_CATEGORY.STUDY,
   "프로젝트 모집": POST_CATEGORY.PROJECT,
   "코딩테스트 준비": POST_CATEGORY.CODING_TEST,
-  "자료방": POST_CATEGORY.ARCHIVE,
+  자료방: POST_CATEGORY.ARCHIVE,
 };
+
+const TAB_KEYS: PostCategory[] = ["전체보기", ...CATEGORY_LIST];
+
+/** API 응답 바디에서 totalElements 추출 */
+function extractTotalElements(raw: unknown): number {
+  if (!raw || typeof raw !== "object") return 0;
+  const obj = raw as Record<string, unknown>;
+  const inner =
+    "data" in obj && obj.data && typeof obj.data === "object"
+      ? (obj.data as { totalElements?: number })
+      : (obj as { totalElements?: number });
+  return inner?.totalElements ?? 0;
+}
 
 export default function MyPostsSection() {
   const [activeTab, setActiveTab] = useState<PostCategory>("전체보기");
@@ -155,7 +184,38 @@ export default function MyPostsSection() {
   const categoryParam = TAB_TO_CATEGORY[activeTab];
   const pageSize = TAB_PAGE_SIZE[activeTab];
 
-  const { data: myPostsRes, isLoading, isError } = useQuery({
+  /** 모든 탭의 개수 한 번에 조회 (page 0, size 1로 totalElements만 확보) */
+  const countResults = useQueries({
+    queries: TAB_KEYS.map((tab) => ({
+      queryKey: ["post", "my", "count", TAB_TO_CATEGORY[tab]],
+      queryFn: () =>
+        postApi.getMyPosts({
+          category: TAB_TO_CATEGORY[tab],
+          page: 0,
+          size: 1,
+        }),
+    })),
+  });
+
+  const isCountsLoading = countResults.some((r) => r.isPending);
+  const countByTab = useMemo(() => {
+    const map: Partial<Record<PostCategory, number>> = {};
+    TAB_KEYS.forEach((tab, i) => {
+      const res = countResults[i]?.data;
+      const apiBody =
+        res && typeof res === "object" && "data" in res
+          ? (res as { data?: unknown }).data
+          : res;
+      map[tab] = extractTotalElements(apiBody ?? res);
+    });
+    return map;
+  }, [countResults]);
+
+  const {
+    data: myPostsRes,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["post", "my", categoryParam, pageIndex, pageSize],
     queryFn: () =>
       postApi.getMyPosts({
@@ -165,12 +225,10 @@ export default function MyPostsSection() {
       }),
   });
 
-  const { posts, totalPages, totalCount } = useMemo(() => {
+  const { posts, totalPages } = useMemo(() => {
     const raw = myPostsRes?.data;
     const content = extractContent(raw);
     const tp = extractTotalPages(raw);
-    const data = raw as { totalElements?: number } | undefined;
-    const totalCount = data?.totalElements ?? content.length;
 
     const posts = content.map((item) => {
       const cat = item.category ?? categoryParam ?? 0;
@@ -180,14 +238,13 @@ export default function MyPostsSection() {
     return {
       posts,
       totalPages: Math.max(1, tp),
-      totalCount,
     };
   }, [myPostsRes, categoryParam]);
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-2 md:px-4">
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
         나의 작성 목록
       </h1>
@@ -201,7 +258,7 @@ export default function MyPostsSection() {
           }}
           className={`transition-colors ${activeTab === "전체보기" ? "text-gray-900 font-semibold" : "text-gray-400"}`}
         >
-          전체보기{activeTab === "전체보기" && totalCount >= 0 ? `(${totalCount})` : ""}
+          전체보기({countByTab["전체보기"] ?? "-"})
         </button>
         {CATEGORY_LIST.map((cat) => (
           <button
@@ -212,21 +269,34 @@ export default function MyPostsSection() {
             }}
             className={`transition-colors ${activeTab === cat ? "text-gray-900 font-semibold" : "text-gray-400"}`}
           >
-            {cat}
+            {cat}({countByTab[cat] ?? "-"})
           </button>
         ))}
       </div>
 
-      {isLoading && (
-        <div className="text-center py-12 text-gray-500">목록을 불러오는 중...</div>
-      )}
-      {isError && (
-        <div className="text-center py-12 text-red-500">
-          목록을 불러오지 못했습니다.
+      {isCountsLoading && (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <LoadingSpinner size="md" colorClassName="border-gray-400" />
+          <p className="text-sm text-gray-500">목록을 불러오는 중...</p>
         </div>
       )}
 
-      {!isLoading && !isError && (
+      {!isCountsLoading && (
+        <>
+          {isLoading && (
+            <div className="text-center py-12 text-gray-500">
+              목록을 불러오는 중...
+            </div>
+          )}
+          {isError && (
+            <div className="text-center py-12 text-red-500">
+              목록을 불러오지 못했습니다.
+            </div>
+          )}
+        </>
+      )}
+
+      {!isCountsLoading && !isLoading && !isError && (
         <>
           {activeTab === "전체보기" && (
             <div className="flex flex-col gap-4">
@@ -273,17 +343,29 @@ export default function MyPostsSection() {
               <table className="w-full min-w-[600px]">
                 <thead className="bg-[#95C674] text-white">
                   <tr>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">상태</th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">문제</th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">언어</th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">플랫폼</th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">작성자</th>
+                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">
+                      상태
+                    </th>
+                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">
+                      문제
+                    </th>
+                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">
+                      언어
+                    </th>
+                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                      플랫폼
+                    </th>
+                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                      작성자
+                    </th>
                     <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[60px] sm:w-[80px]"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {posts.map((post) => {
-                    const lang = post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) || "Python";
+                    const lang =
+                      post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) ||
+                      "Python";
                     return (
                       <CodingTestRow
                         key={post.id}
@@ -303,9 +385,9 @@ export default function MyPostsSection() {
 
           {activeTab === "자료방" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {posts.map((post) => (
+              {posts.map((post, index) => (
                 <ArchiveCard
-                  key={post.id}
+                  key={`archive-${post.id}-${index}`}
                   id={String(post.id)}
                   title={post.title}
                   uploadedBy={post.author ?? "씨부엉"}
@@ -339,6 +421,8 @@ export default function MyPostsSection() {
 
 function PostCard({ post }: { post: MyPost }) {
   const isCompleted = post.status === "모집 완료";
+  const isCodingTest = post.category === "코딩테스트 준비";
+  const hasComments = (post.comments ?? 0) > 0;
 
   return (
     <Link
@@ -378,10 +462,12 @@ function PostCard({ post }: { post: MyPost }) {
           <span className="flex items-center gap-1">
             <Eye size={14} /> {post.views}
           </span>
-          <span className="flex items-center gap-1">
-            <MessageCircle size={14} />
-            {post.comments}
-          </span>
+          {isCodingTest && hasComments && (
+            <span className="flex items-center gap-1">
+              <MessageCircle size={14} />
+              {post.comments}
+            </span>
+          )}
         </div>
       </div>
     </Link>
