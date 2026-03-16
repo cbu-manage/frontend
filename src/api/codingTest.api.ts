@@ -19,6 +19,10 @@ export type ProblemListParams = {
   categoryId?: number[];
   /** 플랫폼 ID 복수 선택 */
   platformId?: number[];
+  /** 언어 ID 복수 선택 */
+  languageId?: number[];
+  /** 풀이 상태 필터 */
+  problemStatus?: "SOLVED" | "UNSOLVED";
 };
 
 export type ProblemListItem = {

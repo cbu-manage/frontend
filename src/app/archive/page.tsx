@@ -48,6 +48,14 @@ export default function ArchivePage() {
             </Link>
           </div>
 
+          {/* 안내 */}
+          <div className="mt-6 rounded-xl bg-gray-50 border border-gray-200 px-6 py-4">
+            <p className="text-sm text-gray-500">
+              <span className="font-semibold text-gray-600">안내</span>{" "}
+              네이버 블로그 링크는 미리보기 지원이 어렵습니다.
+            </p>
+          </div>
+
           {/* 카드 그리드 */}
           <div className="py-8 md:py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
@@ -116,6 +124,7 @@ export default function ArchivePage() {
               onPageChange={setCurrentPage}
             />
           )}
+
         </div>
       </main>
     </RequireMember>
