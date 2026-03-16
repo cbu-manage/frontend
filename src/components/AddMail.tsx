@@ -9,7 +9,7 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [cooldown, setCooldown] = useState(0); // 초 단위
-  const { isVerificationSent, isVerifying, sendEmailToServer, verifyCodeWithServer } =
+  const { isVerificationSent, isVerifying, isSending, sendEmailToServer, verifyCodeWithServer } =
     useVerifyEmail();
   const mailUpdateMutation = useMailUpdate(onEmailUpdated);
   const isUpdating = mailUpdateMutation.isPending;
@@ -51,9 +51,9 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
         <LongBtn
           type="button"
           className="w-full"
-          disabled={cooldown > 0 || !email}
+          disabled={cooldown > 0 || !email || isSending}
           onClick={async () => {
-            if (!email || cooldown > 0) return;
+            if (!email || cooldown > 0 || isSending) return;
             const fullEmail = `${email}@tukorea.ac.kr`;
             const ok = await sendEmailToServer(fullEmail);
             if (ok) {
