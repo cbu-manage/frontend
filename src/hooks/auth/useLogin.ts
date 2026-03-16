@@ -4,10 +4,20 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { authApi, type LoginResponse } from "@/api/auth.api";
+import { memberApi } from "@/api";
 import { useAuthStore } from "@/store/authStore";
 import { useUserStore } from "@/store/userStore";
 import { setCookie } from "@/lib/cookie";
 import { AxiosError } from "axios";
+
+function getUserIdFromToken(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.user_id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 type LoginParams = {
   studentId: string;
@@ -44,24 +54,54 @@ export function useLogin() {
         password: string;
       };
     },
-    onSuccess: ({ data, studentNumber, password }) => {
+    onSuccess: async ({ data, studentNumber, password }) => {
       if (data.accessToken) {
         setAccessToken(data.accessToken);
         setCookie("ACCESS_TOKEN", data.accessToken);
       }
 
-      const rawEmail = data.email === "null" ? null : data.email;
-      const emailValue =
-        rawEmail && rawEmail.endsWith("@tukorea.ac.kr") ? rawEmail : null;
-
       const isDefaultPassword =
         password === "12345678" || password === "11111111";
+
+      let emailValue: string | null = null;
+      let role: string[] = [];
+
+      // 로그인 응답에 이메일이 없을 수 있으므로 멤버 정보 API에서 조회
+      const loginEmail = data.email === "null" ? null : data.email;
+      if (loginEmail && loginEmail.endsWith("@tukorea.ac.kr")) {
+        emailValue = loginEmail;
+      }
+
+      if (data.accessToken) {
+        const userId = getUserIdFromToken(data.accessToken);
+        if (userId) {
+          try {
+            const memberRes = await memberApi.getById(userId);
+            const raw = memberRes?.data as Record<string, unknown> | undefined;
+            const memberData = (raw && "data" in raw ? raw.data : raw) as
+              | { email?: string; role?: string[] }
+              | undefined;
+            if (!emailValue) {
+              const memberEmail = memberData?.email;
+              if (memberEmail && memberEmail.endsWith("@tukorea.ac.kr")) {
+                emailValue = memberEmail;
+              }
+            }
+            role = memberData?.role ?? [];
+          } catch {
+            // 멤버 정보 조회 실패 시 무시
+          }
+        }
+      }
+
       const isEmailNull = !emailValue;
+      const isAdmin = role.includes('ADMIN');
 
       setUser({
         name: data.name,
         studentNumber,
         email: emailValue,
+        role,
       });
       setAuthStatus({
         isDefaultPassword,
@@ -69,20 +109,16 @@ export function useLogin() {
       });
       setErrorMessage(null);
 
-      const isAdmin = data.name === '관리자';
-
       if (isAdmin) {
         router.push("/");
         return;
       }
 
-      // 1순위: 이메일이 없거나 학교 메일이 아닌 경우 → 이메일 등록 페이지로 이동
       if (isEmailNull) {
         router.push("/private");
         return;
       }
 
-      // 2순위: 기본 비밀번호(1234, 1111)인 경우 → 비밀번호 변경 페이지로 이동
       if (isDefaultPassword) {
         const shouldChangePassword = window.confirm(
           "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?",

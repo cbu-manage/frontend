@@ -118,6 +118,9 @@ export default function CodingTestPage() {
   const languages = useCodingTestMetaStore((s) => s.languages);
   const categories = useCodingTestMetaStore((s) => s.categories);
 
+  const hasClientFilter =
+    statusFilter !== "전체" || languageFilterIds.length > 0;
+
   const pageIndex = Math.max(0, currentPage - 1);
 
   const {
@@ -128,14 +131,14 @@ export default function CodingTestPage() {
     queryKey: [
       "codingTest",
       "list",
-      pageIndex,
+      hasClientFilter ? "all" : pageIndex,
       platformFilterIds,
       categoryFilterIds,
     ],
     queryFn: () =>
       codingTestApi.getList({
-        page: pageIndex,
-        size: PAGE_SIZE,
+        page: hasClientFilter ? 0 : pageIndex,
+        size: hasClientFilter ? 9999 : PAGE_SIZE,
         sort: ["post.createdAt,DESC"],
         platformId:
           platformFilterIds.length > 0 ? platformFilterIds : undefined,
@@ -144,7 +147,7 @@ export default function CodingTestPage() {
       }),
   });
 
-  const { content: rawList, totalPages } = useMemo(() => {
+  const { content: rawList, totalPages: serverTotalPages } = useMemo(() => {
     const body = listRes?.data;
     return extractProblemList(body ?? null);
   }, [listRes?.data]);
@@ -181,39 +184,31 @@ export default function CodingTestPage() {
             ? `${item.authorGeneration}기 ${item.authorName}`
             : item.authorName
           : undefined,
+      commentCount: item.commentCount ?? 0,
     }));
   }, [rawList, languages, platforms]);
 
-  const filteredProblems = useMemo(() => {
-    const selectedCategoryNames =
-      categoryFilterIds.length === 0
-        ? []
-        : categories
-            .filter((c) => categoryFilterIds.includes(c.id))
-            .map((c) => c.name)
-            .filter((name): name is string => !!name);
-
+  const allFiltered = useMemo(() => {
+    if (!hasClientFilter) return problems;
     return problems.filter((p) => {
       const statusOk = statusFilter === "전체" || p.status === statusFilter;
       const langOk =
         languageFilterIds.length === 0 ||
         (p.languageId != null && languageFilterIds.includes(p.languageId));
-      const categoryOk =
-        selectedCategoryNames.length === 0 ||
-        (Array.isArray(p.categories) &&
-          p.categories.some((name) => selectedCategoryNames.includes(name)));
-      return statusOk && langOk && categoryOk;
+      return statusOk && langOk;
     });
-  }, [
-    problems,
-    statusFilter,
-    languageFilterIds,
-    categoryFilterIds,
-    categories,
-  ]);
+  }, [problems, statusFilter, languageFilterIds, hasClientFilter]);
+
+  const totalPages = hasClientFilter
+    ? Math.max(1, Math.ceil(allFiltered.length / PAGE_SIZE))
+    : Math.max(1, serverTotalPages);
+
+  const filteredProblems = hasClientFilter
+    ? allFiltered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+    : allFiltered;
 
   const pageNumbers = Array.from(
-    { length: Math.max(1, totalPages) },
+    { length: totalPages },
     (_, i) => i + 1,
   );
 
@@ -245,6 +240,7 @@ export default function CodingTestPage() {
   ) => {
     if (list.includes(id)) setList(list.filter((x) => x !== id));
     else setList([...list, id]);
+    setCurrentPage(1);
   };
 
   return (
@@ -277,6 +273,7 @@ export default function CodingTestPage() {
                           key={option}
                           onClick={() => {
                             setStatusFilter(option);
+                            setCurrentPage(1);
                             setOpenFilter(null);
                           }}
                           className="w-full px-3 sm:px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg"
@@ -540,6 +537,7 @@ export default function CodingTestPage() {
                       language={problem.language}
                       platform={problem.platform}
                       author={problem.author}
+                      comments={problem.commentCount}
                     />
                   ))}
                 {!isLoading &&
