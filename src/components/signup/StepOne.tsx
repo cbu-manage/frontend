@@ -31,7 +31,7 @@ export default function StepOne({
   }, [cooldown]);
 
   const { validateUser } = useValidateUser();
-  const { sendEmailToServer, verifyCodeWithServer } = useVerifyEmail();
+  const { isSending, sendEmailToServer, verifyCodeWithServer } = useVerifyEmail();
   const setUser = useUserStore((s) => s.setUser);
 
   const handleUserVerification = async () => {
@@ -49,10 +49,7 @@ export default function StepOne({
       alert("먼저 합격자 인증을 완료해주세요.");
       return;
     }
-    if (!email) {
-      alert("이메일을 입력해주세요.");
-      return;
-    }
+    if (!email || isSending) return;
     const success = await sendEmailToServer(fullEmail);
     if (success) {
       alert("인증번호가 전송되었습니다.");
@@ -144,7 +141,7 @@ export default function StepOne({
           <ShortBtn
             type="button"
             onClick={handleEmailSend}
-            disabled={!verifiedUserInfo || !email || cooldown > 0}
+            disabled={!verifiedUserInfo || !email || cooldown > 0 || isSending}
           >
             {cooldown > 0 ? `${cooldown}초 후 재전송` : "인증번호 받기"}
           </ShortBtn>
