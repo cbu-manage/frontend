@@ -10,10 +10,9 @@ import { useUserStore } from "@/store/userStore";
 import { setCookie } from "@/lib/cookie";
 import { AxiosError } from "axios";
 
-function getUserIdFromToken(token: string): number | null {
+function decodeTokenPayload(token: string): Record<string, unknown> | null {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.user_id ?? null;
+    return JSON.parse(atob(token.split(".")[1]));
   } catch {
     return null;
   }
@@ -60,34 +59,48 @@ export function useLogin() {
         setCookie("ACCESS_TOKEN", data.accessToken);
       }
 
+      const loginEmail = data.email === "null" ? null : data.email;
+      const tokenPayload = data.accessToken
+        ? decodeTokenPayload(data.accessToken)
+        : null;
+      const permissions = Array.isArray(tokenPayload?.permissions)
+        ? (tokenPayload.permissions as string[])
+        : [];
+      const isAdmin = permissions.includes("admin");
+
+      if (isAdmin) {
+        setUser({
+          name: data.name,
+          studentNumber,
+          email: loginEmail,
+          isAdmin: true,
+        });
+        setErrorMessage(null);
+        router.push("/");
+        return;
+      }
+
       const isDefaultPassword =
         password === "12345678" || password === "11111111";
 
       let emailValue: string | null = null;
-      let role: string[] = [];
-
-      // 로그인 응답에 이메일이 없을 수 있으므로 멤버 정보 API에서 조회
-      const loginEmail = data.email === "null" ? null : data.email;
       if (loginEmail && loginEmail.endsWith("@tukorea.ac.kr")) {
         emailValue = loginEmail;
       }
 
-      if (data.accessToken) {
-        const userId = getUserIdFromToken(data.accessToken);
+      if (!emailValue && tokenPayload) {
+        const userId = (tokenPayload.user_id as number) ?? null;
         if (userId) {
           try {
             const memberRes = await memberApi.getById(userId);
             const raw = memberRes?.data as Record<string, unknown> | undefined;
             const memberData = (raw && "data" in raw ? raw.data : raw) as
-              | { email?: string; role?: string[] }
+              | { email?: string }
               | undefined;
-            if (!emailValue) {
-              const memberEmail = memberData?.email;
-              if (memberEmail && memberEmail.endsWith("@tukorea.ac.kr")) {
-                emailValue = memberEmail;
-              }
+            const memberEmail = memberData?.email;
+            if (memberEmail && memberEmail.endsWith("@tukorea.ac.kr")) {
+              emailValue = memberEmail;
             }
-            role = memberData?.role ?? [];
           } catch {
             // 멤버 정보 조회 실패 시 무시
           }
@@ -95,24 +108,17 @@ export function useLogin() {
       }
 
       const isEmailNull = !emailValue;
-      const isAdmin = role.includes('ADMIN');
 
       setUser({
         name: data.name,
         studentNumber,
         email: emailValue,
-        role,
       });
       setAuthStatus({
         isDefaultPassword,
         isEmailNull,
       });
       setErrorMessage(null);
-
-      if (isAdmin) {
-        router.push("/");
-        return;
-      }
 
       if (isEmailNull) {
         router.push("/private");

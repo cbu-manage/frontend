@@ -16,7 +16,7 @@ type UserInfo = {
 
 type AuthStatus = { isDefaultPassword: boolean; isEmailNull: boolean };
 
-type SetUserInfo = Partial<Omit<UserInfo, 'isAdmin'>> & { role?: string[] };
+type SetUserInfo = Partial<UserInfo>;
 
 type UserStore = UserInfo & {
   setUser: (info: SetUserInfo) => void;
@@ -62,22 +62,16 @@ export const useUserStore = create<UserStore>()(
     (set, get) => ({
       ...initialState,
       setUser: (info) =>
-        set((s) => {
-          const name = info.name ?? s.name;
-          const email = info.email ?? s.email;
-          const role = info.role ?? [];
-          const isAdmin = role.includes('ADMIN');
-          return {
-            ...s,
-            name,
-            studentNumber: info.studentNumber ?? s.studentNumber,
-            email,
-            major: info.major ?? s.major,
-            grade: info.grade ?? s.grade,
-            nickName: info.nickName ?? s.nickName,
-            isAdmin,
-          };
-        }),
+        set((s) => ({
+          ...s,
+          name: info.name ?? s.name,
+          studentNumber: info.studentNumber ?? s.studentNumber,
+          email: info.email ?? s.email,
+          major: info.major ?? s.major,
+          grade: info.grade ?? s.grade,
+          nickName: info.nickName ?? s.nickName,
+          isAdmin: info.isAdmin ?? s.isAdmin,
+        })),
       setAuthStatus: (status) =>
         set((s) => ({
           ...s,

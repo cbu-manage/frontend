@@ -1,67 +1,84 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { memberApi, type MemberInfo } from "@/api/member.api";
+import PGN from "@/components/shared/Pagination";
 
-type Member = {
-  id: number;
-  name: string;
-  studentId: string;
-  nickName: string;
-  email: string;
-  batch: string;
-  paymentStatus: boolean;
-  activityStatus: string;
-};
-
-const STATUSES = ["활동", "중단", "탈퇴"] as const;
+const PAGE_SIZE = 10;
 
 export default function MemberManageSection() {
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [batchFilter, setBatchFilter] = useState<string | null>(null);
+  const [generationFilter, setGenerationFilter] = useState<number | null>(null);
+  const [searchName, setSearchName] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
-  const batchList = useMemo(
-    () => Array.from({ length: 20 }, (_, i) => `${i + 1}기`),
-    [],
-  );
+  const { data: allMembers = [], isLoading } = useQuery({
+    queryKey: ["admin", "members"],
+    queryFn: async () => {
+      const parseResponse = (raw: unknown): MemberInfo[] => {
+        if (Array.isArray(raw)) return raw as MemberInfo[];
+        const obj = raw as Record<string, unknown>;
+        const inner = obj?.data;
+        if (Array.isArray(inner)) return inner as MemberInfo[];
+        const paged = inner as { content?: MemberInfo[] } | undefined;
+        return paged?.content ?? [];
+      };
 
-  const data = useMemo<Member[]>(
-    () =>
-      Array.from({ length: 30 }, (_, i) => ({
-        id: i + 1,
-        name: `회원 ${i + 1}`,
-        studentId: `20191${Math.floor(10000 + Math.random() * 89999)}`,
-        nickName: `닉네임 ${i + 1}`,
-        email: `user${i + 1}@tukorea.ac.kr`,
-        batch: `${Math.floor(1 + Math.random() * 20)}기`,
-        paymentStatus: Math.random() > 0.5,
-        activityStatus: STATUSES[Math.floor(Math.random() * STATUSES.length)],
-      })),
-    [],
-  );
+      const all: MemberInfo[] = [];
+      let page = 0;
+
+      while (true) {
+        const res = await memberApi.getAll(page, PAGE_SIZE);
+        const content = parseResponse(res.data as unknown);
+        if (content.length === 0) break;
+        all.push(...content);
+        if (content.length < PAGE_SIZE) break;
+        page += 1;
+      }
+      return all;
+    },
+  });
+
+  const generationList = useMemo(() => {
+    return [...new Set(allMembers.map((m) => m.generation))].sort(
+      (a, b) => a - b,
+    );
+  }, [allMembers]);
 
   const filteredData = useMemo(() => {
-    if (batchFilter) return data.filter((d) => d.batch === batchFilter);
-    return data;
-  }, [data, batchFilter]);
+    let result = allMembers;
+    if (generationFilter !== null) {
+      result = result.filter((m) => m.generation === generationFilter);
+    }
+    if (searchName.trim()) {
+      const keyword = searchName.trim().toLowerCase();
+      result = result.filter((m) => m.name.toLowerCase().includes(keyword));
+    }
+    return result;
+  }, [allMembers, generationFilter, searchName]);
 
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return filteredData.slice(start, end);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+
+  const members = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredData.slice(start, start + PAGE_SIZE);
   }, [filteredData, currentPage]);
 
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i + 1),
+    [totalPages],
+  );
+
   const isEntireSelected =
-    selectedItems.length === paginatedData.length && paginatedData.length > 0;
+    selectedItems.length === members.length && members.length > 0;
 
   const entireSelectToggle = () => {
     if (isEntireSelected) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(paginatedData.map((i) => i.id));
+      setSelectedItems(members.map((i) => i.id));
     }
   };
 
@@ -71,17 +88,32 @@ export default function MemberManageSection() {
     );
   };
 
-  const filterByBatch = (batch: string) => {
-    setBatchFilter(batch);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setSelectedItems([]);
+  };
+
+  const filterByGeneration = (gen: number) => {
+    setGenerationFilter(gen);
     setCurrentPage(1);
+    setSelectedItems([]);
     setDropdownVisible(false);
   };
 
   const resetFilter = () => {
-    setBatchFilter(null);
+    setGenerationFilter(null);
     setCurrentPage(1);
+    setSelectedItems([]);
     setDropdownVisible(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto py-20 text-center text-gray-400">
+        회원 목록을 불러오는 중...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -92,18 +124,15 @@ export default function MemberManageSection() {
       <div className="flex items-center justify-between gap-4 mb-6">
         <p className="text-lg">
           전체 동아리 회원{" "}
-          <span className="font-semibold">{data.length}명</span>
+          <span className="font-semibold">{filteredData.length}명</span>
         </p>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-gray-50 transition-colors">
-            스프레드 시트 연동하기
-          </button>
           <div className="relative">
             <button
               onClick={() => setDropdownVisible((v) => !v)}
               className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
             >
-              {batchFilter ?? "기수"}
+              {generationFilter !== null ? `${generationFilter}기` : "기수"}
             </button>
             {dropdownVisible && (
               <ul className="absolute right-0 z-10 mt-1 w-32 rounded-md border bg-white shadow-lg max-h-60 overflow-y-auto">
@@ -113,13 +142,13 @@ export default function MemberManageSection() {
                 >
                   전체
                 </li>
-                {batchList.map((b) => (
+                {generationList.map((g) => (
                   <li
-                    key={b}
+                    key={g}
                     className="px-3 py-2 cursor-pointer hover:bg-gray-50 text-sm"
-                    onClick={() => filterByBatch(b)}
+                    onClick={() => filterByGeneration(g)}
                   >
-                    {b}
+                    {g}기
                   </li>
                 ))}
               </ul>
@@ -130,6 +159,12 @@ export default function MemberManageSection() {
               className="outline-none text-sm"
               type="text"
               placeholder="이름을 검색하세요."
+              value={searchName}
+              onChange={(e) => {
+                setSearchName(e.target.value);
+                setCurrentPage(1);
+                setSelectedItems([]);
+              }}
             />
           </div>
         </div>
@@ -146,88 +181,82 @@ export default function MemberManageSection() {
                   aria-label="select all"
                 />
               </th>
-              <th className="p-3 text-left font-medium text-gray-700">기수</th>
+              <th className="p-3 text-center font-medium text-gray-700">기수</th>
               <th className="p-3 text-left font-medium text-gray-700">이름</th>
-              <th className="p-3 text-left font-medium text-gray-700">학번</th>
-              <th className="p-3 text-left font-medium text-gray-700">
-                닉네임
-              </th>
+              <th className="p-3 text-center font-medium text-gray-700">학번</th>
+              <th className="p-3 text-center font-medium text-gray-700">학과</th>
               <th className="p-3 text-left font-medium text-gray-700">
                 메일 주소
               </th>
-              <th className="p-3 text-left font-medium text-gray-700">
-                입금 상태
+              <th className="p-3 text-center font-medium text-gray-700">
+                회비 납부
               </th>
-              <th className="p-3 text-left font-medium text-gray-700">
+              <th className="p-3 text-center font-medium text-gray-700">
                 활동 여부
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {paginatedData.map((item) => (
-              <tr
-                key={item.id}
-                className={`transition-colors ${selectedItems.includes(item.id) ? "bg-gray-50" : "hover:bg-gray-50/50"}`}
-              >
-                <td className="p-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedItems.includes(item.id)}
-                    onChange={() => toggleSelect(item.id)}
-                  />
+            {members.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="p-6 text-center text-gray-400">
+                  {generationFilter !== null || searchName.trim()
+                    ? "검색 결과가 없습니다."
+                    : "등록된 회원이 없습니다."}
                 </td>
-                <td className="p-3">{item.batch}</td>
-                <td className="p-3 font-medium">{item.name}</td>
-                <td className="p-3">{item.studentId}</td>
-                <td className="p-3">{item.nickName}</td>
-                <td className="p-3">{item.email}</td>
-                <td
-                  className={`p-3 font-medium ${item.paymentStatus ? "text-emerald-600" : "text-rose-500"}`}
-                >
-                  {item.paymentStatus ? "입금" : "미입금"}
-                </td>
-                <td className="p-3">{item.activityStatus}</td>
               </tr>
-            ))}
+            ) : (
+              members.map((item) => (
+                <tr
+                  key={item.id}
+                  className={`transition-colors ${selectedItems.includes(item.id) ? "bg-gray-50" : "hover:bg-gray-50/50"}`}
+                >
+                  <td className="p-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item.id)}
+                      onChange={() => toggleSelect(item.id)}
+                    />
+                  </td>
+                  <td className="p-3 text-center">{item.generation}기</td>
+                  <td className="p-3 font-medium">{item.name}</td>
+                  <td className="p-3 text-center">{item.studentNumber}</td>
+                  <td className="p-3 text-center">{item.major}</td>
+                  <td className="p-3">{item.email || "-"}</td>
+                  <td className="p-3 text-center font-medium text-emerald-600">
+                    납부
+                  </td>
+                  <td className="p-3 text-center">활동</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50 transition-colors">
-            활동 상태 변경
+      {selectedItems.length > 0 && (
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-sm text-gray-600">
+            {selectedItems.length}명 선택
+          </span>
+          <button
+            onClick={() => {
+              alert(
+                `선택된 ${selectedItems.length}명의 회비 상태를 일괄 변경합니다.\n(API 연동 예정)`,
+              );
+            }}
+            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+          >
+            회비 일괄 납부 처리
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="rounded-md border px-3 py-2 text-sm hover:bg-gray-50 transition-colors">
-            디스코드 일괄 초대링크 발송
-          </button>
-          <button className="rounded-md bg-gray-900 text-white px-3 py-2 text-sm hover:opacity-90 transition-opacity">
-            입금 상태 변경
-          </button>
-        </div>
-      </div>
+      )}
 
-      <div className="mt-6 flex items-center justify-center gap-2">
-        <button
-          className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
-          disabled={currentPage <= 1}
-          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        >
-          이전
-        </button>
-        <span className="text-sm text-gray-600">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          className="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
-          disabled={currentPage >= totalPages}
-          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-        >
-          다음
-        </button>
-      </div>
+      <PGN
+        currentPage={currentPage}
+        totalPages={pageNumbers}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 }
