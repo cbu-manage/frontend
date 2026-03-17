@@ -4,11 +4,20 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { AxiosError } from "axios";
 import { Calendar as CalendarIcon } from "lucide-react";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
 import { Calendar } from "@/components/ui/calendar";
 import { projectApi } from "@/api";
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof AxiosError && err.response?.data) {
+    const msg = (err.response.data as { message?: string })?.message;
+    if (msg) return msg;
+  }
+  return "요청 처리 중 오류가 발생했습니다.";
+}
 
 const RECRUIT_STATUS_OPTIONS = [
   { label: "모집 중", value: "recruiting" },
@@ -126,6 +135,9 @@ export default function ProjectWriteClient() {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.push("/project");
     },
+    onError: (err) => {
+      alert(getErrorMessage(err));
+    },
   });
 
   const updateMutation = useMutation({
@@ -149,6 +161,9 @@ export default function ProjectWriteClient() {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project", numericEditId] });
       router.push(`/project/${numericEditId}`);
+    },
+    onError: (err) => {
+      alert(getErrorMessage(err));
     },
   });
 
