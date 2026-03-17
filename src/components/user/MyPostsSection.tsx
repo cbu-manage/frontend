@@ -2,15 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { MessageCircle, Eye } from "lucide-react";
+import { MessageCircle, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
 import { StudyCard } from "@/components/study/StudyCard";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { CodingTestRow } from "@/components/coding-test/CodingTestRow";
 import ArchiveCard from "@/components/archive/card";
-import { postApi, POST_CATEGORY } from "@/api";
-import type { PostListItem } from "@/api";
+import { postApi, POST_CATEGORY, resourcesApi, projectApi } from "@/api";
+import { useDeleteResource } from "@/hooks/archive/useResourceList";
+import type { PostListItem, ResourceItem } from "@/api";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 // ============================================
@@ -39,6 +40,7 @@ interface MyPost {
   comments: number;
   time: string;
   href: string;
+  createdAt?: string;
 }
 
 const CATEGORY_LIST: Exclude<PostCategory, "전체보기">[] = [
@@ -91,14 +93,20 @@ function formatTime(iso?: string): string {
   }
 }
 
-/** API content 배열 추출 */
+/** API content 배열 추출 (post/project/resource 등 다양한 응답 구조 지원) */
 function extractContent(raw: unknown): PostListItem[] {
   if (!raw || typeof raw !== "object") return [];
   const obj = raw as Record<string, unknown>;
-  const data = obj.data ?? obj;
+  let data: unknown = obj.data ?? obj;
   if (Array.isArray(data)) return data as PostListItem[];
-  if (data && typeof data === "object" && "content" in data)
-    return ((data as { content?: unknown }).content ?? []) as PostListItem[];
+  if (data && typeof data === "object") {
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d.content)) return d.content as PostListItem[];
+    if ("data" in d && d.data && typeof d.data === "object") {
+      const inner = d.data as Record<string, unknown>;
+      if (Array.isArray(inner.content)) return inner.content as PostListItem[];
+    }
+  }
   return [];
 }
 
@@ -144,6 +152,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     comments: item.comments ?? 0,
     time: formatTime(item.createdAt as string),
     href: `${path}/${postId}`,
+    createdAt: item.createdAt as string | undefined,
   };
 }
 
@@ -165,7 +174,7 @@ const TAB_TO_CATEGORY: Record<PostCategory, number | undefined> = {
 
 const TAB_KEYS: PostCategory[] = ["전체보기", ...CATEGORY_LIST];
 
-/** API 응답 바디에서 totalElements 추출 */
+/** API 응답 바디에서 totalElements 추출 (post API) */
 function extractTotalElements(raw: unknown): number {
   if (!raw || typeof raw !== "object") return 0;
   const obj = raw as Record<string, unknown>;
@@ -176,70 +185,317 @@ function extractTotalElements(raw: unknown): number {
   return inner?.totalElements ?? 0;
 }
 
+/** resources API 응답에서 totalElements 또는 content 길이 추출 */
+function extractResourcesTotal(raw: unknown): number {
+  if (!raw || typeof raw !== "object") return 0;
+  const obj = raw as Record<string, unknown>;
+  const inner =
+    "data" in obj && obj.data && typeof obj.data === "object"
+      ? (obj.data as { totalElements?: number; content?: unknown[] })
+      : (obj as { totalElements?: number; content?: unknown[] });
+  if (typeof inner?.totalElements === "number") return inner.totalElements;
+  if (Array.isArray(inner?.content)) return inner.content.length;
+  if (Array.isArray(raw)) return (raw as unknown[]).length;
+  return 0;
+}
+
 export default function MyPostsSection() {
   const [activeTab, setActiveTab] = useState<PostCategory>("전체보기");
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = Math.max(0, currentPage - 1);
+  const deleteResourceMutation = useDeleteResource();
 
   const categoryParam = TAB_TO_CATEGORY[activeTab];
   const pageSize = TAB_PAGE_SIZE[activeTab];
 
-  /** 모든 탭의 개수 한 번에 조회 (page 0, size 1로 totalElements만 확보) */
+  const COUNT_TABS = ["스터디 모집", "프로젝트 모집", "코딩테스트 준비", "자료방"] as const;
+
+  /** 각 탭 개수 조회 (프로젝트=projectApi, 자료방=resourcesApi, 나머지=postApi) */
   const countResults = useQueries({
-    queries: TAB_KEYS.map((tab) => ({
-      queryKey: ["post", "my", "count", TAB_TO_CATEGORY[tab]],
+    queries: COUNT_TABS.map((tab) => ({
+      queryKey:
+        tab === "자료방"
+          ? ["resources", "my", "count"]
+          : tab === "프로젝트 모집"
+            ? ["project", "my", "count"]
+            : ["post", "my", "count", TAB_TO_CATEGORY[tab]],
       queryFn: () =>
-        postApi.getMyPosts({
-          category: TAB_TO_CATEGORY[tab],
-          page: 0,
-          size: 1,
-        }),
+        tab === "자료방"
+          ? resourcesApi.getMyList({ page: 0, size: 1 })
+          : tab === "프로젝트 모집"
+            ? projectApi.getMyList({
+                page: 0,
+                size: 1,
+                category: 2,
+              })
+            : postApi.getMyPosts({
+                category: TAB_TO_CATEGORY[tab],
+                page: 0,
+                size: 1,
+              }),
     })),
   });
 
   const isCountsLoading = countResults.some((r) => r.isPending);
   const countByTab = useMemo(() => {
     const map: Partial<Record<PostCategory, number>> = {};
-    TAB_KEYS.forEach((tab, i) => {
+    COUNT_TABS.forEach((tab, i) => {
       const res = countResults[i]?.data;
       const apiBody =
         res && typeof res === "object" && "data" in res
           ? (res as { data?: unknown }).data
           : res;
-      map[tab] = extractTotalElements(apiBody ?? res);
+      map[tab] =
+        tab === "자료방"
+          ? extractResourcesTotal(apiBody ?? res)
+          : extractTotalElements(apiBody ?? res);
     });
+    map["전체보기"] =
+      (map["스터디 모집"] ?? 0) +
+      (map["프로젝트 모집"] ?? 0) +
+      (map["코딩테스트 준비"] ?? 0) +
+      (map["자료방"] ?? 0);
     return map;
   }, [countResults]);
 
-  const {
-    data: myPostsRes,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["post", "my", categoryParam, pageIndex, pageSize],
-    queryFn: () =>
-      postApi.getMyPosts({
+  const isArchiveTab = activeTab === "자료방";
+  const isAllTab = activeTab === "전체보기";
+
+  const allTabFetchSize = 50;
+
+  /** 전체보기: 4개 소스 병합 조회 (전부 가져와서 클라이언트 페이지네이션) */
+  const allTabQueries = useQueries({
+    queries: [
+      {
+        queryKey: ["post", "my", POST_CATEGORY.STUDY, 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await postApi.getMyPosts({
+            category: POST_CATEGORY.STUDY,
+            page: 0,
+            size: allTabFetchSize,
+          });
+          return res.data;
+        },
+        enabled: isAllTab,
+      },
+      {
+        queryKey: ["project", "my", 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await projectApi.getMyList({
+            page: 0,
+            size: allTabFetchSize,
+            category: 2,
+          });
+          return res.data;
+        },
+        enabled: isAllTab,
+      },
+      {
+        queryKey: ["post", "my", POST_CATEGORY.CODING_TEST, 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await postApi.getMyPosts({
+            category: POST_CATEGORY.CODING_TEST,
+            page: 0,
+            size: allTabFetchSize,
+          });
+          return res.data;
+        },
+        enabled: isAllTab,
+      },
+      {
+        queryKey: ["resources", "my", 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await resourcesApi.getMyList({
+            page: 0,
+            size: allTabFetchSize,
+          });
+          const payload =
+            res.data && typeof res.data === "object" && "data" in res.data
+              ? (res.data as { data?: unknown }).data
+              : res.data;
+          if (Array.isArray(payload))
+            return { content: payload, totalPages: 1, totalElements: payload.length };
+          const obj = payload as {
+            content?: ResourceItem[];
+            totalPages?: number;
+            totalElements?: number;
+          };
+          return {
+            content: Array.isArray(obj?.content) ? obj.content : [],
+            totalPages: typeof obj?.totalPages === "number" ? obj.totalPages : 1,
+            totalElements:
+              typeof obj?.totalElements === "number"
+                ? obj.totalElements
+                : obj?.content?.length ?? 0,
+          };
+        },
+        enabled: isAllTab,
+      },
+    ],
+  });
+
+  const isProjectTab = activeTab === "프로젝트 모집";
+
+  /** 자료방/프로젝트/나머지: 단일 API 조회 */
+  const singleTabQuery = useQuery({
+    queryKey: isArchiveTab
+      ? ["resources", "my", pageIndex, pageSize]
+      : isProjectTab
+        ? ["project", "my", pageIndex, pageSize]
+        : ["post", "my", categoryParam, pageIndex, pageSize],
+    queryFn: async () => {
+      if (isArchiveTab) {
+        const res = await resourcesApi.getMyList({
+          page: pageIndex,
+          size: pageSize,
+        });
+        const payload =
+          res.data && typeof res.data === "object" && "data" in res.data
+            ? (res.data as { data?: unknown }).data
+            : res.data;
+        if (Array.isArray(payload)) return { content: payload, totalPages: 1 };
+        const obj = payload as { content?: ResourceItem[]; totalPages?: number };
+        return {
+          content: Array.isArray(obj?.content) ? obj.content : [],
+          totalPages: typeof obj?.totalPages === "number" ? obj.totalPages : 1,
+        };
+      }
+      if (isProjectTab) {
+        const res = await projectApi.getMyList({
+          page: pageIndex,
+          size: pageSize,
+          category: 2,
+        });
+        return res.data;
+      }
+      return postApi.getMyPosts({
         category: categoryParam,
         page: pageIndex,
         size: pageSize,
-      }),
+      });
+    },
+    enabled: !isAllTab,
   });
 
-  const { posts, totalPages } = useMemo(() => {
-    const raw = myPostsRes?.data;
+  const postsQuery = isAllTab ? null : singleTabQuery;
+  const allTabLoading = isAllTab && allTabQueries.some((r) => r.isPending);
+  const allTabError = isAllTab && allTabQueries.some((r) => r.isError);
+
+  const { posts, totalPages, archiveItems } = useMemo(() => {
+    if (isAllTab) {
+      const studyContent = extractContent(allTabQueries[0]?.data);
+      const projectContent = extractContent(allTabQueries[1]?.data);
+      const codingContent = extractContent(allTabQueries[2]?.data);
+      const resourceData = allTabQueries[3]?.data as
+        | { content?: ResourceItem[] }
+        | undefined;
+      const resourceContent = Array.isArray(resourceData?.content)
+        ? resourceData.content
+        : [];
+
+      const studyPosts = studyContent.map((item) =>
+        toMyPost(item, POST_CATEGORY.STUDY),
+      );
+      const projectPosts = projectContent.map((item) =>
+        toMyPost(item, POST_CATEGORY.PROJECT),
+      );
+      const codingPosts = codingContent.map((item) =>
+        toMyPost(item, POST_CATEGORY.CODING_TEST),
+      );
+      const resourcePosts: MyPost[] = resourceContent.map((r) => ({
+        id: r.resourceId,
+        category: "자료방",
+        status: "모집 중" as PostStatus,
+        title: r.title ?? "",
+        content: "",
+        tags: [],
+        author:
+          r.generation != null && r.authorName
+            ? `${r.generation}기 ${r.authorName}`
+            : r.authorName ?? "씨부엉 멤버",
+        views: (r.views as number) ?? 0,
+        comments: 0,
+        time: r.createdAt ? formatTime(r.createdAt) : "-",
+        href: r.link ?? "/archive",
+        createdAt: r.createdAt,
+      }));
+
+      const merged = [
+        ...studyPosts,
+        ...projectPosts,
+        ...codingPosts,
+        ...resourcePosts,
+      ].sort((a, b) => {
+        const da = new Date(a.createdAt ?? 0).getTime();
+        const db = new Date(b.createdAt ?? 0).getTime();
+        return db - da;
+      });
+
+      const pageSizeAll = TAB_PAGE_SIZE["전체보기"];
+      const paginated = merged.slice(
+        pageIndex * pageSizeAll,
+        (pageIndex + 1) * pageSizeAll,
+      );
+
+      const totalCount =
+        extractTotalElements(allTabQueries[0]?.data) +
+        extractTotalElements(allTabQueries[1]?.data) +
+        extractTotalElements(allTabQueries[2]?.data) +
+        extractResourcesTotal(resourceData);
+      const totalPages = Math.max(
+        1,
+        Math.ceil(totalCount / TAB_PAGE_SIZE["전체보기"]),
+      );
+
+      return {
+        posts: paginated,
+        totalPages,
+        archiveItems: [] as { id: number; title: string; link?: string; thumbnailUrl?: string; author: string; time: string; views: number }[],
+      };
+    }
+    if (isArchiveTab) {
+      const data = singleTabQuery.data as
+        | { content?: ResourceItem[]; totalPages?: number }
+        | undefined;
+      const content = Array.isArray(data?.content) ? data.content : [];
+      const tp = typeof data?.totalPages === "number" ? data.totalPages : 1;
+      const items = content.map((r) => ({
+        id: r.resourceId,
+        title: r.title ?? "",
+        link: r.link,
+        thumbnailUrl: r.ogImage,
+        author:
+          r.generation != null && r.authorName
+            ? `${r.generation}기 ${r.authorName}`
+            : r.authorName ?? "씨부엉 멤버",
+        time: r.createdAt ? formatTime(r.createdAt) : "-",
+        views: (r.views as number) ?? 0,
+      }));
+      return {
+        posts: [] as MyPost[],
+        totalPages: Math.max(1, tp),
+        archiveItems: items,
+      };
+    }
+    const raw = singleTabQuery.data;
     const content = extractContent(raw);
     const tp = extractTotalPages(raw);
-
     const posts = content.map((item) => {
       const cat = item.category ?? categoryParam ?? 0;
       return toMyPost(item, cat);
     });
-
     return {
       posts,
       totalPages: Math.max(1, tp),
+      archiveItems: [] as { id: number; title: string; link?: string; thumbnailUrl?: string; author: string; time: string; views: number }[],
     };
-  }, [myPostsRes, categoryParam]);
+  }, [
+    isAllTab,
+    isArchiveTab,
+    allTabQueries,
+    singleTabQuery.data,
+    categoryParam,
+  ]);
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
@@ -283,12 +539,12 @@ export default function MyPostsSection() {
 
       {!isCountsLoading && (
         <>
-          {isLoading && (
+          {(isAllTab ? allTabLoading : postsQuery?.isLoading) && (
             <div className="text-center py-12 text-gray-500">
               목록을 불러오는 중...
             </div>
           )}
-          {isError && (
+          {(isAllTab ? allTabError : postsQuery?.isError) && (
             <div className="text-center py-12 text-red-500">
               목록을 불러오지 못했습니다.
             </div>
@@ -296,13 +552,36 @@ export default function MyPostsSection() {
         </>
       )}
 
-      {!isCountsLoading && !isLoading && !isError && (
+      {!isCountsLoading &&
+        !(isAllTab ? allTabLoading : postsQuery?.isLoading) &&
+        !(isAllTab ? allTabError : postsQuery?.isError) && (
         <>
           {activeTab === "전체보기" && (
             <div className="flex flex-col gap-4">
-              {posts.map((post) => (
-                <PostCard key={`${post.category}-${post.id}`} post={post} />
-              ))}
+              {posts.map((post) => {
+                const isExternal = post.href.startsWith("http");
+                const cardClass =
+                  "group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden";
+                return isExternal ? (
+                  <a
+                    key={`${post.category}-${post.id}`}
+                    href={post.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cardClass}
+                  >
+                    <AllViewCardContent post={post} />
+                  </a>
+                ) : (
+                  <Link
+                    key={`${post.category}-${post.id}`}
+                    href={post.href}
+                    className={cardClass}
+                  >
+                    <AllViewCardContent post={post} />
+                  </Link>
+                );
+              })}
             </div>
           )}
 
@@ -385,20 +664,34 @@ export default function MyPostsSection() {
 
           {activeTab === "자료방" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {posts.map((post, index) => (
-                <ArchiveCard
-                  key={`archive-${post.id}-${index}`}
-                  id={String(post.id)}
-                  title={post.title}
-                  uploadedBy={post.author ?? "씨부엉"}
-                  uploadedAt={post.time}
-                  views={post.views}
-                />
+              {archiveItems.map((item, index) => (
+                <div key={`archive-${item.id}-${index}`} className="relative group">
+                  <ArchiveCard
+                    id={String(item.id)}
+                    title={item.title}
+                    link={item.link}
+                    thumbnailUrl={item.thumbnailUrl}
+                    uploadedBy={item.author}
+                    uploadedAt={item.time}
+                    views={item.views}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("이 자료를 삭제할까요?")) {
+                        deleteResourceMutation.mutate(item.id);
+                      }
+                    }}
+                    className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           )}
 
-          {posts.length === 0 && (
+          {posts.length === 0 && archiveItems.length === 0 && (
             <div className="text-center py-12 text-gray-500">
               해당 카테고리에 작성한 글이 없습니다.
             </div>
@@ -416,7 +709,67 @@ export default function MyPostsSection() {
 }
 
 // ============================================
-// PostCard 컴포넌트 (전체보기용)
+// AllViewCardContent (전체보기 - 프로젝트 양식)
+// ============================================
+
+function AllViewCardContent({ post }: { post: MyPost }) {
+  return (
+    <>
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          {post.category === "자료방" ? (
+            <span className="text-center py-2 px-3 rounded-full text-xs font-semibold text-white bg-gray-600">
+              자료방
+            </span>
+          ) : (
+            <span
+              className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
+                post.status === "모집 완료" ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
+              }`}
+            >
+              {post.status}
+            </span>
+          )}
+          <span className="ml-auto bg-gray-100 text-gray-700 text-xs font-medium flex items-center gap-1 px-3 py-1 rounded-full shrink-0">
+            {post.time}
+          </span>
+        </div>
+        <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+          {post.title}
+        </h3>
+        {post.content && (
+          <p className="text-sm text-gray-700 leading-relaxed line-clamp-2 max-h-0 overflow-hidden opacity-0 -mb-3 group-hover:max-h-20 group-hover:opacity-100 group-hover:mb-0 transition-all duration-300 ease-in-out">
+            {post.content}
+          </p>
+        )}
+      </div>
+      <div className="mx-4 sm:mx-6 border-t border-gray-200" />
+      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
+        <div className="flex flex-wrap gap-1.5">
+          {post.tags.map((pos) => (
+            <span
+              key={pos}
+              className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold"
+            >
+              {pos}
+            </span>
+          ))}
+        </div>
+        <div className="flex items-center gap-6 text-xs text-gray-400">
+          <span className="flex items-center gap-1">
+            <Eye size={14} /> {post.views ?? 0}
+          </span>
+          {post.author && (
+            <span className="text-gray-600 text-xs">{post.author}</span>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ============================================
+// PostCard 컴포넌트 (전체보기용 - 레거시)
 // ============================================
 
 function PostCard({ post }: { post: MyPost }) {
