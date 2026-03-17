@@ -54,14 +54,24 @@ function extractApplications(raw: unknown): ApplicationItem[] {
       | undefined;
     const src = nested && typeof nested === "object" ? { ...i, ...nested } : i;
 
-    const rawType = src.postType ?? src.type ?? src.recruitmentType ?? src.postCategory;
+    const rawType = src.postType ?? src.type ?? src.recruitmentType ?? src.postCategory ?? i.postType ?? i.type;
     const catNum = src.category ?? i.category;
+    const recruitmentFields = (src.recruitmentFields ?? i.recruitmentFields) as string[] | undefined;
+    const PROJECT_POSITIONS = ["BACKEND", "FRONTEND", "DEV", "PLANNING", "DESIGN", "ETC"];
+    const hasProjectPositions =
+      Array.isArray(recruitmentFields) &&
+      recruitmentFields.some((f) => PROJECT_POSITIONS.includes(String(f).toUpperCase()));
+
     let postType: "STUDY" | "PROJECT" = "STUDY";
-    if (typeof catNum === "number") {
+    if (i.project != null && typeof i.project === "object" && !(i.study != null && typeof i.study === "object")) {
+      postType = "PROJECT";
+    } else if (typeof catNum === "number") {
       postType = catNum === 2 ? "PROJECT" : "STUDY";
     } else if (rawType != null) {
       const s = String(rawType).toUpperCase();
       postType = s === "PROJECT" ? "PROJECT" : "STUDY";
+    } else if (hasProjectPositions) {
+      postType = "PROJECT";
     }
     const myStatus = (src.myStatus ?? src.status ?? "PENDING") as MyStatus;
     const tags = (src.studyTags ??
