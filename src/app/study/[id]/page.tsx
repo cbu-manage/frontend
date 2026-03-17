@@ -244,6 +244,10 @@ export default function StudyDetailPage() {
                 >
                   신청 취소
                 </button>
+              ) : !study.recruiting ? (
+                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-500 text-base font-semibold cursor-not-allowed">
+                  모집 마감
+                </span>
               ) : (
                 <button
                   type="button"
