@@ -110,6 +110,7 @@ export default function CodingTestDetailPage() {
         content?: string;
         problemStatus?: string;
         authorName?: string;
+        authorId?: number;
         authorGeneration?: number;
         viewCount?: number;
         commentCount?: number;
@@ -125,6 +126,13 @@ export default function CodingTestDetailPage() {
       }
     | null
     | undefined;
+
+  const isAuthor =
+    detail?.isAuthor === true ||
+    (detail?.authorId != null &&
+      currentUserId != null &&
+      detail.authorId === currentUserId) ||
+    (!!name && !!detail?.authorName && detail.authorName === name);
 
   const authorDisplay = detail?.authorName
     ? detail.authorGeneration != null
@@ -228,7 +236,7 @@ export default function CodingTestDetailPage() {
           showCommentsCount={isMember}
           commentsCount={detail.commentCount ?? comments.length}
           onEdit={
-            detail.isAuthor
+            isAuthor
               ? () => {
                   const payload = {
                     id: String(params.id),
@@ -252,7 +260,7 @@ export default function CodingTestDetailPage() {
               : undefined
           }
           onDelete={
-            detail.isAuthor
+            isAuthor
               ? () => {
                   if (window.confirm("이 문제 글을 삭제할까요?"))
                     deleteMutation.mutate();
