@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { MessageCircle, Eye, Trash2 } from "lucide-react";
+import { MessageCircle, Eye, Trash2, Clock, UserCircle } from "lucide-react";
 import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
 import { StudyCard } from "@/components/study/StudyCard";
@@ -93,6 +93,21 @@ function formatTime(iso?: string): string {
   }
 }
 
+/** 마감일 포맷 (프로젝트용 - 프로젝트 모집 게시판과 동일) */
+function formatDeadline(iso?: string): string {
+  if (!iso) return "-";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
 /** API content 배열 추출 (post/project/resource 등 다양한 응답 구조 지원) */
 function extractContent(raw: unknown): PostListItem[] {
   if (!raw || typeof raw !== "object") return [];
@@ -140,6 +155,8 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     item.postId ??
     (item as { id?: number }).id ??
     0;
+  const isProject = categoryNum === POST_CATEGORY.PROJECT;
+  const deadline = (item as { deadline?: string }).deadline;
   return {
     id: postId,
     category,
@@ -150,7 +167,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     author,
     views: item.viewCount ?? 0,
     comments: item.comments ?? 0,
-    time: formatTime(item.createdAt as string),
+    time: isProject ? formatDeadline(deadline) : formatTime(item.createdAt as string),
     href: `${path}/${postId}`,
     createdAt: item.createdAt as string | undefined,
   };
@@ -731,7 +748,14 @@ function AllViewCardContent({ post }: { post: MyPost }) {
             </span>
           )}
           <span className="ml-auto bg-gray-100 text-gray-700 text-xs font-medium flex items-center gap-1 px-3 py-1 rounded-full shrink-0">
-            {post.time}
+            {post.category === "프로젝트 모집" ? (
+              <>
+                <Clock size={12} />
+                마감일 {post.time}
+              </>
+            ) : (
+              post.time
+            )}
           </span>
         </div>
         <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
@@ -760,7 +784,10 @@ function AllViewCardContent({ post }: { post: MyPost }) {
             <Eye size={14} /> {post.views ?? 0}
           </span>
           {post.author && (
-            <span className="text-gray-600 text-xs">{post.author}</span>
+            <div className="flex items-center gap-1.5">
+              <UserCircle size={18} className="text-gray-400" />
+              <span className="text-gray-600 text-xs">{post.author}</span>
+            </div>
           )}
         </div>
       </div>
