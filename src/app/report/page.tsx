@@ -1,6 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { Users, Sparkles } from "lucide-react";
 
 import RequireMember from "@/components/auth/RequireMember";
 import { groupApi, type MyGroupItem } from "@/api";
@@ -29,67 +31,92 @@ export default function ReportPage() {
 
   return (
     <RequireMember>
-      <main className="min-h-screen pb-12 bg-white">
+      <main className="min-h-screen pb-16 bg-white">
         <div className="px-[15%]">
-          <div className="pt-16 flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                내 스터디/프로젝트
-              </h1>
-              <p className="text-base text-gray-600">
-                보고서 업로드 기능이 곧 제공될 예정입니다. 잠시만 기다려 주세요.
-              </p>
-            </div>
+          <div className="pt-16 pb-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              내 스터디/프로젝트
+            </h1>
+            <p className="text-base text-gray-600">
+              함께하는 팀을 선택해서 보고서를 작성해보세요 ✨
+            </p>
           </div>
 
-          <section className="py-8 md:py-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {isLoading && (
-                <div className="col-span-full text-center py-12 text-gray-500">
-                  그룹 목록을 불러오는 중...
-                </div>
-              )}
-              {isError && (
-                <div className="col-span-full text-center py-12 text-red-500">
-                  그룹 목록을 불러오지 못했습니다.
-                </div>
-              )}
-              {!isLoading &&
-                !isError &&
-                activeGroups.map((g) => (
-                  <div
+          <section className="grid grid-cols-2 gap-4 w-full">
+            {isLoading && (
+              <div className="col-span-full text-center py-16 text-gray-500">
+                그룹 목록을 불러오는 중...
+              </div>
+            )}
+            {isError && (
+              <div className="col-span-full text-center py-16 text-red-500">
+                그룹 목록을 불러오지 못했습니다.
+              </div>
+            )}
+            {!isLoading && !isError && allGroups.length > 0 && (
+              <>
+                {activeGroups.map((g) => (
+                  <Link
                     key={g.groupId}
-                    className="rounded-2xl border border-gray-200 bg-white p-4 md:p-5 shadow-sm hover:shadow-md transition-shadow block cursor-pointer"
+                    href={`/report/${g.groupId}`}
+                    className="group block rounded-2xl border-2 border-gray-200 bg-white p-6 text-center hover:border-[#95C674] hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
                   >
-                    <p className="text-gray-900 font-medium line-clamp-2 mb-2">
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#E8F5E3] text-[#5a9b4a] group-hover:bg-[#95C674]/30 transition-colors">
+                      <Users className="h-7 w-7" strokeWidth={2} />
+                    </div>
+                    <p className="text-gray-900 font-semibold text-base break-words line-clamp-2 group-hover:text-[#2d5a1e] transition-colors">
                       {g.groupName}
                     </p>
-                  
-                  </div>
+                    <span className="mt-3 inline-block rounded-full bg-[#E8F5E3] px-4 py-1.5 text-sm font-medium text-[#5a9b4a]">
+                      보고서 작성
+                    </span>
+                  </Link>
                 ))}
-              {!isLoading &&
-                !isError &&
-                pendingGroups.map((g) => (
+                {pendingGroups.map((g) => (
                   <div
                     key={g.groupId}
-                    className="rounded-2xl border border-gray-200 bg-gray-50 p-4 md:p-5 block opacity-70"
+                    className="block rounded-2xl border-2 border-gray-200 bg-gray-50 p-6 text-center cursor-not-allowed opacity-60"
                   >
-                    <div className="flex items-center gap-2 mb-2">
-                      <p className="text-gray-700 font-medium line-clamp-2 flex-1">
-                        {g.groupName}
-                      </p>
-                      <span className="shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
-                        승인 대기 중
-                      </span>
+                    <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-200 text-gray-400">
+                      <Users className="h-7 w-7" strokeWidth={2} />
                     </div>
+                    <p className="text-gray-500 font-semibold text-base break-words line-clamp-2">
+                      {g.groupName}
+                    </p>
+                    <span className="mt-3 inline-block rounded-full bg-amber-100 px-4 py-1.5 text-sm font-medium text-amber-700">
+                      승인 대기 중
+                    </span>
                   </div>
                 ))}
-              {!isLoading && !isError && allGroups.length === 0 && (
-                <div className="col-span-full text-center py-12 text-gray-500">
-                  가입한 스터디/프로젝트가 없습니다.
+              </>
+            )}
+            {!isLoading && !isError && allGroups.length === 0 && (
+              <div className="col-span-full rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 px-8 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8F5E3]">
+                  <Sparkles className="h-8 w-8 text-[#5a9b4a]" strokeWidth={2} />
                 </div>
-              )}
-            </div>
+                <p className="text-lg font-semibold text-gray-700 mb-2">
+                  아직 가입한 스터디/프로젝트가 없어요
+                </p>
+                <p className="text-gray-500 max-w-sm mx-auto">
+                  스터디·프로젝트에 참여하고 보고서를 올려보세요!
+                  <br />
+                  <Link
+                    href="/study"
+                    className="mt-3 inline-block text-[#5a9b4a] font-medium hover:underline"
+                  >
+                    스터디 둘러보기 →
+                  </Link>
+                  {" · "}
+                  <Link
+                    href="/project"
+                    className="text-[#5a9b4a] font-medium hover:underline"
+                  >
+                    프로젝트 둘러보기 →
+                  </Link>
+                </p>
+              </div>
+            )}
           </section>
         </div>
       </main>
