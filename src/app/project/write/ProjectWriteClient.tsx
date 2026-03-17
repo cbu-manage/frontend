@@ -283,7 +283,6 @@ export default function ProjectWriteClient() {
                               setRecruitDeadline(date ?? undefined);
                               setShowCalendar(false);
                             }}
-                            showWeekNumber
                             className="p-3 border-0"
                           />
                         </div>
