@@ -4,9 +4,18 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
 import { studyApi } from "@/api";
+
+function getErrorMessage(err: unknown): string {
+  if (err instanceof AxiosError && err.response?.data) {
+    const msg = (err.response.data as { message?: string })?.message;
+    if (msg) return msg;
+  }
+  return "요청 처리 중 오류가 발생했습니다.";
+}
 
 const RECRUIT_STATUS_OPTIONS = [
   { label: "모집 중", value: "recruiting" },
@@ -77,6 +86,9 @@ export default function StudyWriteClient() {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
     },
+    onError: (err) => {
+      alert(getErrorMessage(err));
+    },
   });
 
   const updateMutation = useMutation({
@@ -97,6 +109,9 @@ export default function StudyWriteClient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
+    },
+    onError: (err) => {
+      alert(getErrorMessage(err));
     },
   });
 
