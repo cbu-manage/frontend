@@ -83,14 +83,13 @@ function normalizeResponse(raw: unknown): ProjectListResult {
       const raw = item as {
         activeMemberCount?: number;
         maxMembers?: number;
-        maxMember?: number; // 프로젝트 예전 필드명 fallback
       };
       return {
         ...item,
         status: (item.recruiting ? "모집 중" : "모집 완료") as ProjectStatus,
         positions: (item.recruitmentFields ?? []).map(toDisplayPosition),
         activeMemberCount: raw.activeMemberCount ?? 0,
-        maxMembers: raw.maxMembers ?? raw.maxMember ?? 0,
+        maxMembers: raw.maxMembers ?? 0,
       };
     }),
     totalPages,

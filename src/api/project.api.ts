@@ -50,7 +50,7 @@ export type CreateProjectRequest = {
   recruitmentFields: string[];
   recruiting: boolean;
   deadline: string;
-  maxMember: number;
+  maxMembers: number;
   category: 2;
 };
 
@@ -61,7 +61,7 @@ export type UpdateProjectRequest = {
   recruitmentFields?: string[];
   recruiting?: boolean;
   deadline?: string;
-  maxMember?: number;
+  maxMembers?: number;
 };
 
 export type ProjectDetailData = {
@@ -73,7 +73,7 @@ export type ProjectDetailData = {
   recruiting: boolean;
   createdAt: string;
   deadline?: string;
-  maxMember?: number;
+  maxMembers?: number;
   groupId?: number;
   authorGeneration?: number;
   authorName?: string;
