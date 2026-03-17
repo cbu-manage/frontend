@@ -220,7 +220,13 @@ export default function ProjectDetailPage() {
             content={projectData.content ?? ""}
             onEdit={
               isLeader
-                ? () => router.push(`/project/write?id=${id}`)
+                ? () => {
+                    if (!projectData.recruiting) {
+                      alert("모집 완료된 글은 수정할 수 없습니다.");
+                      return;
+                    }
+                    router.push(`/project/write?id=${id}`);
+                  }
                 : undefined
             }
             onDelete={

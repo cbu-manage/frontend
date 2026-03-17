@@ -106,6 +106,13 @@ export default function StudyWriteClient() {
     if (!title.trim() || !content.trim() || categories.length === 0) return;
     if (recruitCount < 1) return;
 
+    if (recruitStatus === "completed") {
+      const confirmed = window.confirm(
+        "모집 완료 상태로 게시하면 바로 모집이 마감됩니다.\n계속하시겠습니까?",
+      );
+      if (!confirmed) return;
+    }
+
     if (editId) {
       updateMutation.mutate();
       return;
