@@ -88,7 +88,7 @@ export default function ProjectWriteClient() {
       recruitmentFields?: string[];
       recruiting?: boolean;
       deadline?: string;
-      maxMember?: number;
+      maxMembers?: number;
     };
     queueMicrotask(() => {
       if (d.title) setTitle(d.title);
@@ -101,7 +101,7 @@ export default function ProjectWriteClient() {
       if (typeof d.recruiting === "boolean")
         setRecruitStatus(d.recruiting ? "recruiting" : "completed");
       if (d.deadline) setRecruitDeadline(new Date(d.deadline));
-      if (typeof d.maxMember === "number") setRecruitCount(d.maxMember);
+      if (typeof d.maxMembers === "number") setRecruitCount(d.maxMembers);
     });
   }, [isValidEditId, editPayload]);
 
@@ -118,7 +118,7 @@ export default function ProjectWriteClient() {
         recruitmentFields,
         recruiting: recruitStatus === "recruiting",
         deadline,
-        maxMember: Math.max(1, recruitCount),
+        maxMembers: Math.max(1, recruitCount),
         category: PROJECT_CATEGORY,
       });
     },
@@ -142,7 +142,7 @@ export default function ProjectWriteClient() {
         recruitmentFields,
         recruiting: recruitStatus === "recruiting",
         deadline,
-        maxMember: Math.max(0, recruitCount),
+        maxMembers: Math.max(0, recruitCount),
       });
     },
     onSuccess: () => {
