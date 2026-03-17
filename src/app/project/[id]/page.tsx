@@ -85,7 +85,6 @@ export default function ProjectDetailPage() {
         deadline?: string;
         activeMemberCount?: number;
         maxMembers?: number;
-        maxMember?: number;
         groupId?: number;
         authorGeneration?: number;
         authorName?: string;
@@ -215,7 +214,7 @@ export default function ProjectDetailPage() {
             infoLabel="모집 분야"
             categories={categories}
             activeMemberCount={activeMemberCount}
-            maxMembers={projectData?.maxMembers ?? projectData?.maxMember}
+            maxMembers={projectData?.maxMembers}
             deadline={projectData?.deadline}
             content={projectData.content ?? ""}
             onEdit={
