@@ -231,7 +231,7 @@ export default function StudyDetailPage() {
                     현재 인원 확인
                   </button>
                 </div>
-              ) : justApplied ? (
+              ) : justApplied || hasAppliedFromApi ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -244,10 +244,6 @@ export default function StudyDetailPage() {
                 >
                   신청 취소
                 </button>
-              ) : hasAppliedFromApi ? (
-                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-600 text-base font-semibold">
-                  신청 완료
-                </span>
               ) : (
                 <button
                   type="button"

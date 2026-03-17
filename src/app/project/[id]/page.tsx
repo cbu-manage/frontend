@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import DetailTemplate from "@/components/detail/DetailTemplate";
@@ -9,6 +9,29 @@ import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { projectApi, groupApi } from "@/api";
+
+/** getMyApplications 응답에서 groupId에 해당하는 myStatus 추출 */
+function getMyStatusForGroup(raw: unknown, groupId: number): "PENDING" | "ACTIVE" | "REJECTED" | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  const data = obj.data ?? obj;
+  const list = Array.isArray(data) ? data : (data && typeof data === "object" && "content" in data) ? (data as { content?: unknown }).content ?? [] : [];
+  if (!Array.isArray(list)) return null;
+  for (const item of list) {
+    const i = item as Record<string, unknown>;
+    const nested = (i.post ?? i.study ?? i.project ?? i.recruitment) as Record<string, unknown> | undefined;
+    const src = nested && typeof nested === "object" ? { ...i, ...nested } : i;
+    const gid = (i.groupId ?? src?.groupId) as number | undefined;
+    if (gid === groupId) {
+      const status = (src?.myStatus ?? src?.status ?? i.myStatus ?? i.status) as string | undefined;
+      if (status === "ACTIVE" || status === "APPROVED") return "ACTIVE";
+      if (status === "REJECTED") return "REJECTED";
+      if (status === "PENDING" || status === "APPLIED") return "PENDING";
+      return null;
+    }
+  }
+  return null;
+}
 
 /** API enum → 한글 (상세/카드 표시용) */
 const ENUM_TO_LABEL: Record<string, string> = {
@@ -103,7 +126,18 @@ export default function ProjectDetailPage() {
     (!!currentUserName &&
       !!projectData?.authorName &&
       projectData.authorName === currentUserName);
-  const hasAppliedFromApi = projectData?.hasApplied ?? false;
+
+  const { data: myApplicationsRes } = useQuery({
+    queryKey: ["groups", "my", "applications"],
+    queryFn: () => groupApi.getMyApplications(),
+    enabled: !!groupId && !isLeader,
+  });
+
+  const myStatus = useMemo(() => {
+    if (!groupId) return null;
+    const raw = myApplicationsRes?.data ?? myApplicationsRes;
+    return getMyStatusForGroup(raw, groupId);
+  }, [groupId, myApplicationsRes]);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
@@ -136,6 +170,7 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
+      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
       alert("프로젝트 신청이 완료되었습니다.");
     },
     onError: () => {
@@ -152,6 +187,7 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
+      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
       alert("프로젝트 신청이 취소되었습니다.");
     },
   });
@@ -256,7 +292,7 @@ export default function ProjectDetailPage() {
                     현재 인원 확인
                   </button>
                 </div>
-              ) : justApplied ? (
+              ) : justApplied || myStatus === "PENDING" || myStatus === "ACTIVE" || projectData?.hasApplied ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -269,10 +305,6 @@ export default function ProjectDetailPage() {
                 >
                   신청 취소
                 </button>
-              ) : hasAppliedFromApi ? (
-                <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-600 text-base font-semibold">
-                  신청 완료
-                </span>
               ) : (
                 <button
                   type="button"
