@@ -122,7 +122,15 @@ export default function ApplicantsModal({
       )
     : applicants.filter((a) => getStatus(a) === "ACTIVE");
 
+  const activeMemberCount = applicants.filter(
+    (a) => getStatus(a) === "ACTIVE",
+  ).length;
+
   const handleCloseRecruitment = () => {
+    if (activeMemberCount < 2) {
+      alert("모집 마감을 하려면 현재 인원이 2명 이상이어야 합니다.");
+      return;
+    }
     const message = "이대로 마감하시겠습니까?";
     if (!window.confirm(message)) return;
     alert("그룹 생성을 요청하였습니다!");
