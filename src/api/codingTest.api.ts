@@ -26,7 +26,6 @@ export type ProblemListParams = {
 };
 
 export type ProblemListItem = {
-  problemId?: number;
   postId?: number;
   id?: number;
   title?: string;
@@ -84,15 +83,15 @@ export const codingTestApi = {
   /** 새 코딩테스트 문제 생성 */
   create: (data: CreateProblemRequest) => api.post("/post/problems", data),
 
-  /** 문제 상세 정보 조회 (problemId 사용) */
-  getById: (problemId: number) => api.get(`/post/problems/${problemId}`),
+  /** 문제 상세 정보 조회 (postId 사용) */
+  getById: (postId: number) => api.get(`/post/problems/${postId}`),
 
   /** 문제 정보 수정 */
-  update: (problemId: number, data: UpdateProblemRequest) =>
-    api.patch(`/post/problems/${problemId}`, data),
+  update: (postId: number, data: UpdateProblemRequest) =>
+    api.patch(`/post/problems/${postId}`, data),
 
   /** 문제 삭제 */
-  delete: (problemId: number) => api.delete(`/post/problems/${problemId}`),
+  delete: (postId: number) => api.delete(`/post/problems/${postId}`),
 
   /** 모든 플랫폼 목록 조회 */
   getPlatforms: () => api.get<{ data?: PlatformItem[] }>("/post/platforms"),

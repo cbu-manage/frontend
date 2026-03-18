@@ -72,10 +72,20 @@ export const groupApi = {
       "/groups/my"
     ),
 
-  /** 내가 신청한 그룹(스터디/프로젝트) 목록 - 모든 상태(PENDING/APPROVED/REJECTED) */
-  getMyApplications: () =>
+  /**
+   * 내가 신청한 그룹 목록 (승인/대기/거절/비활동)
+   * @param page 페이지 번호 (0부터)
+   * @param size 한 페이지당 개수
+   * @param category 1=스터디, 2=프로젝트, 미입력=전체
+   */
+  getMyApplications: (params: {
+    page: number;
+    size: number;
+    category?: 1 | 2;
+  }) =>
     api.get<{ code: string; message: string; data: unknown }>(
-      "/groups/my/applications"
+      "/groups/my/applications",
+      { params }
     ),
 
   /** 그룹 전체 조회 (관리자 전용) */
