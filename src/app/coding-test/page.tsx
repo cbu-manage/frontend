@@ -155,7 +155,7 @@ export default function CodingTestPage() {
   const problems = useMemo(() => {
     const list = rawList as import("@/api").ProblemListItem[];
     return list.map((item) => ({
-      id: item.problemId ?? item.postId ?? item.id ?? 0,
+      id: item.postId ?? item.id ?? 0,
       status: (item.problemStatus === "SOLVED"
         ? "해결"
         : "미해결") as SolveStatus,

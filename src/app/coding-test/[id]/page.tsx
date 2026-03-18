@@ -68,16 +68,6 @@ export default function CodingTestDetailPage() {
   const [mainCommentValue, setMainCommentValue] = useState("");
 
   const {
-    comments,
-    isLoading: commentsLoading,
-    createComment,
-    replyComment,
-    updateComment,
-    deleteComment,
-    isCreating,
-  } = useProblemComments(id);
-
-  const {
     data: res,
     isLoading,
     isError,
@@ -105,7 +95,7 @@ export default function CodingTestDetailPage() {
       : raw
   ) as
     | {
-        problemId?: number;
+        postId?: number;
         title?: string;
         content?: string;
         problemStatus?: string;
@@ -126,6 +116,16 @@ export default function CodingTestDetailPage() {
       }
     | null
     | undefined;
+
+  const {
+    comments,
+    isLoading: commentsLoading,
+    createComment,
+    replyComment,
+    updateComment,
+    deleteComment,
+    isCreating,
+  } = useProblemComments(id);
 
   const isAuthor =
     detail?.isAuthor === true ||
@@ -240,7 +240,7 @@ export default function CodingTestDetailPage() {
               ? () => {
                   const payload = {
                     id: String(params.id),
-                    problemId: detail.problemId,
+                    postId: detail.postId ?? id,
                     title: detail.title,
                     categories: categoryNames,
                     platformName: detail.platformName,
@@ -301,7 +301,6 @@ export default function CodingTestDetailPage() {
                           if (window.confirm("이 댓글을 삭제할까요?"))
                             await deleteComment(commentId);
                         }}
-                        deleted={c.deleted}
                         currentUserId={currentUserId}
                       />
                     ))}

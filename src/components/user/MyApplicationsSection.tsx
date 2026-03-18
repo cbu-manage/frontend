@@ -24,9 +24,9 @@ interface ApplicationItem {
 }
 
 const STATUS_LABEL: Record<MyStatus, string> = {
-  PENDING: "대기",
+  PENDING: "승인 대기중",
   ACTIVE: "승인",
-  REJECTED: "거절",
+  REJECTED: "거절됨",
   INACTIVE: "비활동",
 };
 
@@ -36,6 +36,10 @@ const STATUS_BG: Record<MyStatus, string> = {
   REJECTED: "#FC5E6E",
   INACTIVE: "#9CA3AF",
 };
+
+/** category: 1 = 스터디, 2 = 프로젝트 */
+const CATEGORY_STUDY = 1;
+const CATEGORY_PROJECT = 2;
 
 function extractApplications(raw: unknown): ApplicationItem[] {
   if (!raw || typeof raw !== "object") return [];
@@ -49,108 +53,112 @@ function extractApplications(raw: unknown): ApplicationItem[] {
   }
   return list.map((item) => {
     const i = item as Record<string, unknown>;
-    const nested = (i.post ?? i.study ?? i.project ?? i.recruitment) as
-      | Record<string, unknown>
+    const catNum = (i.category as number) ?? 0;
+    const postType: "STUDY" | "PROJECT" =
+      catNum === CATEGORY_PROJECT ? "PROJECT" : "STUDY";
+    const myStatus = (i.myStatus ?? i.status ?? "PENDING") as MyStatus;
+    const authorName = (i.leaderName ?? i.authorName ?? i.userName) as
+      | string
       | undefined;
-    const src = nested && typeof nested === "object" ? { ...i, ...nested } : i;
-
-    const rawType = src.postType ?? src.type ?? src.recruitmentType ?? src.postCategory ?? i.postType ?? i.type;
-    const catNum = src.category ?? i.category;
-    const recruitmentFields = (src.recruitmentFields ?? i.recruitmentFields) as string[] | undefined;
-    const PROJECT_POSITIONS = ["BACKEND", "FRONTEND", "DEV", "PLANNING", "DESIGN", "ETC"];
-    const hasProjectPositions =
-      Array.isArray(recruitmentFields) &&
-      recruitmentFields.some((f) => PROJECT_POSITIONS.includes(String(f).toUpperCase()));
-
-    let postType: "STUDY" | "PROJECT" = "STUDY";
-    if (i.project != null && typeof i.project === "object" && !(i.study != null && typeof i.study === "object")) {
-      postType = "PROJECT";
-    } else if (typeof catNum === "number") {
-      postType = catNum === 2 ? "PROJECT" : "STUDY";
-    } else if (rawType != null) {
-      const s = String(rawType).toUpperCase();
-      postType = s === "PROJECT" ? "PROJECT" : "STUDY";
-    } else if (hasProjectPositions) {
-      postType = "PROJECT";
-    }
-    const myStatus = (src.myStatus ?? src.status ?? "PENDING") as MyStatus;
-    const tags = (src.studyTags ??
-      src.recruitmentFields ??
-      src.tags ??
-      []) as string[];
-    const authorName = (src.authorName ??
-      src.writerName ??
-      src.userName ??
-      src.leaderName ??
-      src.memberName ??
-      src.name) as string | undefined;
-    const authorGeneration = (src.authorGeneration ??
-      src.writerGeneration ??
-      src.generation ??
-      src.userGeneration ??
-      src.leaderGeneration) as number | undefined;
+    const authorGeneration = (i.leaderGeneration ??
+      i.authorGeneration ??
+      i.generation) as number | undefined;
     return {
       groupId: (i.groupId as number) ?? 0,
-      postId:
-        (src.postId as number) ??
-        (src.id as number) ??
-        (i.postId as number) ??
-        0,
+      postId: (i.postId as number) ?? (i.id as number) ?? 0,
       postType,
-      title: (src.title as string) ?? (src.groupName as string) ?? "",
+      title: (i.groupName as string) ?? (i.title as string) ?? "",
       authorName:
         authorName && String(authorName).trim() ? authorName : undefined,
       authorGeneration:
         typeof authorGeneration === "number" ? authorGeneration : undefined,
-      tags,
-      activeMemberCount:
-        (src.activeMemberCount as number) ??
-        (i.activeMemberCount as number) ??
-        0,
-      maxMembers: (src.maxMembers as number) ?? (i.maxMembers as number) ?? 0,
+      tags: [],
+      activeMemberCount: (i.activeMemberCount as number) ?? 0,
+      maxMembers: (i.maxMembers as number) ?? 0,
       myStatus,
     };
   });
 }
 
+const PAGE_SIZE = 10;
+
+/** 탭 → API category 파라미터 (1=스터디, 2=프로젝트, undefined=전체) */
+const TAB_TO_CATEGORY: Record<BoardTab, 1 | 2 | undefined> = {
+  "전체보기": undefined,
+  "스터디 모집": 1,
+  "프로젝트 모집": 2,
+};
+
+function getTotalFromResponse(res: unknown): number {
+  if (!res || typeof res !== "object") return 0;
+  const body = (res as { data?: unknown }).data;
+  const inner =
+    body && typeof body === "object" && "data" in body
+      ? (body as { data?: unknown }).data
+      : body;
+  if (inner && typeof inner === "object" && "totalElements" in inner)
+    return (inner as { totalElements?: number }).totalElements ?? 0;
+  return 0;
+}
+
 export default function MyApplicationsSection() {
   const [activeTab, setActiveTab] = useState<BoardTab>("전체보기");
+  const [page, setPage] = useState(0);
 
+  const category = TAB_TO_CATEGORY[activeTab];
   const {
     data: applicationsRes,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["groups", "my", "applications"],
-    queryFn: () => groupApi.getMyApplications(),
+    queryKey: ["groups", "my", "applications", category, page],
+    queryFn: () =>
+      groupApi.getMyApplications({
+        page,
+        size: PAGE_SIZE,
+        category: category ?? undefined,
+      }),
   });
 
-  const applications = useMemo(() => {
+  const { applications, totalElements } = useMemo(() => {
     const raw = applicationsRes?.data;
     const data =
       raw && typeof raw === "object" && "data" in raw
         ? (raw as { data?: unknown }).data
         : raw;
-    return extractApplications(data);
+    const list = extractApplications(data);
+    const total =
+      data && typeof data === "object" && "totalElements" in data
+        ? (data as { totalElements?: number }).totalElements ?? list.length
+        : list.length;
+    return { applications: list, totalElements: total };
   }, [applicationsRes]);
 
-  const filtered = useMemo(() => {
-    if (activeTab === "전체보기") return applications;
-    if (activeTab === "스터디 모집")
-      return applications.filter((a) => a.postType === "STUDY");
-    if (activeTab === "프로젝트 모집")
-      return applications.filter((a) => a.postType === "PROJECT");
-    return applications;
-  }, [applications, activeTab]);
+  const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
+
+  const allRes = useQuery({
+    queryKey: ["groups", "my", "applications", undefined, 0],
+    queryFn: () =>
+      groupApi.getMyApplications({ page: 0, size: 1, category: undefined }),
+  });
+  const studyRes = useQuery({
+    queryKey: ["groups", "my", "applications", 1, 0],
+    queryFn: () =>
+      groupApi.getMyApplications({ page: 0, size: 1, category: 1 }),
+  });
+  const projectRes = useQuery({
+    queryKey: ["groups", "my", "applications", 2, 0],
+    queryFn: () =>
+      groupApi.getMyApplications({ page: 0, size: 1, category: 2 }),
+  });
 
   const counts = useMemo(
     () => ({
-      전체보기: applications.length,
-      "스터디 모집": applications.filter((a) => a.postType === "STUDY").length,
-      "프로젝트 모집": applications.filter((a) => a.postType === "PROJECT")
-        .length,
+      전체보기: getTotalFromResponse(allRes.data),
+      "스터디 모집": getTotalFromResponse(studyRes.data),
+      "프로젝트 모집": getTotalFromResponse(projectRes.data),
     }),
-    [applications],
+    [allRes.data, studyRes.data, projectRes.data],
   );
 
   const tabItems: BoardTab[] = ["전체보기", "스터디 모집", "프로젝트 모집"];
@@ -165,7 +173,10 @@ export default function MyApplicationsSection() {
         {tabItems.map((tab) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              setActiveTab(tab);
+              setPage(0);
+            }}
             className={`transition-colors ${activeTab === tab ? "text-gray-900 font-semibold" : "text-gray-400"}`}
           >
             {tab}({counts[tab]})
@@ -204,7 +215,7 @@ export default function MyApplicationsSection() {
           </div>
 
           <div className="divide-y divide-gray-100">
-            {filtered.map((app) => (
+            {applications.map((app) => (
               <ApplicationRow
                 key={`${app.postType}-${app.groupId}-${app.postId}`}
                 item={app}
@@ -212,11 +223,35 @@ export default function MyApplicationsSection() {
             ))}
           </div>
 
-          {filtered.length === 0 && (
+          {applications.length === 0 && (
             <div className="py-12 text-center text-gray-500">
               {activeTab === "전체보기"
                 ? "신청한 내역이 없습니다."
                 : `${activeTab} 신청 내역이 없습니다.`}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex justify-center gap-2 py-6">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                이전
+              </button>
+              <span className="px-4 py-2 text-sm text-gray-600">
+                {page + 1} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                disabled={page >= totalPages - 1}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                다음
+              </button>
             </div>
           )}
         </>

@@ -14,7 +14,7 @@ export default function Footer() {
   // 소셜 링크 정보(간단하게)
   const socialLinks = [
     { name: "인스타그램", url: "https://www.instagram.com/tukorea_cbu", icon: "/assets/instagram.svg" },
-    { name: "깃허브", url: "https://github.com/C-B-U/TUK-cbu-manage", icon: "/assets/github.svg" },
+    { name: "깃허브", url: "https://github.com/cbu-manage", icon: "/assets/github.svg" },
   ];
 
   return (
