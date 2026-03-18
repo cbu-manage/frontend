@@ -19,11 +19,9 @@ function getMyStatusForGroup(raw: unknown, groupId: number): "PENDING" | "ACTIVE
   if (!Array.isArray(list)) return null;
   for (const item of list) {
     const i = item as Record<string, unknown>;
-    const nested = (i.post ?? i.study ?? i.project ?? i.recruitment) as Record<string, unknown> | undefined;
-    const src = nested && typeof nested === "object" ? { ...i, ...nested } : i;
-    const gid = (i.groupId ?? src?.groupId) as number | undefined;
+    const gid = (i.groupId as number) ?? 0;
     if (gid === groupId) {
-      const status = (src?.myStatus ?? src?.status ?? i.myStatus ?? i.status) as string | undefined;
+      const status = (i.myStatus ?? i.status) as string | undefined;
       if (status === "ACTIVE" || status === "APPROVED") return "ACTIVE";
       if (status === "REJECTED") return "REJECTED";
       if (status === "PENDING" || status === "APPLIED") return "PENDING";
@@ -128,8 +126,9 @@ export default function ProjectDetailPage() {
       projectData.authorName === currentUserName);
 
   const { data: myApplicationsRes } = useQuery({
-    queryKey: ["groups", "my", "applications"],
-    queryFn: () => groupApi.getMyApplications(),
+    queryKey: ["groups", "my", "applications", 2, 0],
+    queryFn: () =>
+      groupApi.getMyApplications({ page: 0, size: 50, category: 2 }),
     enabled: !!groupId && !isLeader,
   });
 

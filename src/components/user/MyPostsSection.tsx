@@ -151,7 +151,6 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
         : item.authorName
       : undefined;
   const postId =
-    (item as { problemId?: number }).problemId ??
     item.postId ??
     (item as { id?: number }).id ??
     0;

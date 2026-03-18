@@ -11,7 +11,6 @@ export type NormalizedComment = {
   content: string;
   date: string;
   replies: NormalizedComment[];
-  deleted?: boolean;
 };
 
 function formatDate(iso?: string): string {
@@ -28,7 +27,6 @@ function formatDate(iso?: string): string {
 }
 
 function toAuthor(item: CommentItem): string {
-  if (item.deleted) return "(삭제된 댓글)";
   const name = item.userName ?? item.authorName ?? "익명";
   const gen = item.generation ?? item.authorGeneration;
   return gen != null ? `${gen}기 ${name}` : name;
@@ -40,6 +38,13 @@ function extractId(item: CommentItem): number {
   return typeof val === "number" ? val : Number(val) || 0;
 }
 
+/** 백엔드: deleted 필드 없이 content가 "삭제된 댓글입니다"로 내려옴 */
+function isDeleted(item: CommentItem): boolean {
+  if (item.deleted) return true;
+  const content = (item.content ?? "").trim();
+  return content === "삭제된 댓글입니다" || content === "삭제된 댓글입니다.";
+}
+
 function normalize(item: CommentItem): NormalizedComment {
   const raw = item as Record<string, unknown>;
   return {
@@ -47,27 +52,30 @@ function normalize(item: CommentItem): NormalizedComment {
     author: toAuthor(item),
     authorName: (item.userName ?? item.authorName) ?? undefined,
     userId: typeof raw.userId === "number" ? (raw.userId as number) : undefined,
-    content: item.deleted ? "(삭제된 댓글입니다.)" : (item.content ?? ""),
+    content: item.content ?? "",
     date: formatDate(item.createdAt as string),
-    replies: (item.replies ?? []).map(normalize),
-    deleted: item.deleted,
+    replies: (item.replies ?? []).filter((r) => !isDeleted(r)).map(normalize),
   };
 }
 
-export function useProblemComments(problemId: number) {
+function filterDeleted(comments: CommentItem[]): CommentItem[] {
+  return comments.filter((c) => !isDeleted(c));
+}
+
+export function useProblemComments(postId: number) {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["problemComments", problemId],
-    queryFn: () => commentApi.getProblemComments(problemId),
-    enabled: !!problemId && !Number.isNaN(problemId),
+    queryKey: ["problemComments", postId],
+    queryFn: () => commentApi.getProblemComments(postId),
+    enabled: !!postId && !Number.isNaN(postId),
   });
 
   const createMutation = useMutation({
     mutationFn: (content: string) =>
-      commentApi.createProblemComment(problemId, { content }),
+      commentApi.createProblemComment(postId, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problemComments", problemId] });
+      queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
   });
 
@@ -75,7 +83,7 @@ export function useProblemComments(problemId: number) {
     mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
       commentApi.reply(commentId, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problemComments", problemId] });
+      queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
   });
 
@@ -83,19 +91,19 @@ export function useProblemComments(problemId: number) {
     mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
       commentApi.update(commentId, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problemComments", problemId] });
+      queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (commentId: number) => commentApi.delete(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["problemComments", problemId] });
+      queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
   });
 
   const list = extractCommentList(query.data);
-  const comments: NormalizedComment[] = list.map(normalize);
+  const comments: NormalizedComment[] = filterDeleted(list).map(normalize);
 
   return {
     comments,
