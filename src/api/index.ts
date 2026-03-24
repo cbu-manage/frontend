@@ -21,7 +21,11 @@ export {
 export { userApi, type UserInfo, type ValidateUserRequest } from "./user.api";
 
 // Study
-export { studyApi, type StudyListParams } from "./study.api";
+export {
+  studyApi,
+  type StudyListParams,
+  type StudyMyListParams,
+} from "./study.api";
 
 // Resources (자료방)
 export {
