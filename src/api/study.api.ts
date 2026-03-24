@@ -7,6 +7,13 @@ import { api } from "./client";
 // page: 0부터 시작, size: 페이지 당 개수, category: 백엔드 enum 번호
 export type StudyListParams = { page?: number; size?: number; category?: number };
 
+/** GET /post/study/me — Swagger상 page, size, category 필수 (스터디 category=1) */
+export type StudyMyListParams = {
+  page: number;
+  size: number;
+  category: number;
+};
+
 export type CreateStudyRequest = {
   title: string;
   content: string;
@@ -84,8 +91,8 @@ export const studyApi = {
   updateApplyStatus: (postId: number, applyId: number, data: unknown) =>
     api.patch(`/post/study/${postId}/apply/${applyId}`, data),
 
-  /** 내가 작성한 스터디 게시글 목록 조회 */
-  getMyList: (params?: StudyListParams) =>
+  /** 내가 작성한 스터디 게시글 목록 조회 (authorName·authorGeneration 등 content 스키마) */
+  getMyList: (params: StudyMyListParams) =>
     api.get("/post/study/me", { params }),
 
   /** 태그별 목록 조회 */

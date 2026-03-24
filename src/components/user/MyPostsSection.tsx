@@ -9,7 +9,13 @@ import { StudyCard } from "@/components/study/StudyCard";
 import { ProjectCard } from "@/components/project/ProjectCard";
 import { CodingTestRow } from "@/components/coding-test/CodingTestRow";
 import ArchiveCard from "@/components/archive/card";
-import { postApi, POST_CATEGORY, resourcesApi, projectApi } from "@/api";
+import {
+  postApi,
+  POST_CATEGORY,
+  resourcesApi,
+  projectApi,
+  studyApi,
+} from "@/api";
 import { useDeleteResource } from "@/hooks/archive/useResourceList";
 import type { PostListItem, ResourceItem } from "@/api";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
@@ -41,6 +47,8 @@ interface MyPost {
   time: string;
   href: string;
   createdAt?: string;
+  activeMemberCount?: number;
+  maxMembers?: number;
 }
 
 const CATEGORY_LIST: Exclude<PostCategory, "전체보기">[] = [
@@ -156,6 +164,10 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     0;
   const isProject = categoryNum === POST_CATEGORY.PROJECT;
   const deadline = (item as { deadline?: string }).deadline;
+  const extra = item as {
+    activeMemberCount?: number;
+    maxMembers?: number;
+  };
   return {
     id: postId,
     category,
@@ -169,6 +181,8 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     time: isProject ? formatDeadline(deadline) : formatTime(item.createdAt as string),
     href: `${path}/${postId}`,
     createdAt: item.createdAt as string | undefined,
+    activeMemberCount: extra.activeMemberCount,
+    maxMembers: extra.maxMembers,
   };
 }
 
@@ -226,7 +240,7 @@ export default function MyPostsSection() {
 
   const COUNT_TABS = ["스터디 모집", "프로젝트 모집", "코딩테스트 준비", "자료방"] as const;
 
-  /** 각 탭 개수 조회 (프로젝트=projectApi, 자료방=resourcesApi, 나머지=postApi) */
+  /** 각 탭 개수 조회 (스터디=study/me, 프로젝트=project/me, 자료방=resources, 코딩=post/my) */
   const countResults = useQueries({
     queries: COUNT_TABS.map((tab) => ({
       queryKey:
@@ -234,7 +248,9 @@ export default function MyPostsSection() {
           ? ["resources", "my", "count"]
           : tab === "프로젝트 모집"
             ? ["project", "my", "count"]
-            : ["post", "my", "count", TAB_TO_CATEGORY[tab]],
+            : tab === "스터디 모집"
+              ? ["study", "my", "count"]
+              : ["post", "my", "count", TAB_TO_CATEGORY[tab]],
       queryFn: () =>
         tab === "자료방"
           ? resourcesApi.getMyList({ page: 0, size: 1 })
@@ -244,11 +260,17 @@ export default function MyPostsSection() {
                 size: 1,
                 category: 2,
               })
-            : postApi.getMyPosts({
-                category: TAB_TO_CATEGORY[tab],
-                page: 0,
-                size: 1,
-              }),
+            : tab === "스터디 모집"
+              ? studyApi.getMyList({
+                  page: 0,
+                  size: 1,
+                  category: POST_CATEGORY.STUDY,
+                })
+              : postApi.getMyPosts({
+                  category: TAB_TO_CATEGORY[tab],
+                  page: 0,
+                  size: 1,
+                }),
     })),
   });
 
@@ -283,12 +305,12 @@ export default function MyPostsSection() {
   const allTabQueries = useQueries({
     queries: [
       {
-        queryKey: ["post", "my", POST_CATEGORY.STUDY, 0, allTabFetchSize],
+        queryKey: ["study", "my", 0, allTabFetchSize],
         queryFn: async () => {
-          const res = await postApi.getMyPosts({
-            category: POST_CATEGORY.STUDY,
+          const res = await studyApi.getMyList({
             page: 0,
             size: allTabFetchSize,
+            category: POST_CATEGORY.STUDY,
           });
           return res.data;
         },
@@ -351,14 +373,17 @@ export default function MyPostsSection() {
   });
 
   const isProjectTab = activeTab === "프로젝트 모집";
+  const isStudyTab = activeTab === "스터디 모집";
 
-  /** 자료방/프로젝트/나머지: 단일 API 조회 */
+  /** 자료방/프로젝트/스터디/코딩: 단일 API 조회 */
   const singleTabQuery = useQuery({
     queryKey: isArchiveTab
       ? ["resources", "my", pageIndex, pageSize]
       : isProjectTab
         ? ["project", "my", pageIndex, pageSize]
-        : ["post", "my", categoryParam, pageIndex, pageSize],
+        : isStudyTab
+          ? ["study", "my", pageIndex, pageSize]
+          : ["post", "my", categoryParam, pageIndex, pageSize],
     queryFn: async () => {
       if (isArchiveTab) {
         const res = await resourcesApi.getMyList({
@@ -381,6 +406,14 @@ export default function MyPostsSection() {
           page: pageIndex,
           size: pageSize,
           category: 2,
+        });
+        return res.data;
+      }
+      if (isStudyTab) {
+        const res = await studyApi.getMyList({
+          page: pageIndex,
+          size: pageSize,
+          category: POST_CATEGORY.STUDY,
         });
         return res.data;
       }
@@ -610,6 +643,11 @@ export default function MyPostsSection() {
                   status={post.status}
                   title={post.title}
                   time={post.time}
+                  authorDisplay={post.author}
+                  categories={post.tags}
+                  viewCount={post.views}
+                  activeMemberCount={post.activeMemberCount}
+                  maxMembers={post.maxMembers}
                 />
               ))}
             </div>
