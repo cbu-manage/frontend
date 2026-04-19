@@ -57,7 +57,7 @@ export default function GroupManageSection() {
     isError,
   } = useQuery({
     queryKey: ["groups", "admin"],
-    queryFn: () => groupApi.getAll(),
+    queryFn: () => groupApi.getAll({ page: 0, size: 100 }),
   });
 
   const groups = useMemo(() => extractGroups(res?.data ?? null), [res]);
