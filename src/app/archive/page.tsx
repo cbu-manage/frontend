@@ -30,18 +30,18 @@ export default function ArchivePage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-12 bg-white">
-        <div className="px-[15%]">
+        <div className="container-x-lg">
           {/* 헤더 섹션 */}
-          <div className="pt-16 flex items-start justify-between">
+          <div className="pt-6 lg:pt-16 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-h1 text-gray-900 mb-2">
                 자료방
               </h1>
               <p className="text-base text-gray-600">
                 스터디와 프로젝트에서 공유된 자료들을 한눈에 확인해보세요.
               </p>
             </div>
-            <Link href="/archive/write">
+            <Link href="/archive/write" className="hidden lg:block">
               <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide">
                 <Pencil size={18} />글 작성하기
               </button>
@@ -126,6 +126,15 @@ export default function ArchivePage() {
           )}
 
         </div>
+
+        {/* 모바일 글 작성 FAB */}
+        <Link
+          href="/archive/write"
+          aria-label="글 작성하기"
+          className="lg:hidden fixed bottom-5 right-5 z-30 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-800 text-gray-0 shadow-lg active:opacity-80"
+        >
+          <Pencil size={18} />
+        </Link>
       </main>
     </RequireMember>
   );

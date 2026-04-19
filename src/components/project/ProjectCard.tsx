@@ -150,7 +150,7 @@ export function ProjectCard({
         </div>
 
         {/* 프로젝트 제목 */}
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+        <h3 className="text-h3 font-bold text-gray-900 line-clamp-2">
           {title}
         </h3>
 
