@@ -156,7 +156,7 @@ export function StudyCard({
         {/* 중간 영역: 제목 + 카테고리 태그 */}
         <div className="flex flex-col gap-3 sm:gap-4 flex-1">
           {/* 스터디 제목 - 2줄 고정 높이 */}
-          <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2 min-h-11 sm:min-h-14">
+          <h3 className="text-h3 font-bold text-gray-900 line-clamp-2 min-h-11 sm:min-h-14">
             {title}
           </h3>
 
@@ -178,10 +178,10 @@ export function StudyCard({
 
       {/* 카드 하단: 작성자(왼쪽) | 조회수 + 작성시간(오른쪽, 간격) */}
       <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex justify-between items-center">
-        <span className="text-xs sm:text-sm text-gray-700 font-medium">
+        <span className="text-body-sm text-gray-700 font-medium">
           {authorDisplay}
         </span>
-        <div className="flex items-center gap-4 sm:gap-6 text-xs text-gray-400">
+        <div className="flex items-center gap-4 sm:gap-6 text-caption text-gray-400">
           <span className="flex items-center gap-1">
             <Eye size={14} className="shrink-0" />
             {viewCount}

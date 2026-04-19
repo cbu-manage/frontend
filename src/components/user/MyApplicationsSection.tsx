@@ -165,7 +165,7 @@ export default function MyApplicationsSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-2 md:px-4">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-h1 text-gray-900 mb-6">
         나의 신청 목록
       </h1>
 
