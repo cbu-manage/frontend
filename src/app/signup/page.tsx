@@ -67,3 +67,5 @@ export default function JoinPage() {
     </Suspense>
   );
 }
+
+// 주석 테스트
