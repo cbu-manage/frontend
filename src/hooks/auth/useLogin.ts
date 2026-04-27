@@ -39,11 +39,6 @@ export function useLogin() {
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: async ({ data, studentNumber, password }) => {
-      if (data.accessToken) {
-        setAccessToken(data.accessToken);
-        setCookie("ACCESS_TOKEN", data.accessToken);
-      }
-
       const loginEmail = data.email === "null" ? null : data.email;
       const isAdmin =
         data.role === "admin" ||
