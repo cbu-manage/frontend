@@ -65,6 +65,11 @@
   --color-card: var(--card); /* 36px */ --radius-sm: calc(var(--radius) - 4px); --radius-md: calc(var(--radius) - 2px); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) + 4px); --radius-2xl: calc(var(--radius) + 8px); --radius-3xl: calc(var(--radius) + 12px); --radius-4xl: calc(var(--radius) + 16px);
 }
 
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
@@ -79,6 +84,29 @@ body {
 }
 
 :root {
+  /* ========== 반응형 타이포 토큰 (clamp: 360 ~ 1440px 사이에서 스케일) ========== */
+  --text-display: clamp(1.75rem, 1.25rem + 2.2vw, 2.5rem);   /* 28 → 40 */
+  --text-h1:      clamp(1.5rem, 1.1rem + 1.75vw, 2rem);      /* 24 → 32 */
+  --text-h2:      clamp(1.25rem, 1rem + 1.1vw, 1.5rem);      /* 20 → 24 */
+  --text-h3:      clamp(1.125rem, 1rem + 0.55vw, 1.25rem);   /* 18 → 20 */
+  --text-body:    clamp(0.9375rem, 0.875rem + 0.3vw, 1rem);  /* 15 → 16 */
+  --text-body-sm: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem); /* 13 → 14 */
+  --text-xs:      0.75rem;                                   /* 12 고정 */
+
+  /* line-height */
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  /* ========== 스페이싱/레이아웃 토큰 ========== */
+  --container-px:    clamp(1.5rem, 0.4rem + 2.5vw, 9.375rem); /* 24 → 150 (기본) */
+  --container-px-lg: clamp(1rem, 15vw, 20rem);                /* 15% (최소 16, 최대 320) */
+  --section-gap:    clamp(2rem, 1.2rem + 3.5vw, 4rem);       /* 32 → 64 */
+  --block-gap:      clamp(1rem, 0.8rem + 0.8vw, 1.5rem);     /* 16 → 24 */
+  --card-radius:    clamp(0.75rem, 0.65rem + 0.4vw, 1rem);   /* 12 → 16 */
+  --touch-min:      2.75rem;                                  /* 44px */
+
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -153,5 +181,77 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    font-size: var(--text-body);
+    line-height: var(--leading-normal);
+  }
+}
+
+/* ========== 시맨틱 타이포 유틸 ========== */
+@utility text-display {
+  font-size: var(--text-display);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+@utility text-h1 {
+  font-size: var(--text-h1);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+@utility text-h2 {
+  font-size: var(--text-h2);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+@utility text-h3 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-snug);
+  font-weight: 600;
+}
+@utility text-body {
+  font-size: var(--text-body);
+  line-height: var(--leading-normal);
+}
+@utility text-body-sm {
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-normal);
+}
+@utility text-caption {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+/* ========== 레이아웃 유틸 ========== */
+@utility container-x {
+  padding-left: var(--container-px);
+  padding-right: var(--container-px);
+}
+@utility container-x-lg {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  @media (min-width: 640px) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  @media (min-width: 1024px) {
+    padding-left: var(--container-px-lg);
+    padding-right: var(--container-px-lg);
+  }
+}
+@utility section-y {
+  padding-top: var(--section-gap);
+  padding-bottom: var(--section-gap);
+}
+@utility touch-target {
+  min-height: var(--touch-min);
+  min-width: var(--touch-min);
+}
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }

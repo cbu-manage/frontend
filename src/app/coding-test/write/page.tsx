@@ -360,7 +360,7 @@ function CodingTestWriteContent() {
   };
 
   return (
-    <main className="min-h-screen px-[15%] bg-gray-100">
+    <main className="min-h-screen container-x-lg bg-gray-100">
       <div className="px-6 py-8 bg-white min-h-screen">
         <nav className="text-sm text-gray-500 mb-2">
           <Link
@@ -496,7 +496,7 @@ export default function CodingTestWritePage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen px-[9.375%] bg-gray-100 flex items-center justify-center">
+        <main className="min-h-screen container-x-lg bg-gray-100 flex items-center justify-center">
           <p className="text-gray-500">로딩 중...</p>
         </main>
       }

@@ -57,7 +57,7 @@ export default function GroupManageSection() {
     isError,
   } = useQuery({
     queryKey: ["groups", "admin"],
-    queryFn: () => groupApi.getAll(),
+    queryFn: () => groupApi.getAll({ page: 0, size: 100 }),
   });
 
   const groups = useMemo(() => extractGroups(res?.data ?? null), [res]);
@@ -97,7 +97,7 @@ export default function GroupManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-h1 text-gray-900 mb-6">
         그룹 관리
       </h1>
 

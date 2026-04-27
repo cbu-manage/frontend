@@ -88,6 +88,15 @@ export const groupApi = {
       { params }
     ),
 
-  /** 그룹 전체 조회 (관리자 전용) */
-  getAll: () => api.get("/groups/admin"),
+  /**
+   * 그룹 전체 조회 (관리자 전용)
+   * @param page 페이지 번호 (0부터)
+   * @param size 한 페이지당 개수
+   * @param groupStatus ACTIVE | PENDING | REJECTED | RESUBMITTED | INACTIVE (미입력 시 전체)
+   */
+  getAll: (params: {
+    page: number;
+    size: number;
+    groupStatus?: "ACTIVE" | "PENDING" | "REJECTED" | "RESUBMITTED" | "INACTIVE";
+  }) => api.get("/groups/admin", { params }),
 };

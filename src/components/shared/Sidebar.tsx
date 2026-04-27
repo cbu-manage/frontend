@@ -94,16 +94,46 @@ export default function Sidebar({
   const showWriteButton = Boolean(writeLink);
   return (
     <>
-      {/* 
-        사이드바 상단 라운딩 뒷배경을 흰색으로 메꾸는 레이어 
-        - 사이드바 라운딩(3xl)이 깎이는 부분 뒤로 gray-50이 보이지 않게 함
-        - 너비를 사이드바보다 아주 약간 작게 하여 테두리를 가리지 않도록 함
-      */}
-      <div className="w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
+      {/* 모바일/태블릿 (lg 미만): 상단 가로 스크롤 pill 바 */}
+      <div className="lg:hidden px-6 sm:px-8 pt-4 pb-3 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2 w-max">
+          {items.map((item) => (
+            <button
+              key={item.value}
+              onClick={() => onSelect(item.value)}
+              className={`shrink-0 h-10 px-4 rounded-full border text-sm whitespace-nowrap transition-all ${
+                selected === item.value
+                  ? "bg-gray-900 text-white border-gray-900 font-medium"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <aside className="w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] min-h-[36rem] rounded-r-3xl z-10">
+      {/* 모바일/태블릿 글 작성 FAB (우하단 고정) */}
+      {showWriteButton && writeLink && (
+        <Link
+          href={writeLink}
+          aria-label={writeLabel}
+          className="lg:hidden fixed bottom-5 right-5 z-30 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-800 text-gray-0 shadow-lg active:opacity-80"
+        >
+          <Image
+            src="/assets/pencil.svg"
+            alt=""
+            width={18}
+            height={18}
+          />
+        </Link>
+      )}
+
+      {/* 데스크탑 (lg 이상): 기존 fixed 사이드바 */}
+      <div className="hidden lg:block w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
+
+      <aside className="hidden lg:block w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] min-h-[36rem] rounded-r-3xl z-10">
         <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
-          {/* ========== 카테고리 네비게이션 ========== */}
           <nav className="space-y-2">
             {items.map((item) => (
               <button
@@ -119,24 +149,19 @@ export default function Sidebar({
                 focus-visible:bg-gray-100 active:bg-gray-200
                 ${
                   selected === item.value
-                    ? // 선택된 상태: 배경색 + 굵은 글씨
-                      "bg-gray-50 border border-gray-50 font-medium text-gray-900"
-                    : // 선택되지 않은 상태: 호버 시 배경색 변경
-                      "text-gray-900 hover:bg-gray-50"
+                    ? "bg-gray-50 border border-gray-50 font-medium text-gray-900"
+                    : "text-gray-900 hover:bg-gray-50"
                 }
               `}
               >
-                {/* 코드 아이콘 (장식용) */}
                 <span className="text-gray-400 text-xs font-mono">
                   &lt;/&gt;
                 </span>
-                {/* 카테고리 라벨 */}
                 <span>{item.label}</span>
               </button>
             ))}
           </nav>
 
-          {/* ========== 글 작성하기 버튼 (writeLink 있을 때만) ========== */}
           {showWriteButton && writeLink && (
             <div className="mt-auto pt-8">
               <Link
@@ -149,7 +174,6 @@ export default function Sidebar({
                 rounded-lg transition-all duration-200
               "
               >
-                {/* 펜 아이콘 (assets/pencil) */}
                 <Image
                   src="/assets/pencil.svg"
                   alt="글 작성 아이콘"
