@@ -550,7 +550,7 @@ export default function MyPostsSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-2 md:px-4">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-h1 text-gray-900 mb-6">
         나의 작성 목록
       </h1>
 
@@ -795,7 +795,7 @@ function AllViewCardContent({ post }: { post: MyPost }) {
             )}
           </span>
         </div>
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+        <h3 className="text-h3 font-bold text-gray-900 line-clamp-2">
           {post.title}
         </h3>
         {post.content && (
@@ -856,7 +856,7 @@ function PostCard({ post }: { post: MyPost }) {
             {post.status}
           </span>
         </div>
-        <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-2">
+        <h3 className="text-h3 font-bold text-gray-900 line-clamp-2">
           {post.title}
         </h3>
         <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
