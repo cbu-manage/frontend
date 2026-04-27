@@ -13,6 +13,7 @@ export function useChangePassword() {
   const mutation = useMutation({
     mutationFn: (newPassword: string) =>
       authApi.changePassword({ studentNumber, password: newPassword }),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       const { isEmailNull } = useUserStore.getState();
       setAuthStatus({ isDefaultPassword: false, isEmailNull });

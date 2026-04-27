@@ -19,6 +19,7 @@ export function useVerifyEmail() {
       const fullEmail = addSuffixIfMissing(email);
       return mailApi.verify(fullEmail, code);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: (res) => {
       if (res.data.success) alert("인증되었습니다!");
       else alert(`❌ 인증 실패: ${res.data.responseMessage}`);
