@@ -21,7 +21,7 @@ export default function Footer() {
     <footer
       className={`w-full py-9 ${isHome ? "bg-[#151517]" : "bg-gray-0"}`}
     >
-      <div className="px-[9.375%] flex flex-col gap-6">
+      <div className="container-x flex flex-col gap-6">
         <div className="flex justify-center">
           <Link href="/">
             <Image

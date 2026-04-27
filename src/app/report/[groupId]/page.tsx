@@ -11,7 +11,7 @@ export default function ReportWritePage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-12 bg-white">
-        <div className="px-[15%] pt-16">
+        <div className="container-x-lg pt-6 lg:pt-16">
           <button
             type="button"
             onClick={() => router.push("/report")}
