@@ -33,8 +33,14 @@ async function proxy(req: NextRequest) {
   res.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
     if (lower === "transfer-encoding") return;
+    // Set-Cookie는 여러 줄일 수 있으므로 아래에서 별도 처리
+    if (lower === "set-cookie") return;
     responseHeaders.set(key, value);
   });
+  // 복수 Set-Cookie를 그대로 전달 (set이 아닌 append)
+  for (const cookie of res.headers.getSetCookie()) {
+    responseHeaders.append("set-cookie", cookie);
+  }
 
   return new NextResponse(res.body, {
     status: res.status,

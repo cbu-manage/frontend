@@ -31,13 +31,13 @@ export default function AdminPageClient() {
 
   return (
     <main className="min-h-screen bg-gray-0">
-      <div className="flex pt-14 pb-12">
+      <div className="flex flex-col lg:flex-row pt-4 lg:pt-14 pb-6 lg:pb-12">
         <Sidebar
           items={ADMIN_MENU_ITEMS}
           selected={selectedMenu}
           onSelect={handleSelect}
         />
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] min-w-0">
+        <div className="flex-1 min-w-0 px-6 sm:px-8 lg:ml-[calc(9.375vw+240px)] lg:pl-6 lg:pr-[9.375%]">
           {selectedMenu === "members" && <MemberManageSection />}
           {selectedMenu === "groups" && <GroupManageSection />}
           {selectedMenu === "reports" && <ReportManageSection />}
