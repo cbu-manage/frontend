@@ -32,9 +32,9 @@ export default function ReportPage() {
   return (
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
-        <div className="px-[15%]">
-          <div className="pt-16 pb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+        <div className="container-x-lg">
+          <div className="pt-6 lg:pt-16 pb-6">
+            <h1 className="text-h1 text-gray-900 mb-2">
               내 스터디/프로젝트
             </h1>
             <p className="text-base text-gray-600">
@@ -42,7 +42,7 @@ export default function ReportPage() {
             </p>
           </div>
 
-          <section className="grid grid-cols-2 gap-4 w-full">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             {isLoading && (
               <div className="col-span-full text-center py-16 text-gray-500">
                 그룹 목록을 불러오는 중...

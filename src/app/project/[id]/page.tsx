@@ -152,7 +152,7 @@ export default function ProjectDetailPage() {
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });

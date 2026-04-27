@@ -1,28 +1,16 @@
 "use client";
 
 import { useUserStore } from "@/store/userStore";
-import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/shared/Sidebar";
 import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
 import MyApplicationsSection from "@/components/user/MyApplicationsSection";
 import InputBox from "@/components/common/InputBox";
-import { memberApi } from "@/api";
-
-function getUserIdFromToken(token: string | null): number | null {
-  if (!token) return null;
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.user_id ?? null;
-  } catch {
-    return null;
-  }
-}
+import { useMe } from "@/hooks/auth";
 
 const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
@@ -48,34 +36,15 @@ export default function UserPageClient() {
   });
 
   const user = useUserStore();
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const userId = getUserIdFromToken(accessToken);
-
-  const { data: memberRes } = useQuery({
-    queryKey: ["member", userId],
-    queryFn: () => memberApi.getById(userId!),
-    enabled: !!userId,
-  });
-
-  const raw = memberRes?.data as Record<string, unknown> | undefined;
-  const memberData = (raw && "data" in raw ? raw.data : raw) as
-    | {
-        name?: string;
-        studentNumber?: number;
-        major?: string;
-        grade?: string;
-        generation?: number;
-        email?: string;
-      }
-    | undefined;
+  const { data: me } = useMe();
 
   const profile = {
-    name: memberData?.name ?? user.name,
-    studentNumber: memberData?.studentNumber ?? user.studentNumber,
-    major: memberData?.major ?? user.major,
-    grade: memberData?.grade ?? user.grade,
-    generation: memberData?.generation,
-    email: memberData?.email ?? user.email,
+    name: me?.name ?? user.name,
+    studentNumber: me?.studentNumber ?? user.studentNumber,
+    major: me?.major ?? user.major,
+    grade: me?.grade ?? user.grade,
+    generation: me?.generation,
+    email: me?.email ?? user.email,
   };
 
   const handleSelect = useCallback((value: string) => {
@@ -87,7 +56,7 @@ export default function UserPageClient() {
       <main className="min-h-screen bg-gray-50">
         <div className="py-16">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold text-gray-900 mb-8">내 정보</h1>
+            <h1 className="text-h1 text-gray-900 mb-8">내 정보</h1>
             <div className="text-center py-16">
               <p className="text-gray-600 mb-6">
                 로그인 후 내 정보를 확인하세요.
@@ -108,13 +77,13 @@ export default function UserPageClient() {
     <main
       className={`min-h-screen ${selectedMenu === "applications" ? "bg-gray-0" : "bg-gray-50"}`}
     >
-      <div className="flex pt-14 pb-12">
+      <div className="flex flex-col lg:flex-row pt-4 lg:pt-14 pb-6 lg:pb-12">
         <Sidebar
           items={USER_MENU_ITEMS}
           selected={selectedMenu}
           onSelect={handleSelect}
         />
-        <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] min-w-0">
+        <div className="flex-1 min-w-0 px-6 sm:px-8 lg:ml-[calc(9.375vw+240px)] lg:pl-6 lg:pr-[9.375%]">
           {selectedMenu === "applications" && (
             <div className="min-h-screen">
               <MyApplicationsSection />
