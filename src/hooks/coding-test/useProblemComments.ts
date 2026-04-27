@@ -74,6 +74,7 @@ export function useProblemComments(postId: number) {
   const createMutation = useMutation({
     mutationFn: (content: string) =>
       commentApi.createProblemComment(postId, { content }),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
@@ -82,6 +83,7 @@ export function useProblemComments(postId: number) {
   const replyMutation = useMutation({
     mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
       commentApi.reply(commentId, { content }),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
@@ -90,6 +92,7 @@ export function useProblemComments(postId: number) {
   const updateMutation = useMutation({
     mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
       commentApi.update(commentId, { content }),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },
@@ -97,6 +100,7 @@ export function useProblemComments(postId: number) {
 
   const deleteMutation = useMutation({
     mutationFn: (commentId: number) => commentApi.delete(commentId),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["problemComments", postId] });
     },

@@ -7,7 +7,7 @@ import DetailTemplate from "@/components/detail/DetailTemplate";
 import Image from "next/image";
 import { CommentInput, CommentItem } from "@/components/detail/CommentSection";
 import { useUserStore } from "@/store/userStore";
-import { useAuthStore } from "@/store/authStore";
+import { useMe } from "@/hooks/auth";
 import RequireMember from "@/components/auth/RequireMember";
 import { codingTestApi } from "@/api";
 import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
@@ -51,16 +51,8 @@ export default function CodingTestDetailPage() {
   const name = useUserStore((s) => s.name);
   const isMember = !!name;
 
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const currentUserId = (() => {
-    if (!accessToken) return null;
-    try {
-      const payload = JSON.parse(atob(accessToken.split(".")[1]));
-      return (payload.user_id as number) ?? null;
-    } catch {
-      return null;
-    }
-  })();
+  const { data: me } = useMe();
+  const currentUserId = me?.userId ?? null;
 
   useCodingTestMeta();
 
@@ -79,6 +71,7 @@ export default function CodingTestDetailPage() {
 
   const deleteMutation = useMutation({
     mutationFn: () => codingTestApi.delete(id),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["codingTest", "list"] });
       router.push("/coding-test");
