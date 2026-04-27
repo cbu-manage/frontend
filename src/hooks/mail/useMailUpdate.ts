@@ -11,6 +11,7 @@ export function useMailUpdate(onSuccess?: () => void) {
   const mutation = useMutation({
     mutationFn: (email: string) =>
       mailApi.update({ studentNumber, email }),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: (_, email) => {
       updateEmail(email);
       alert("📩 이메일이 성공적으로 등록되었습니다!");

@@ -143,6 +143,7 @@ export default function ProjectDetailPage() {
       if (!numericId) return;
       await projectApi.delete(numericId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.push("/project");
@@ -154,6 +155,7 @@ export default function ProjectDetailPage() {
       if (!groupId) return;
       await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
       queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -166,6 +168,7 @@ export default function ProjectDetailPage() {
       if (!groupId) return;
       await groupApi.join(groupId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
@@ -183,6 +186,7 @@ export default function ProjectDetailPage() {
       if (!groupId) return;
       await groupApi.leave(groupId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
