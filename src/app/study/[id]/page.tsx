@@ -87,7 +87,7 @@ export default function StudyDetailPage() {
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {

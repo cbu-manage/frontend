@@ -107,7 +107,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: "#151517" }}>
-      <div className="px-[9.375%]">
+      <div className="container-x">
         {/* 히어로: 가운데 부엉이, 호버 시 크기 확대 + owl-icon으로 전환 */}
         <div
           className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] mb-40 sm:mb-24 relative"
@@ -499,7 +499,7 @@ export default function Home() {
 
       {/* CBU STORY - px-[9.375%] 제외, 슬라이드만 풀 너비 */}
       <div className="pb-32">
-        <div className="px-[9.375%] max-w-7xl mx-auto text-center mb-10">
+        <div className="container-x max-w-7xl mx-auto text-center mb-10">
           <h2
             className={`text-3xl font-bold text-white mb-2 ${poppins.className}`}
           >
