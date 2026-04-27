@@ -79,6 +79,7 @@ export default function CodingTestDetailPage() {
 
   const deleteMutation = useMutation({
     mutationFn: () => codingTestApi.delete(id),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["codingTest", "list"] });
       router.push("/coding-test");
