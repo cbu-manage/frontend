@@ -3,6 +3,7 @@ updates:
   # npm 의존성: 매주 월요일 09:00 KST(UTC 00:00) minor/patch 업데이트 PR 생성
   - package-ecosystem: "npm"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "weekly"
       day: "monday"
@@ -32,6 +33,7 @@ updates:
   # GitHub Actions 워크플로우에 사용된 action 버전도 자동 업데이트
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "develop"
     schedule:
       interval: "monthly"
     labels:
