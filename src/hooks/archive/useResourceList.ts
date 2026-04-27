@@ -54,6 +54,7 @@ export function useDeleteResource() {
     mutationFn: async (id: number) => {
       await resourcesApi.delete(id);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
     },

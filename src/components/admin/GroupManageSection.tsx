@@ -76,6 +76,7 @@ export default function GroupManageSection() {
     mutationFn: async (groupId: number) => {
       await groupApi.updateStatus(groupId, { groupStatus: "ACTIVE" });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups", "admin"] });
     },
