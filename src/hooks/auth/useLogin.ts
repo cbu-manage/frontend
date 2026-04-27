@@ -53,6 +53,7 @@ export function useLogin() {
         password: string;
       };
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: async ({ data, studentNumber, password }) => {
       if (data.accessToken) {
         setAccessToken(data.accessToken);
