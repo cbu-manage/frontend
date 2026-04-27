@@ -82,6 +82,7 @@ export default function StudyWriteClient() {
         category: STUDY_CATEGORY,
       });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
@@ -106,6 +107,7 @@ export default function StudyWriteClient() {
         await studyApi.close(id);
       }
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");

@@ -131,6 +131,7 @@ export default function ProjectWriteClient() {
         category: PROJECT_CATEGORY,
       });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       router.push("/project");
@@ -157,6 +158,7 @@ export default function ProjectWriteClient() {
         maxMembers: Math.max(0, recruitCount),
       });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["project", numericEditId] });

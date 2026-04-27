@@ -77,6 +77,7 @@ export default function StudyDetailPage() {
       if (!numericId) return;
       await studyApi.delete(numericId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
@@ -88,6 +89,7 @@ export default function StudyDetailPage() {
       if (!groupId) return;
       await groupApi.updateRecruitment(groupId, { status: "CLOSED" });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       queryClient.invalidateQueries({ queryKey: ["studies"] });
@@ -100,6 +102,7 @@ export default function StudyDetailPage() {
       if (!groupId) return;
       await groupApi.join(groupId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
@@ -116,6 +119,7 @@ export default function StudyDetailPage() {
       if (!groupId) return;
       await groupApi.leave(groupId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
