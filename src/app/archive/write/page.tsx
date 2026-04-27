@@ -23,6 +23,7 @@ export default function ArchiveWritePage() {
         ...(title.trim() ? { title: title.trim() } : {}),
       });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["resources"] });
       router.push("/archive");
