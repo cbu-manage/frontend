@@ -1,0 +1,49 @@
+# CodeRabbit 설정
+# docs: https://docs.coderabbit.ai/reference/yaml-template
+
+language: "ko-KR"
+early_access: false
+
+reviews:
+  profile: "chill"             # 'chill'은 과하지 않은 리뷰 톤. 'assertive'는 엄격
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false                  # 장난스러운 시 생성 off (PR이 가벼워짐)
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false              # draft PR은 리뷰 skip (완성 전)
+    base_branches:
+      - main
+      - develop
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/dist/**"
+    - "!**/public/**"
+    - "!**/*.lock"
+    - "!package-lock.json"
+  path_instructions:
+    - path: "src/components/**"
+      instructions: |
+        컴포넌트 리뷰 시 다음을 중점 확인:
+        - 단일 책임 원칙 (컴포넌트 사이즈 300줄 이내 권장)
+        - props 타입 명확성
+        - 접근성 (a11y: aria, semantic HTML, keyboard navigation)
+        - 재사용 가능한 로직은 hook으로 분리 가능한지
+    - path: "src/api/**"
+      instructions: |
+        API 레이어 리뷰 시:
+        - 에러 처리 일관성
+        - 타입 추론 정확성
+        - `any` 사용 금지 (불가피하면 근거 주석 필수)
+    - path: "src/hooks/**"
+      instructions: |
+        React Query 훅 리뷰 시:
+        - queryKey 컨벤션 준수
+        - staleTime/gcTime 설정 적절성
+        - mutation 후 invalidateQueries 매핑
+
+chat:
+  auto_reply: true
