@@ -3,7 +3,7 @@
 export default function ReportManageSection() {
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
+      <h1 className="text-h1 text-gray-900 mb-6">
         보고서 관리
       </h1>
 

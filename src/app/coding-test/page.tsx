@@ -7,6 +7,7 @@ import {
   CodingTestRow,
   SolveStatus,
 } from "@/components/coding-test/CodingTestRow";
+import { CodingTestCard } from "@/components/coding-test/CodingTestCard";
 import PGN from "@/components/shared/Pagination";
 import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
@@ -28,11 +29,11 @@ function FilterButton({ label, isOpen, onClick }: FilterButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-[#EEEFF3]/80 hover:bg-[#EEEFF3] rounded-xl text-base font-semibold text-gray-900 transition-colors"
+      className="inline-flex items-center gap-1.5 h-10 px-4 bg-[#EEEFF3]/80 hover:bg-[#EEEFF3] rounded-full lg:rounded-xl text-sm lg:text-base font-semibold text-gray-900 transition-colors"
     >
       {label}
       <svg
-        className={`w-5 h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        className={`w-4 h-4 lg:w-5 lg:h-5 transition-transform ${isOpen ? "rotate-180" : ""}`}
         fill="none"
         stroke="#959AA3"
         viewBox="0 0 24 24"
@@ -246,9 +247,9 @@ export default function CodingTestPage() {
   return (
     <RequireMember>
       <div className="w-full bg-gray-0 min-h-screen">
-        <main className="px-[15%] pt-16 pb-16">
+        <main className="container-x-lg pt-6 lg:pt-16 pb-16">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            <h1 className="text-h1 text-gray-900">
               코딩테스트 준비
             </h1>
           </div>
@@ -400,7 +401,7 @@ export default function CodingTestPage() {
                 </div>
               </div>
 
-              <Link href="/coding-test/write">
+              <Link href="/coding-test/write" className="hidden lg:block">
                 <button className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide">
                   <Pencil size={18} />글 작성하기
                 </button>
@@ -489,7 +490,41 @@ export default function CodingTestPage() {
             </div>
           )}
 
-          <div className="bg-white border border-gray-200 overflow-x-auto">
+          {/* 모바일/태블릿: 카드 리스트 */}
+          <div className="lg:hidden flex flex-col gap-3 pb-20">
+            {isLoading && (
+              <div className="py-12 text-center text-gray-500">
+                목록을 불러오는 중...
+              </div>
+            )}
+            {isError && (
+              <div className="py-12 text-center text-red-500">
+                목록을 불러오지 못했습니다.
+              </div>
+            )}
+            {!isLoading &&
+              !isError &&
+              filteredProblems.map((problem) => (
+                <CodingTestCard
+                  key={problem.id}
+                  id={problem.id}
+                  status={problem.status}
+                  title={problem.title}
+                  language={problem.language}
+                  platform={problem.platform}
+                  author={problem.author}
+                  comments={problem.commentCount}
+                />
+              ))}
+            {!isLoading && !isError && filteredProblems.length === 0 && (
+              <div className="py-12 text-center text-gray-500">
+                해당 조건에 맞는 문제가 없습니다.
+              </div>
+            )}
+          </div>
+
+          {/* 데스크탑: 테이블 */}
+          <div className="hidden lg:block bg-white border border-gray-200 overflow-x-auto">
             <table className="w-full min-w-150">
               <thead className="bg-brand text-white">
                 <tr>
@@ -562,6 +597,15 @@ export default function CodingTestPage() {
             onPageChange={(num) => setCurrentPage(num)}
           />
         </main>
+
+        {/* 모바일 글 작성 FAB */}
+        <Link
+          href="/coding-test/write"
+          aria-label="글 작성하기"
+          className="lg:hidden fixed bottom-5 right-5 z-30 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-800 text-gray-0 shadow-lg active:opacity-80"
+        >
+          <Pencil size={18} />
+        </Link>
       </div>
     </RequireMember>
   );

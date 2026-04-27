@@ -64,8 +64,8 @@ export default function StudyPage() {
 
   return (
     <RequireMember>
-      <main className="min-h-screen min-w-[1200px] bg-[#F8FAFF]">
-        <div className="flex min-w-[1200px]">
+      <main className="min-h-screen bg-[#F8FAFF]">
+        <div className="flex flex-col lg:flex-row">
           <Sidebar
             items={CATEGORIES}
             selected={selectedCategory}
@@ -73,12 +73,12 @@ export default function StudyPage() {
             writeLink="/study/write"
           />
 
-          <div className="flex-1 ml-[calc(9.375vw+240px)] pl-6 pr-[9.375%] py-16">
+          <div className="flex-1 min-w-0 px-6 sm:px-8 lg:ml-[calc(9.375vw+240px)] lg:pl-6 lg:pr-[9.375%] py-3 lg:py-16">
             <div>
               {/* 페이지 헤더 */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <div className="flex items-center gap-3">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  <h1 className="text-h1 text-gray-900">
                     스터디 모집
                   </h1>
                 </div>

@@ -29,9 +29,9 @@ export default function RequireAdmin({ children }: RequireAdminProps) {
 
   if (!name) {
     return (
-      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-[9.375%]">
+      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center container-x">
         <div className="max-w-xl text-center space-y-3">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+          <h1 className="text-h1 font-semibold text-gray-900">
             로그인이 필요합니다.
           </h1>
           <p className="text-base text-gray-600">로그인 이후 이용해주세요.</p>
@@ -47,9 +47,9 @@ export default function RequireAdmin({ children }: RequireAdminProps) {
 
   if (!isAdmin) {
     return (
-      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-[9.375%]">
+      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center container-x">
         <div className="max-w-xl text-center space-y-3">
-          <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
+          <h1 className="text-h1 font-semibold text-gray-900">
             관리자만 접근 가능한 페이지입니다.
           </h1>
           <p className="text-base text-gray-600">

@@ -10,7 +10,7 @@ type Props = {
 export default function ArchiveError({ reset }: Props) {
   return (
     <main className="min-h-screen pb-12 bg-white">
-      <div className="px-[9.375%] pt-12">
+      <div className="container-x pt-12">
         <div className="max-w-xl mx-auto py-16 text-center space-y-6">
           <h1 className="text-2xl font-bold text-gray-900">
             자료를 불러오는 중 오류가 발생했습니다.

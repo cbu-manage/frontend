@@ -5,12 +5,32 @@ export type LoginRequest = {
   password: string;
 };
 
-export type LoginResponse = {
+export type LoginResponseData = {
   name: string;
   email: string | null;
-  /** 로그인 성공 시 서버가 발급하는 JWT (있으면 저장 후 API 요청에 사용) */
-  accessToken?: string;
+  role: string;
 };
+
+export type MeResponseData = {
+  userId: number;
+  name: string;
+  email: string | null;
+  role: string;
+  studentNumber: number;
+  major: string;
+  grade: string;
+  generation: number;
+};
+
+export type MeResponse = ApiEnvelope<MeResponseData>;
+
+export type ApiEnvelope<T> = {
+  code: string;
+  message: string;
+  data: T;
+};
+
+export type LoginResponse = ApiEnvelope<LoginResponseData>;
 
 export type SignupRequest = {
   email: string;
@@ -25,15 +45,25 @@ export type ChangePasswordRequest = {
   password: string;
 };
 
+export type ResetPasswordRequest = {
+  studentNumber: number;
+  email: string;
+};
+
 export const authApi = {
-  login: (data: LoginRequest) =>
-    api.post<LoginResponse>("/login", data),
+  login: (data: LoginRequest) => api.post<LoginResponse>("/login", data),
 
   logout: () => api.delete("/login"),
 
-  signup: (data: SignupRequest) =>
-    api.post("/login/signup", data),
+  refresh: () => api.post("/login/refresh"),
+
+  me: () => api.get<MeResponse>("/login/me"),
+
+  signup: (data: SignupRequest) => api.post("/login/signup", data),
 
   changePassword: (data: ChangePasswordRequest) =>
     api.patch("/login/password", data),
+
+  resetPassword: (data: ResetPasswordRequest) =>
+    api.post("/login/password/reset", data),
 };

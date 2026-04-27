@@ -3,20 +3,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { authApi, type LoginResponse } from "@/api/auth.api";
-import { memberApi } from "@/api";
-import { useAuthStore } from "@/store/authStore";
-import { useUserStore } from "@/store/userStore";
-import { setCookie } from "@/lib/cookie";
 import { AxiosError } from "axios";
-
-function decodeTokenPayload(token: string): Record<string, unknown> | null {
-  try {
-    return JSON.parse(atob(token.split(".")[1]));
-  } catch {
-    return null;
-  }
-}
+import { authApi } from "@/api/auth.api";
+import { useUserStore } from "@/store/userStore";
 
 type LoginParams = {
   studentId: string;
@@ -41,32 +30,20 @@ export function useLogin() {
   const router = useRouter();
   const setUser = useUserStore((s) => s.setUser);
   const setAuthStatus = useUserStore((s) => s.setAuthStatus);
-  const setAccessToken = useAuthStore((s) => s.setAccessToken);
 
   const mutation = useMutation({
     mutationFn: async ({ studentId, password }: LoginParams) => {
       const studentNumber = Number(String(studentId).replace(/^cbu/, ""));
       const res = await authApi.login({ studentNumber, password });
-      return { data: res.data, studentNumber, password } as {
-        data: LoginResponse;
-        studentNumber: number;
-        password: string;
-      };
+      return { data: res.data.data, studentNumber, password };
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: async ({ data, studentNumber, password }) => {
-      if (data.accessToken) {
-        setAccessToken(data.accessToken);
-        setCookie("ACCESS_TOKEN", data.accessToken);
-      }
-
       const loginEmail = data.email === "null" ? null : data.email;
-      const tokenPayload = data.accessToken
-        ? decodeTokenPayload(data.accessToken)
-        : null;
-      const permissions = Array.isArray(tokenPayload?.permissions)
-        ? (tokenPayload.permissions as string[])
-        : [];
-      const isAdmin = permissions.includes("admin");
+      const isAdmin =
+        data.role === "admin" ||
+        data.role === "ROLE_ADMIN" ||
+        data.role?.toUpperCase().includes("ADMIN");
 
       if (isAdmin) {
         setUser({
@@ -82,42 +59,16 @@ export function useLogin() {
 
       const isDefaultPassword =
         password === "12345678" || password === "11111111";
-
-      let emailValue: string | null = null;
-      if (loginEmail && loginEmail.endsWith("@tukorea.ac.kr")) {
-        emailValue = loginEmail;
-      }
-
-      if (!emailValue && tokenPayload) {
-        const userId = (tokenPayload.user_id as number) ?? null;
-        if (userId) {
-          try {
-            const memberRes = await memberApi.getById(userId);
-            const raw = memberRes?.data as Record<string, unknown> | undefined;
-            const memberData = (raw && "data" in raw ? raw.data : raw) as
-              | { email?: string }
-              | undefined;
-            const memberEmail = memberData?.email;
-            if (memberEmail && memberEmail.endsWith("@tukorea.ac.kr")) {
-              emailValue = memberEmail;
-            }
-          } catch {
-            // 멤버 정보 조회 실패 시 무시
-          }
-        }
-      }
-
-      const isEmailNull = !emailValue;
+      const hasValidEmail =
+        !!loginEmail && loginEmail.endsWith("@tukorea.ac.kr");
+      const isEmailNull = !hasValidEmail;
 
       setUser({
         name: data.name,
         studentNumber,
-        email: emailValue,
+        email: hasValidEmail ? loginEmail : null,
       });
-      setAuthStatus({
-        isDefaultPassword,
-        isEmailNull,
-      });
+      setAuthStatus({ isDefaultPassword, isEmailNull });
       setErrorMessage(null);
 
       if (isEmailNull) {

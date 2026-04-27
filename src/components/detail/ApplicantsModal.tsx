@@ -104,6 +104,7 @@ export default function ApplicantsModal({
       });
     },
     onMutate: ({ groupMemberId }) => setUpdatingId(groupMemberId),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSettled: () => setUpdatingId(null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applicants", groupId] });

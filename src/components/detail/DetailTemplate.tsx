@@ -93,7 +93,11 @@ export default function DetailTemplate({
 
   return (
     <div
-      className={`flex-1 bg-white ${hasSidebar ? "ml-[calc(9.375vw+240px)] pl-16 pr-[9.375%]" : "px-[9.375%]"} py-16 min-h-screen`}
+      className={`flex-1 min-w-0 bg-white ${
+        hasSidebar
+          ? "container-x lg:ml-[calc(9.375vw+240px)] lg:pl-16 lg:pr-[9.375%]"
+          : "container-x"
+      } py-6 lg:py-16 min-h-screen`}
     >
       <div className="w-full">
         {/* 상단 네비게이션 (뒤로가기, 메뉴) */}
@@ -192,7 +196,7 @@ export default function DetailTemplate({
           </div>
 
           {/* 제목 */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">
+          <h1 className="text-h1 text-gray-900 mb-4">
             {title}
           </h1>
 

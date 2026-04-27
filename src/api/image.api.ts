@@ -4,8 +4,7 @@
  * base path가 /api 이므로 별도 instance 사용
  */
 import axios from "axios";
-import { useAuthStore } from "@/store/authStore";
-import { getAccessTokenFromCookie } from "@/lib/cookie";
+import { attachAuthInterceptor } from "./client";
 
 const getImageBaseUrl = () => {
   const base = process.env.NEXT_PUBLIC_API_URL;
@@ -24,14 +23,7 @@ const imageApiBase = axios.create({
   },
 });
 
-imageApiBase.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token =
-      useAuthStore.getState().accessToken ?? getAccessTokenFromCookie();
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+attachAuthInterceptor(imageApiBase);
 
 export const imageApi = {
   /** 사진 업로드 */
