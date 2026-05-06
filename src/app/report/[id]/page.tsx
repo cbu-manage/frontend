@@ -44,7 +44,7 @@ export default function ReportDetailPage() {
 
         {/* 목록으로 */}
         <button
-          onClick={() => router.push("/manage?tab=reports")}
+          onClick={() => router.push("/report")}
           className="mb-6 text-sm text-gray-900 font-medium hover:text-gray-600 transition-colors"
         >
           ← 목록으로

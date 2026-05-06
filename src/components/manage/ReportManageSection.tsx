@@ -78,7 +78,7 @@ export default function ReportManageSection() {
           // 카드 클릭 시 /manage/reports/{id} 상세 페이지로 이동
           <Link
             key={report.id}
-            href={`/manage/reports/${report.id}`}
+            href={`/report/${report.id}`}
             className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow min-h-[140px]"
           >
             {/* 팀 뱃지 (좌상단) */}
