@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import ErrorFallback from "@/components/common/ErrorFallback";
 
 interface ErrorProps {
-  error: Error & { digest?: string };
+  error: Error & { digest?: string; response?: { data?: { message?: string } } };
   reset: () => void;
 }
 
@@ -13,5 +13,7 @@ export default function Error({ error, reset }: ErrorProps) {
     console.error("error.tsx caught:", error);
   }, [error]);
 
-  return <ErrorFallback status={500} reset={reset} error={error} />;
+  const message = error.response?.data?.message ?? error.message;
+
+  return <ErrorFallback message={message} reset={reset} />;
 }
