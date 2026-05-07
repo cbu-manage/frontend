@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string; response?: { data?: { message?: string } } };
@@ -48,9 +49,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <button onClick={reset} style={buttonStyle}>
             다시 시도
           </button>
-          <a href="/" style={buttonStyle}>
+          <Link href="/" style={buttonStyle}>
             홈으로 가기
-          </a>
+          </Link>
         </div>
       </body>
     </html>
