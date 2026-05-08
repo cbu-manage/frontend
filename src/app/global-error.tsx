@@ -8,7 +8,7 @@ interface GlobalErrorProps {
   reset: () => void;
 }
 
-const buttonStyle: React.CSSProperties = {
+const buttonStyle = {
   padding: "0.75rem 2rem",
   borderRadius: "8px",
   background: "#222222",
@@ -19,7 +19,7 @@ const buttonStyle: React.CSSProperties = {
   fontWeight: 500,
   textDecoration: "none",
   display: "inline-block",
-};
+} as const;
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
