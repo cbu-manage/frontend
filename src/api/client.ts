@@ -43,6 +43,12 @@ function handleAuthFailure(): void {
   });
 }
 
+function applyServerMessage(err: AxiosError): AxiosError {
+  const msg = (err.response?.data as { message?: string } | undefined)?.message;
+  if (msg) err.message = msg;
+  return err;
+}
+
 /**
  * 401 → /login/refresh → 원요청 재시도. refresh 실패 시 로그아웃 + /login 이동.
  */
@@ -59,7 +65,7 @@ export function attachAuthInterceptor(instance: AxiosInstance) {
         if (isAuthError && url.endsWith(REFRESH_PATH)) {
           handleAuthFailure();
         }
-        return Promise.reject(err);
+        return Promise.reject(applyServerMessage(err));
       }
 
       original._retry = true;
@@ -67,7 +73,7 @@ export function attachAuthInterceptor(instance: AxiosInstance) {
         await refreshTokens();
       } catch (refreshErr) {
         handleAuthFailure();
-        return Promise.reject(refreshErr);
+        return Promise.reject(applyServerMessage(refreshErr as AxiosError));
       }
       return instance(original);
     },
