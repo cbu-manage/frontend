@@ -26,8 +26,8 @@ export default function ReportPage() {
   });
 
   const allGroups = extractMyGroups(res?.data ?? null);
-  const activeGroups = allGroups.filter((g) => g.groupStatus === "ACTIVE");
-  const pendingGroups = allGroups.filter((g) => g.groupStatus !== "ACTIVE");
+  const activeGroups = allGroups.filter((g: MyGroupItem) => g.groupStatus === "ACTIVE");
+  const pendingGroups = allGroups.filter((g: MyGroupItem) => g.groupStatus !== "ACTIVE");
 
   return (
     <RequireMember>
