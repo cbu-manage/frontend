@@ -45,10 +45,11 @@ export default function NoticePage() {
               <p className="text-base text-gray-700">동아리 공지와 새 소식을 확인하세요</p>
             </div>
             {isAdmin && (
-              <Link href="/notice/write">
-                <button className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors">
-                  + 글쓰기
-                </button>
+              <Link
+                href="/notice/write"
+                className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors"
+              >
+                + 글쓰기
               </Link>
             )}
           </div>

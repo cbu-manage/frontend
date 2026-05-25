@@ -42,10 +42,11 @@ export default function BoardPage() {
               <h1 className="text-h1 text-gray-900 mb-2">자유게시판</h1>
               <p className="text-base text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
             </div>
-            <Link href="/board/write">
-              <button className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors">
-                + 글쓰기
-              </button>
+            <Link
+              href="/board/write"
+              className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors"
+            >
+              + 글쓰기
             </Link>
           </div>
 
@@ -73,7 +74,7 @@ export default function BoardPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="제목 · 내용으로 검색"
+                placeholder="제목 · 작성자로 검색"
                 className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
               />
             </div>

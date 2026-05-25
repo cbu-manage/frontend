@@ -25,9 +25,9 @@ export default function ReportCard({ id, tag, title, author, date, files }: Repo
         {author} · {date}
       </p>
       <div className="flex justify-end gap-1 mt-auto">
-        {files.map((f) => (
+        {files.map((f, i) => (
           <span
-            key={f}
+            key={`${f}-${i}`}
             className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-500 font-medium"
           >
             {f}
