@@ -87,7 +87,8 @@ export default function ReportManageSection() {
       <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
 
         {/* 팀 탭 */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium text-gray-700 shrink-0 w-8">팀</span>
           {TEAM_TABS.map((t) => (
             <button
               key={t}
@@ -107,12 +108,12 @@ export default function ReportManageSection() {
         {/* 기간 + 팀으로 그룹핑 */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-            <span className="font-medium text-gray-700 shrink-0">기간</span>
+            <span className="font-medium text-gray-700 shrink-0 w-8">기간</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outligne-none focus:ring-1 focus:ring-gray-300"
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
             />
             <span className="shrink-0">~</span>
             <input
@@ -126,6 +127,8 @@ export default function ReportManageSection() {
             <span className="text-sm text-gray-600">팀으로 그룹핑</span>
             <button
               type="button"
+              role="switch"
+              aria-checked={groupByTeam}
               onClick={() => setGroupByTeam((v) => !v)}
               className={`relative w-10 h-6 rounded-full transition-colors ${
                 groupByTeam ? "bg-gray-800" : "bg-gray-200"
