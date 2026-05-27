@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\dev\\\\cbu-manage\\\\frontend\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(dir /B)",
+      "Bash(npx tsc *)"
     ]
   }
 }

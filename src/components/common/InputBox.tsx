@@ -33,6 +33,7 @@ export default function InputBox({
   className = "",
   rightElement,
   insetLabel,
+  required,
   ...props
 }: InputBoxProps) {
   const hasError = errorMessage !== undefined && errorMessage !== null;
@@ -103,12 +104,14 @@ export default function InputBox({
       {label && (
         <label className="block text-sm font-medium text-gray-900">
           {label}
+          {required && <span className="text-notice ml-0.5">*</span>}
         </label>
       )}
 
       <div className="relative">
         <input
           {...props}
+          required={required}
           disabled={disabled}
           className={`
             w-full rounded-lg p-4 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
