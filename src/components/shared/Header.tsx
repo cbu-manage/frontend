@@ -19,8 +19,13 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    // defer closing the mobile menu to avoid synchronous setState inside effect
+    if (mobileOpen) {
+      const t = setTimeout(() => setMobileOpen(false), 0);
+      return () => clearTimeout(t);
+    }
+    return;
+  }, [pathname, mobileOpen]);
 
   useEffect(() => {
     if (mobileOpen) {
