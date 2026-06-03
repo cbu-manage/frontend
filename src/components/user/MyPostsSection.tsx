@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
-import { MessageCircle, Eye, Trash2, Clock, UserCircle } from "lucide-react";
+import { Eye, Trash2, Clock, UserCircle } from "lucide-react";
 import Link from "next/link";
 import PGN from "@/components/shared/Pagination";
 import { StudyCard } from "@/components/study/StudyCard";
@@ -120,7 +120,7 @@ function formatDeadline(iso?: string): string {
 function extractContent(raw: unknown): PostListItem[] {
   if (!raw || typeof raw !== "object") return [];
   const obj = raw as Record<string, unknown>;
-  let data: unknown = obj.data ?? obj;
+  const data: unknown = obj.data ?? obj;
   if (Array.isArray(data)) return data as PostListItem[];
   if (data && typeof data === "object") {
     const d = data as Record<string, unknown>;
@@ -202,7 +202,7 @@ const TAB_TO_CATEGORY: Record<PostCategory, number | undefined> = {
   자료방: POST_CATEGORY.ARCHIVE,
 };
 
-const TAB_KEYS: PostCategory[] = ["전체보기", ...CATEGORY_LIST];
+// NOTE: TAB_KEYS was unused and removed to satisfy linter
 
 /** API 응답 바디에서 totalElements 추출 (post API) */
 function extractTotalElements(raw: unknown): number {
@@ -238,6 +238,7 @@ export default function MyPostsSection() {
   const categoryParam = TAB_TO_CATEGORY[activeTab];
   const pageSize = TAB_PAGE_SIZE[activeTab];
 
+  // stable list of tabs used for counting
   const COUNT_TABS = ["스터디 모집", "프로젝트 모집", "코딩테스트 준비", "자료방"] as const;
 
   /** 각 탭 개수 조회 (스터디=study/me, 프로젝트=project/me, 자료방=resources, 코딩=post/my) */
@@ -294,7 +295,7 @@ export default function MyPostsSection() {
       (map["코딩테스트 준비"] ?? 0) +
       (map["자료방"] ?? 0);
     return map;
-  }, [countResults]);
+  }, [countResults, COUNT_TABS]);
 
   const isArchiveTab = activeTab === "자료방";
   const isAllTab = activeTab === "전체보기";
@@ -544,6 +545,7 @@ export default function MyPostsSection() {
     allTabQueries,
     singleTabQuery.data,
     categoryParam,
+    pageIndex,
   ]);
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -836,57 +838,4 @@ function AllViewCardContent({ post }: { post: MyPost }) {
 // PostCard 컴포넌트 (전체보기용 - 레거시)
 // ============================================
 
-function PostCard({ post }: { post: MyPost }) {
-  const isCompleted = post.status === "모집 완료";
-  const isCodingTest = post.category === "코딩테스트 준비";
-  const hasComments = (post.comments ?? 0) > 0;
-
-  return (
-    <Link
-      href={post.href}
-      className="group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden"
-    >
-      <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
-        <div className="flex items-center">
-          <span
-            className={`text-center py-2 px-4 rounded-full text-xs font-semibold text-white ${
-              isCompleted ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
-            }`}
-          >
-            {post.status}
-          </span>
-        </div>
-        <h3 className="text-h3 font-bold text-gray-900 line-clamp-2">
-          {post.title}
-        </h3>
-        <p className="text-sm text-gray-700 leading-relaxed line-clamp-2">
-          {post.content}
-        </p>
-      </div>
-      <div className="mx-4 sm:mx-6 border-t border-gray-200" />
-      <div className="bg-white px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center">
-        <div className="flex flex-wrap gap-1.5">
-          {post.tags.map((pos) => (
-            <span
-              key={pos}
-              className="bg-gray-100 text-gray-500 px-4 py-1.5 rounded-full text-sm font-semibold"
-            >
-              {pos}
-            </span>
-          ))}
-        </div>
-        <div className="flex items-center gap-12 sm:gap-14 text-xs text-gray-600">
-          <span className="flex items-center gap-1">
-            <Eye size={14} /> {post.views}
-          </span>
-          {isCodingTest && hasComments && (
-            <span className="flex items-center gap-1">
-              <MessageCircle size={14} />
-              {post.comments}
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
-  );
-}
+// PostCard was unused and removed to satisfy linter; keep AllViewCardContent for rendering.
