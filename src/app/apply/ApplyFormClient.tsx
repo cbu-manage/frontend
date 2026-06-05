@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { applyApi } from "@/api/apply.api";
 import InputBox from "@/components/common/InputBox";
 import ShortBtn from "@/components/common/ShortBtn";
 import RecruitmentNotice from "@/components/apply/RecruitmentNotice";
@@ -21,7 +22,6 @@ type FormState = {
   birthDate: string;
   studentId: string;
   department: string;
-  phone: string;
   schoolYear: string;
   applyFields: string[];
   teamExperience: string;
@@ -41,7 +41,6 @@ type FormErrors = {
   birthDate?: string;
   studentId?: string;
   department?: string;
-  phone?: string;
   applyFields?: string;
   teamExperience?: string;
   programmingMotivation?: string;
@@ -58,7 +57,6 @@ const INITIAL_FORM: FormState = {
   birthDate: "",
   studentId: "",
   department: "",
-  phone: "",
   schoolYear: "1학년",
   applyFields: [],
   teamExperience: "",
@@ -87,11 +85,6 @@ function validate(form: FormState): FormErrors {
     errors.studentId = "10자리 숫자로 입력해주세요. (예: 2026000000)";
   }
   if (!form.department) errors.department = "학과를 선택해주세요.";
-  if (!form.phone) {
-    errors.phone = "전화번호를 입력해주세요.";
-  } else if (!/^010-\d{4}-\d{4}$/.test(form.phone)) {
-    errors.phone = "올바른 형식으로 입력해주세요. (예: 010-0000-0000)";
-  }
   if (form.applyFields.length === 0) {
     errors.applyFields = "지원 분야를 1개 이상 선택해주세요.";
   }
@@ -100,13 +93,6 @@ function validate(form: FormState): FormErrors {
   if (!form.applyPurpose.trim()) errors.applyPurpose = "씨부엉 지원 목적을 입력해주세요.";
   if (!form.privacyAgreed) errors.privacyAgreed = "개인정보 수집·이용에 동의해주세요.";
   return errors;
-}
-
-function formatPhone(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
 function FieldError({ message }: { message: string }) {
@@ -135,14 +121,30 @@ export default function ApplyFormClient() {
     setErrors((prev) => ({ ...prev, email: undefined }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const validationErrors = validate(form);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-    // API 연동 필요
+    await applyApi.submit({
+      email: form.email,
+      name: form.name,
+      nickname: form.nickname,
+      birthDate: form.birthDate,
+      studentId: form.studentId,
+      department: form.department,
+      schoolYear: form.schoolYear,
+      applyFields: form.applyFields,
+      teamExperience: form.teamExperience,
+      programmingMotivation: form.programmingMotivation,
+      applyPurpose: form.applyPurpose,
+      devLinks: form.devLinks,
+      howFound: form.howFound,
+      otAttendance: form.otAttendance,
+      welcomePartyAttendance: form.welcomePartyAttendance,
+    });
   };
 
   return (
@@ -213,22 +215,12 @@ export default function ApplyFormClient() {
             />
           </div>
 
-          {/* 학과 / 전화번호 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DepartmentSelect
-              value={form.department}
-              onChange={setField("department")}
-              errorMessage={errors.department}
-            />
-            <InputBox
-              label="전화번호"
-              placeholder="010-0000-0000"
-              value={form.phone}
-              onChange={(e) => setField("phone")(formatPhone(e.target.value))}
-              errorMessage={errors.phone}
-              required
-            />
-          </div>
+          {/* 학과 */}
+          <DepartmentSelect
+            value={form.department}
+            onChange={setField("department")}
+            errorMessage={errors.department}
+          />
 
           {/* 학년 */}
           <SchoolYearRadioGroup
