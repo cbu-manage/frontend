@@ -110,7 +110,6 @@ export default function ApplyFormClient() {
   };
 
   const handleVerify = () => {
-    // 이메일 인증 로직 필요
     setForm((prev) => ({ ...prev, isEmailVerified: true }));
     setErrors((prev) => ({ ...prev, email: undefined }));
   };
