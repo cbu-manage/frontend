@@ -19,4 +19,6 @@ export type ApplicationRequest = {
 
 export const applyApi = {
   submit: (data: ApplicationRequest) => api.post("/application", data),
+  check: (studentId: string, email: string) =>
+    api.get("/application/check", { params: { studentId, email } }),
 };
