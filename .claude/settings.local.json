@@ -2,7 +2,18 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(xargs grep -l \"approv\\\\|voting\\\\|regist\\\\|member.*list\\\\|applicant\")",
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(Start-Process \"npm\" -ArgumentList \"run\",\"dev\" -WorkingDirectory \"C:\\\\dev\\\\cbu-manage\\\\frontend\" -WindowStyle Hidden)",
+      "Bash(Start-Sleep -Seconds 5)",
+      "Bash(Write-Output \"Server started\")",
+      "Bash(Start-Sleep 6)",
+      "Bash(Invoke-WebRequest -Uri \"http://localhost:3000\" -UseBasicParsing -TimeoutSec 5)",
+      "Bash(Select-Object -ExpandProperty StatusCode)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
