@@ -8,7 +8,12 @@
       "Bash(dir /B)",
       "Bash(npx tsc *)",
       "Bash(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. 신청서 작성 폼 \\(지원자\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")",
-      "PowerShell(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. ��û�� �ۼ� �� \\(������\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")"
+      "PowerShell(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. ��û�� �ۼ� �� \\(������\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")",
+      "Bash(git checkout *)",
+      "Bash(grep -n \"{/\\\\*\" src/app/page.tsx)",
+      "Bash(Get-ChildItem -Recurse src/app/apply)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object PSIsContainer -Descending)"
     ]
   }
 }
