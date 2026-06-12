@@ -6,7 +6,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\dev\\\\cbu-manage\\\\frontend\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
       "Bash(dir /B)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. 신청서 작성 폼 \\(지원자\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")",
+      "PowerShell(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. ��û�� �ۼ� �� \\(������\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")"
     ]
   }
 }

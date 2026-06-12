@@ -4,7 +4,6 @@ export type ApplicationRequest = {
   email: string;
   name: string;
   nickname: string;
-  birthDate: string;
   studentId: string;
   department: string;
   schoolYear: string;
