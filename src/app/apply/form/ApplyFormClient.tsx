@@ -316,8 +316,8 @@ export default function ApplyFormClient() {
                 errorMessage={errors.privacyAgreed}
               />
 
-            </div>{/* end space-y-6 */}
-          </div>{/* end 잠금 영역 */}
+            </div>
+          </div>
 
           {/* 제출 버튼 */}
           <div className="flex justify-end pt-2">

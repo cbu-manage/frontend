@@ -1,15 +1,15 @@
 import { Suspense } from "react";
-import ApplyFormClient from "./ApplyFormClient";
+import ApplyIntroClient from "./ApplyIntroClient";
 
 export const metadata = {
-  title: "가입 신청서 | 씨부엉",
-  description: "씨부엉 신규 부원 가입 신청서",
+  title: "가입 신청 | 씨부엉",
+  description: "씨부엉 신규 부원 모집 안내 및 제출 확인",
 };
 
-export default function ApplyPage() {
+export default function ApplyIntroPage() {
   return (
     <Suspense fallback={null}>
-      <ApplyFormClient />
+      <ApplyIntroClient />
     </Suspense>
   );
 }
