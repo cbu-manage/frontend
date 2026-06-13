@@ -25,8 +25,8 @@ export function useVerifyEmail() {
     try {
       const res = await sendMutation.mutateAsync(mail);
       return {
-        success: res.data.success,
-        responseMessage: res.data.responseMessage || "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
+        success: res.data.data.success,
+        responseMessage: res.data.data.responseMessage || "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
       };
     } catch (err) {
       const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -41,8 +41,8 @@ export function useVerifyEmail() {
     try {
       const res = await verifyMutation.mutateAsync({ email, code });
       return {
-        success: res.data.success,
-        responseMessage: res.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
+        success: res.data.data.success,
+        responseMessage: res.data.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
       };
     } catch (err) {
       const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
