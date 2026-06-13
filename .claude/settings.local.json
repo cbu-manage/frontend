@@ -13,7 +13,11 @@
       "Bash(grep -n \"{/\\\\*\" src/app/page.tsx)",
       "Bash(Get-ChildItem -Recurse src/app/apply)",
       "Bash(Select-Object FullName, PSIsContainer)",
-      "Bash(Sort-Object PSIsContainer -Descending)"
+      "Bash(Sort-Object PSIsContainer -Descending)",
+      "Bash(python -c ' *)",
+      "Bash(pip list *)",
+      "PowerShell(node -e \"const fs = require\\('fs'\\); console.log\\('Node.js available'\\); console.log\\(process.version\\);\")",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
     ]
   }
 }
