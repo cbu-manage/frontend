@@ -12,8 +12,6 @@ export {
 // Mail
 export {
   mailApi,
-  type MailSendResponse,
-  type MailVerifyResponse,
   type MailUpdateRequest,
 } from "./mail.api";
 
