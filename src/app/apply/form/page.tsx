@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { applyApi } from "@/api/apply.api";
 import InputBox from "@/components/common/InputBox";
 import ShortBtn from "@/components/common/ShortBtn";
@@ -100,14 +100,48 @@ function FieldError({ message }: { message: string }) {
   );
 }
 
+type StudentIdStatus = "idle" | "checking" | "available" | "duplicate";
+
 export default function ApplyFormPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [studentIdStatus, setStudentIdStatus] = useState<StudentIdStatus>("idle");
 
   const setField = <K extends keyof FormState>(key: K) => (value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
+
+  const handleStudentIdChange = (value: string) => {
+    setField("studentId")(value);
+    setStudentIdStatus("idle");
+  };
+
+  useEffect(() => {
+    if (!form.isEmailVerified || !/^\d{10}$/.test(form.studentId)) {
+      setStudentIdStatus("idle");
+      return;
+    }
+
+    setStudentIdStatus("checking");
+    const timer = setTimeout(async () => {
+      try {
+        await applyApi.check(form.studentId, `${form.email}@tukorea.ac.kr`);
+        setStudentIdStatus("available");
+        setErrors((prev) => ({ ...prev, studentId: undefined }));
+      } catch (err) {
+        const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+        if (code === "E-APP-0002") {
+          setStudentIdStatus("duplicate");
+          setErrors((prev) => ({ ...prev, studentId: "이미 신청된 학번입니다." }));
+        } else {
+          setStudentIdStatus("idle");
+        }
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [form.studentId, form.isEmailVerified, form.email]);
 
   const handleVerify = () => {
     setForm((prev) => ({ ...prev, isEmailVerified: true }));
@@ -121,6 +155,11 @@ export default function ApplyFormPage() {
       setErrors(validationErrors);
       return;
     }
+    if (studentIdStatus === "duplicate") {
+      setErrors((prev) => ({ ...prev, studentId: "이미 신청된 학번입니다." }));
+      return;
+    }
+    if (studentIdStatus === "checking") return;
     await applyApi.submit({
       email: `${form.email}@tukorea.ac.kr`,
       name: form.name,
@@ -192,14 +231,23 @@ export default function ApplyFormPage() {
                   onChange={setField("department")}
                   errorMessage={errors.department}
                 />
-                <InputBox
-                  label="학번"
-                  placeholder="2026000000"
-                  value={form.studentId}
-                  onChange={(e) => setField("studentId")(e.target.value)}
-                  errorMessage={errors.studentId}
-                  required
-                />
+                <div>
+                  <InputBox
+                    label="학번"
+                    placeholder="2026000000"
+                    value={form.studentId}
+                    onChange={(e) => handleStudentIdChange(e.target.value)}
+                    errorMessage={errors.studentId}
+                    success={studentIdStatus === "available"}
+                    required
+                  />
+                  {studentIdStatus === "checking" && (
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">학번 중복 확인 중...</p>
+                  )}
+                  {studentIdStatus === "available" && !errors.studentId && (
+                    <p className="text-xs text-brand flex items-center gap-1 mt-1">사용 가능한 학번입니다.</p>
+                  )}
+                </div>
               </div>
 
               <SchoolYearRadioGroup
