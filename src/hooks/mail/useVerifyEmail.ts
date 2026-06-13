@@ -54,7 +54,7 @@ export function useVerifyEmail() {
     emailError: sendMutation.isError,
     emailErrorMessage: sendMutation.error
       ? "서버 요청에 실패했습니다. 다시 시도해주세요."
-      : sendMutation.data?.data?.responseMessage || "",
+      : sendMutation.data?.data?.data?.responseMessage || "",
     verificationError: verifyMutation.isError,
     verificationErrorMessage: "",
     isVerificationSent: sendMutation.isSuccess,
