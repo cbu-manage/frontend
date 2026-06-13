@@ -62,7 +62,7 @@ export default function EmailVerificationField({
 
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="text-body-sm font-medium text-gray-900">
         이메일 입력 <span className="text-notice">*</span>
       </p>
       <div className="flex gap-2">

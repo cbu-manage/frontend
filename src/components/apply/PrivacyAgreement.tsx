@@ -42,7 +42,7 @@ export default function PrivacyAgreement({
           </svg>
         )}
       </span>
-      <span className="text-sm text-gray-900">
+      <span className="text-body-sm text-gray-900">
         개인정보 수집·이용에 동의합니다.{" "}
         <span className="text-notice">(필수)</span>
       </span>

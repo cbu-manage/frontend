@@ -15,7 +15,7 @@ export default function AttendanceRadioGroup({
 }: AttendanceRadioGroupProps) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="text-body-sm font-medium text-gray-900">
         {label} <span className="text-notice">*</span>
       </p>
       <div className="flex gap-6">
@@ -41,7 +41,7 @@ export default function AttendanceRadioGroup({
                 <span className="w-2 h-2 rounded-full bg-brand block" />
               )}
             </span>
-            <span className="text-sm text-gray-900">{option}</span>
+            <span className="text-body-sm text-gray-900">{option}</span>
           </label>
         ))}
       </div>

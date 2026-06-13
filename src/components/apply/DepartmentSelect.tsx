@@ -40,19 +40,20 @@ export default function DepartmentSelect({
 }: DepartmentSelectProps) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="text-body-sm font-medium text-gray-900">
         학과 <span className="text-notice">*</span>
       </p>
       <div className="relative">
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full appearance-none rounded-lg px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border text-gray-900 outline-none transition-all duration-150 cursor-pointer ${
+          className={`w-full appearance-none rounded-lg px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border outline-none transition-all duration-150 cursor-pointer ${
+            value === "" ? "text-gray-600" : "text-gray-900"
+          } ${
             errorMessage
               ? "border-notice bg-gray-0"
               : "border-transparent bg-gray-50 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
           }`}
-          style={{ color: value === "" ? "#959aa3" : undefined }}
         >
           <option value="" disabled>
             학과 선택

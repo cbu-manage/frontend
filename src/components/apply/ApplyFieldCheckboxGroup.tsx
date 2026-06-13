@@ -28,7 +28,7 @@ export default function ApplyFieldCheckboxGroup({
 
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="text-body-sm font-medium text-gray-900">
         지원 분야 <span className="text-notice">*</span>
         <span className="text-gray-500 font-normal ml-1">(복수 선택 가능)</span>
       </p>
@@ -70,7 +70,7 @@ export default function ApplyFieldCheckboxGroup({
                   </svg>
                 )}
               </span>
-              <span className="text-sm text-gray-900">{field}</span>
+              <span className="text-body-sm text-gray-900">{field}</span>
             </label>
           );
         })}

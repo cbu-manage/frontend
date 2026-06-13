@@ -18,7 +18,7 @@ export default function HowFoundRadioGroup({
 }: HowFoundRadioGroupProps) {
   return (
     <div className="space-y-1.5">
-      <p className="text-sm font-medium text-gray-900">
+      <p className="text-body-sm font-medium text-gray-900">
         유입 경로 <span className="text-notice">*</span>
       </p>
       <div className="flex flex-wrap gap-x-6 gap-y-3">
@@ -43,7 +43,7 @@ export default function HowFoundRadioGroup({
                 <span className="w-2 h-2 rounded-full bg-brand block" />
               )}
             </span>
-            <span className="text-sm text-gray-900">{option}</span>
+            <span className="text-body-sm text-gray-900">{option}</span>
           </label>
         ))}
       </div>
