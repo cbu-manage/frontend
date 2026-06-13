@@ -145,7 +145,7 @@ export default function ApplyFormClient() {
         {/* 페이지 제목 */}
         <div className="mb-6">
           <h1 className="text-h1 font-bold text-gray-900">씨부엉 가입 신청서</h1>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-body-sm text-gray-600">
             씨부엉 36기 신규 부원 모집 — 본인 정보를 정확히 입력해주세요
           </p>
         </div>
@@ -227,7 +227,7 @@ export default function ApplyFormClient() {
 
               {/* 몰입 경험 */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-body-sm font-medium text-gray-900">
                   몰입 경험 <span className="text-notice">*</span>
                 </p>
                 <textarea
@@ -236,7 +236,7 @@ export default function ApplyFormClient() {
                   onChange={(e) => setField("teamExperience")(e.target.value)}
                   rows={5}
                   className={`w-full rounded-lg px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border text-gray-900 placeholder:text-gray-600 outline-none transition-all duration-150 resize-none ${errors.teamExperience
-                    ? "border-[#ff4e4e] bg-gray-0"
+                    ? "border-notice bg-gray-0"
                     : "border-transparent bg-gray-50 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
                     }`}
                 />
@@ -245,7 +245,7 @@ export default function ApplyFormClient() {
 
               {/* 프로그래밍 시작 계기 */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-body-sm font-medium text-gray-900">
                   프로그래밍 시작 계기 <span className="text-notice">*</span>
                 </p>
                 <textarea
@@ -254,7 +254,7 @@ export default function ApplyFormClient() {
                   onChange={(e) => setField("programmingMotivation")(e.target.value)}
                   rows={5}
                   className={`w-full rounded-lg px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border text-gray-900 placeholder:text-gray-600 outline-none transition-all duration-150 resize-none ${errors.programmingMotivation
-                    ? "border-[#ff4e4e] bg-gray-0"
+                    ? "border-notice bg-gray-0"
                     : "border-transparent bg-gray-50 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
                     }`}
                 />
@@ -263,7 +263,7 @@ export default function ApplyFormClient() {
 
               {/* 씨부엉 지원 목적 */}
               <div className="space-y-1.5">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-body-sm font-medium text-gray-900">
                   씨부엉 지원 목적 <span className="text-notice">*</span>
                 </p>
                 <textarea
@@ -272,7 +272,7 @@ export default function ApplyFormClient() {
                   onChange={(e) => setField("applyPurpose")(e.target.value)}
                   rows={5}
                   className={`w-full rounded-lg px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border text-gray-900 placeholder:text-gray-600 outline-none transition-all duration-150 resize-none ${errors.applyPurpose
-                    ? "border-[#ff4e4e] bg-gray-0"
+                    ? "border-notice bg-gray-0"
                     : "border-transparent bg-gray-50 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
                     }`}
                 />
