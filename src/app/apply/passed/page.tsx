@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { RECRUIT_GENERATION } from "../constants";
 
 const NEXT_STEPS = [
   { step: 1, label: "본인 인증", desc: "학번 + 임시 비밀번호" },
@@ -23,7 +24,7 @@ export default function ApplyPassedPage() {
         <div className="text-center space-y-2">
           <h1 className="text-h1 text-gray-900">합격을 축하합니다!</h1>
           <p className="text-body-sm text-gray-500">
-            씨부엉 36기 신규 부원으로 선발되셨습니다.
+            씨부엉 {RECRUIT_GENERATION} 신규 부원으로 선발되셨습니다.
             <br />
             운영진 모두가 환영합니다!
           </p>

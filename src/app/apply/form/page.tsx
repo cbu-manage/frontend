@@ -12,6 +12,7 @@ import ApplyFieldCheckboxGroup from "@/components/apply/ApplyFieldCheckboxGroup"
 import HowFoundRadioGroup from "@/components/apply/HowFoundRadioGroup";
 import AttendanceRadioGroup from "@/components/apply/AttendanceRadioGroup";
 import PrivacyAgreement from "@/components/apply/PrivacyAgreement";
+import { RECRUIT_GENERATION } from "../constants";
 
 type FormState = {
   email: string;
@@ -105,7 +106,7 @@ type StudentIdStatus = "idle" | "checking" | "available" | "duplicate";
 export default function ApplyFormPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [studentIdStatus, setStudentIdStatus] = useState<StudentIdStatus>("idle");
+  const [rawStudentIdStatus, setStudentIdStatus] = useState<StudentIdStatus>("idle");
 
   const setField = <K extends keyof FormState>(key: K) => (value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -119,17 +120,20 @@ export default function ApplyFormPage() {
 
   useEffect(() => {
     if (!form.isEmailVerified || !/^\d{10}$/.test(form.studentId)) {
-      setStudentIdStatus("idle");
       return;
     }
 
-    setStudentIdStatus("checking");
+    let cancelled = false;
+
     const timer = setTimeout(async () => {
+      setStudentIdStatus("checking");
       try {
         await applyApi.check(form.studentId, `${form.email}@tukorea.ac.kr`);
+        if (cancelled) return;
         setStudentIdStatus("available");
         setErrors((prev) => ({ ...prev, studentId: undefined }));
       } catch (err) {
+        if (cancelled) return;
         const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
         if (code === "E-APP-0002") {
           setStudentIdStatus("duplicate");
@@ -140,13 +144,21 @@ export default function ApplyFormPage() {
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [form.studentId, form.isEmailVerified, form.email]);
 
   const handleVerify = () => {
     setForm((prev) => ({ ...prev, isEmailVerified: true }));
     setErrors((prev) => ({ ...prev, email: undefined }));
   };
+
+  const studentIdStatus: StudentIdStatus =
+    !form.isEmailVerified || !/^\d{10}$/.test(form.studentId)
+      ? "idle"
+      : rawStudentIdStatus;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,7 +196,7 @@ export default function ApplyFormPage() {
         <div className="mb-6">
           <h1 className="text-h1 font-bold text-gray-900">씨부엉 가입 신청서</h1>
           <p className="mt-1 text-body-sm text-gray-600">
-            씨부엉 36기 신규 부원 모집 — 본인 정보를 정확히 입력해주세요
+            씨부엉 {RECRUIT_GENERATION} 신규 부원 모집 — 본인 정보를 정확히 입력해주세요
           </p>
         </div>
 
@@ -201,7 +213,7 @@ export default function ApplyFormPage() {
             errorMessage={errors.email}
           />
 
-          <div className="relative">
+          <div className="relative" inert={!form.isEmailVerified}>
             {!form.isEmailVerified && (
               <div className="absolute inset-0 z-10 rounded-xl bg-gray-100/70 cursor-not-allowed" />
             )}

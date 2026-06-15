@@ -44,10 +44,10 @@ export default function ApplyFieldCheckboxGroup({
                 type="checkbox"
                 checked={checked}
                 onChange={() => toggle(field)}
-                className="sr-only"
+                className="sr-only peer"
               />
               <span
-                className={`flex items-center justify-center w-4 h-4 rounded border-2 transition-colors duration-150 ${
+                className={`flex items-center justify-center w-4 h-4 rounded border-2 transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-1 ${
                   checked
                     ? "border-brand bg-brand"
                     : "border-gray-300 bg-transparent"

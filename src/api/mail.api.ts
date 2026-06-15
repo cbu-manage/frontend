@@ -18,14 +18,10 @@ export type MailUpdateRequest = {
 
 export const mailApi = {
   send: (address: string) =>
-    api.post<MailApiResponse>("/mail/send", null, {
-      params: { address },
-    }),
+    api.post<MailApiResponse>("/mail/send", { address }),
 
   verify: (address: string, authCode: string) =>
-    api.post<MailApiResponse>("/mail/verify", null, {
-      params: { address, authCode },
-    }),
+    api.post<MailApiResponse>("/mail/verify", { address, authCode }),
 
   update: (data: MailUpdateRequest) =>
     api.post("/mail/update", data),

@@ -43,7 +43,7 @@ export default function ApplyPendingPage() {
               <span className="text-caption bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 shrink-0">
                 승인 전
               </span>
-              <span className="text-body-sm text-gray-500">내 정보 , 회비 납부</span>
+              <span className="text-body-sm text-gray-500">내 정보, 회비 납부</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-caption bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 shrink-0">

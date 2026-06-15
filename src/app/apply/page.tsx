@@ -4,17 +4,28 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { applyApi } from "@/api/apply.api";
+import { RECRUIT_GENERATION } from "./constants";
 
 export default function ApplyIntroPage() {
   const [studentId, setStudentId] = useState("");
   const [email, setEmail] = useState("");
   const [isChecking, setIsChecking] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const handleCheck = async () => {
     if (!studentId || !email) return;
     setIsChecking(true);
+    setMessage(null);
     try {
       await applyApi.check(studentId, email);
+      setMessage({ type: "success", text: "신청서가 확인되었습니다." });
+    } catch (err) {
+      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
+      if (code === "E-APP-0002") {
+        setMessage({ type: "error", text: "이미 신청된 학번 또는 이메일입니다." });
+      } else {
+        setMessage({ type: "error", text: "확인 중 오류가 발생했습니다. 다시 시도해주세요." });
+      }
     } finally {
       setIsChecking(false);
     }
@@ -41,7 +52,7 @@ export default function ApplyIntroPage() {
 
           <div className="flex flex-col items-center gap-3 w-full mt-2">
             <h2 className="text-h1 text-gray-900 text-center">
-              30기 씨부엉 신청하기
+              {RECRUIT_GENERATION} 씨부엉 신청하기
             </h2>
             <p className="text-body-sm font-medium text-gray-700 text-center">
               씨부엉과 함께 성장할 30기를 기다리고 있어요!
@@ -99,6 +110,12 @@ export default function ApplyIntroPage() {
           >
             제출한 서류 확인하기
           </button>
+
+          {message && (
+            <p className={`text-body-sm text-center ${message.type === "success" ? "text-brand" : "text-notice"}`}>
+              {message.text}
+            </p>
+          )}
         </div>
       </div>
     </main>
