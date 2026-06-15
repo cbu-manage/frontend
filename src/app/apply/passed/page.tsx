@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { RECRUIT_GENERATION } from "../constants";
 
 const NEXT_STEPS = [
@@ -64,13 +65,12 @@ export default function ApplyPassedPage() {
           </ol>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {}}
-          className="w-full h-12 rounded-xl bg-brand text-white font-semibold hover:opacity-90 transition-opacity"
+        <Link
+          href="/login"
+          className="w-full h-12 rounded-xl bg-brand text-white font-semibold hover:opacity-90 transition-opacity flex items-center justify-center"
         >
           본인 인증하러 가기
-        </button>
+        </Link>
       </div>
     </main>
   );

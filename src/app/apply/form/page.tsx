@@ -171,7 +171,7 @@ export default function ApplyFormPage() {
       setErrors((prev) => ({ ...prev, studentId: "이미 신청된 학번입니다." }));
       return;
     }
-    if (studentIdStatus === "checking") return;
+    if (studentIdStatus !== "available") return;
     await applyApi.submit({
       email: `${form.email}@tukorea.ac.kr`,
       name: form.name,

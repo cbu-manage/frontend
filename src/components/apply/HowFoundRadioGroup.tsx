@@ -33,10 +33,10 @@ export default function HowFoundRadioGroup({
               value={option}
               checked={value === option}
               onChange={() => onChange(option)}
-              className="sr-only"
+              className="sr-only peer"
             />
             <span
-              className={`flex items-center justify-center w-4 h-4 rounded-full border-2 transition-colors duration-150 ${value === option ? "border-brand" : "border-gray-300"
+              className={`flex items-center justify-center w-4 h-4 rounded-full border-2 transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-1 ${value === option ? "border-brand" : "border-gray-300"
                 }`}
             >
               {value === option && (
