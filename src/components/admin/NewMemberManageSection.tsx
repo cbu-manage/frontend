@@ -23,23 +23,23 @@ function toLocalStatus(item: ApplicantItem): LocalStatus {
   return "PASS";
 }
 
+const DUMMY_APPLICANTS: ApplicantItem[] = [
+  { id: 1, name: "박지훈", studentNumber: 2024152012, major: "컴퓨터공학과", passCount: 5, failCount: 0, totalVoters: 5, status: "PASS", appliedAt: "2025-03-01T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true, note: "24기에 지원" },
+  { id: 2, name: "김지원", studentNumber: 2024240011, major: "인공지능학과", passCount: 4, failCount: 1, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-01T11:00:00", myReviewed: false, otAttended: false, welcomeAttended: false, note: "23, 24기에 지원" },
+  { id: 3, name: "한소명", studentNumber: 2024152015, major: "컴퓨터공학과", passCount: 5, failCount: 0, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-01T12:00:00", myReviewed: false, otAttended: true, welcomeAttended: false },
+  { id: 4, name: "윤가은", studentNumber: 2024240022, major: "인공지능학과", passCount: 4, failCount: 1, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T09:00:00", myReviewed: false, otAttended: false, welcomeAttended: false },
+  { id: 5, name: "강민지", studentNumber: 2024152011, major: "컴퓨터공학과", passCount: 3, failCount: 2, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+  { id: 6, name: "정도윤", studentNumber: 2024180023, major: "게임공학과", passCount: 3, failCount: 2, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T11:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+  { id: 7, name: "이서연", studentNumber: 2024132013, major: "메카트로닉스공학과", passCount: 2, failCount: 3, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T12:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+  { id: 8, name: "송재현", studentNumber: 2024152016, major: "컴퓨터공학과", passCount: 2, failCount: 3, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-03T09:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+  { id: 9, name: "최예나", studentNumber: 2024152014, major: "컴퓨터공학과", passCount: 1, failCount: 4, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-03T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+  { id: 10, name: "임준혁", studentNumber: 2024152017, major: "컴퓨터공학과", passCount: 0, failCount: 5, totalVoters: 5, status: "FAIL", appliedAt: "2025-03-03T11:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
+];
+
 export default function NewMemberManageSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [localStatuses, setLocalStatuses] = useState<Record<number, LocalStatus>>({});
   const [openStatusId, setOpenStatusId] = useState<number | null>(null);
-
-  const DUMMY_APPLICANTS: ApplicantItem[] = [
-    { id: 1, name: "박지훈", studentNumber: 2024152012, major: "컴퓨터공학과", passCount: 5, failCount: 0, totalVoters: 5, status: "PASS", appliedAt: "2025-03-01T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true, note: "24기에 지원" },
-    { id: 2, name: "김지원", studentNumber: 2024240011, major: "인공지능학과", passCount: 4, failCount: 1, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-01T11:00:00", myReviewed: false, otAttended: false, welcomeAttended: false, note: "23, 24기에 지원" },
-    { id: 3, name: "한소명", studentNumber: 2024152015, major: "컴퓨터공학과", passCount: 5, failCount: 0, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-01T12:00:00", myReviewed: false, otAttended: true, welcomeAttended: false },
-    { id: 4, name: "윤가은", studentNumber: 2024240022, major: "인공지능학과", passCount: 4, failCount: 1, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T09:00:00", myReviewed: false, otAttended: false, welcomeAttended: false },
-    { id: 5, name: "강민지", studentNumber: 2024152011, major: "컴퓨터공학과", passCount: 3, failCount: 2, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-    { id: 6, name: "정도윤", studentNumber: 2024180023, major: "게임공학과", passCount: 3, failCount: 2, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T11:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-    { id: 7, name: "이서연", studentNumber: 2024132013, major: "메카트로닉스공학과", passCount: 2, failCount: 3, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-02T12:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-    { id: 8, name: "송재현", studentNumber: 2024152016, major: "컴퓨터공학과", passCount: 2, failCount: 3, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-03T09:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-    { id: 9, name: "최예나", studentNumber: 2024152014, major: "컴퓨터공학과", passCount: 1, failCount: 4, totalVoters: 5, status: "PENDING", appliedAt: "2025-03-03T10:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-    { id: 10, name: "임준혁", studentNumber: 2024152017, major: "컴퓨터공학과", passCount: 0, failCount: 5, totalVoters: 5, status: "FAIL", appliedAt: "2025-03-03T11:00:00", myReviewed: true, otAttended: true, welcomeAttended: true },
-  ];
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["admin", "applicants"],
@@ -82,7 +82,7 @@ export default function NewMemberManageSection() {
 
   // 보류 수 — 하나라도 있으면 마감 불가
   const holdCount = useMemo(
-    () => applicants.filter((a) => getStatus(a.id, a) === "HOLD").length,
+    () => applicants.filter((a) => (localStatuses[a.id] ?? toLocalStatus(a)) === "HOLD").length,
     [applicants, localStatuses],
   );
 
