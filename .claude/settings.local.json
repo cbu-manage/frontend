@@ -17,7 +17,8 @@
       "Bash(python -c ' *)",
       "Bash(pip list *)",
       "PowerShell(node -e \"const fs = require\\('fs'\\); console.log\\('Node.js available'\\); console.log\\(process.version\\);\")",
-      "mcp__Claude_in_Chrome__tabs_context_mcp"
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npx eslint *)"
     ]
   }
 }

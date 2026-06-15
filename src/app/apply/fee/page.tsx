@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { RECRUIT_GENERATION } from "../constants";
 
 const ACCOUNT_INFO = [
   { label: "은행", value: "카카오 뱅크" },
@@ -21,7 +22,7 @@ export default function ApplyFeePage() {
         <div className="text-center space-y-2">
           <h1 className="text-h1 text-gray-900">회비 납부 안내</h1>
           <p className="text-body-sm text-gray-500">
-            씨부엉 36기 활동을 시작하려면 회비를 납부해주세요.
+            씨부엉 {RECRUIT_GENERATION} 활동을 시작하려면 회비를 납부해주세요.
             <br />
             납부 확인 후 운영진이 활동을 승인합니다.
           </p>
