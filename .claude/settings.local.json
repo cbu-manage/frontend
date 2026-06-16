@@ -2,7 +2,23 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\dev\\\\cbu-manage\\\\frontend\" -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "Bash(dir /B)",
+      "Bash(npx tsc *)",
+      "Bash(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. 신청서 작성 폼 \\(지원자\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")",
+      "PowerShell(python -c \"import pdfplumber; pdf = pdfplumber.open\\(r'C:\\\\Users\\\\selly\\\\Downloads\\\\[Design] 01. ��û�� �ۼ� �� \\(������\\).pdf'\\); [print\\(p.extract_text\\(\\)\\) for p in pdf.pages]; pdf.close\\(\\)\")",
+      "Bash(git checkout *)",
+      "Bash(grep -n \"{/\\\\*\" src/app/page.tsx)",
+      "Bash(Get-ChildItem -Recurse src/app/apply)",
+      "Bash(Select-Object FullName, PSIsContainer)",
+      "Bash(Sort-Object PSIsContainer -Descending)",
+      "Bash(python -c ' *)",
+      "Bash(pip list *)",
+      "PowerShell(node -e \"const fs = require\\('fs'\\); console.log\\('Node.js available'\\); console.log\\(process.version\\);\")",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "Bash(npx eslint *)"
     ]
   }
 }

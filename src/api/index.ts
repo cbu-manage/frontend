@@ -12,8 +12,6 @@ export {
 // Mail
 export {
   mailApi,
-  type MailSendResponse,
-  type MailVerifyResponse,
   type MailUpdateRequest,
 } from "./mail.api";
 
@@ -87,3 +85,6 @@ export { memberApi, type MemberInfo } from "./member.api";
 
 // Image
 export { imageApi } from "./image.api";
+
+// Apply
+export { applyApi, type ApplicationRequest } from "./apply.api";
