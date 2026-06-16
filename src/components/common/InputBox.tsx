@@ -33,6 +33,7 @@ export default function InputBox({
   className = "",
   rightElement,
   insetLabel,
+  required,
   ...props
 }: InputBoxProps) {
   const hasError = errorMessage !== undefined && errorMessage !== null;
@@ -49,19 +50,15 @@ export default function InputBox({
           placeholder=" "
           className={`
             peer w-full rounded-lg p-4 pt-6 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
-            ${
-              disabled
-                ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
-                : hasError
-                  ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
-                  : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-transparent focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
+            ${disabled
+              ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
+              : hasError
+                ? "bg-gray-0 border-notice text-gray-600 placeholder:text-gray-600"
+                : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-transparent focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
             }
             ${hasRightElement ? "pr-12" : ""}
             ${className}
           `.trim()}
-          style={{
-            borderColor: hasError ? "#ff4e4e" : undefined,
-          }}
         />
 
         {/* Inset Label */}
@@ -103,28 +100,26 @@ export default function InputBox({
       {label && (
         <label className="block text-sm font-medium text-gray-900">
           {label}
+          {required && <span className="text-notice ml-0.5">*</span>}
         </label>
       )}
 
       <div className="relative">
         <input
           {...props}
+          required={required}
           disabled={disabled}
           className={`
             w-full rounded-lg p-4 text-base font-medium tracking-[-0.048px] leading-normal outline-none transition-all duration-150 border
-            ${
-              disabled
-                ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
-                : hasError
-                  ? "bg-gray-0 text-gray-600 placeholder:text-gray-600"
-                  : "bg-gray-50 border-transparent text-gray-900 placeholder:text-gray-600 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
+            ${disabled
+              ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed placeholder:text-gray-400"
+              : hasError
+                ? "bg-gray-0 border-notice text-gray-600 placeholder:text-gray-600"
+                : "bg-gray-50 border-transparent text-gray-900 placeholder:text-gray-600 focus:bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
             }
             ${hasRightElement ? "pr-12" : ""}
             ${className}
           `.trim()}
-          style={{
-            borderColor: hasError ? "#ff4e4e" : undefined,
-          }}
         />
 
         {/* 우측 커스텀 요소 (비밀번호 표시/숨김 버튼 등) */}
@@ -155,10 +150,7 @@ export default function InputBox({
 
       {/* 에러 메시지 */}
       {hasError && errorMessage && (
-        <p
-          className="text-xs flex items-center gap-1 mt-1"
-          style={{ color: "#ff4e4e" }}
-        >
+        <p className="text-xs text-notice flex items-center gap-1 mt-1">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="11"
