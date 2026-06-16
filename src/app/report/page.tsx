@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Sparkles, Search, CalendarIcon } from "lucide-react";
@@ -34,6 +34,14 @@ function extractMyGroups(raw: unknown): MyGroupItem[] {
 }
 
 export default function ReportPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReportContent />
+    </Suspense>
+  );
+}
+
+function ReportContent() {
   const router = useRouter();
   // TODO: API 연동 후 아래 두 줄 및 관련 조건 제거 (isPreview 사용처 모두 삭제)
   const searchParams = useSearchParams();
