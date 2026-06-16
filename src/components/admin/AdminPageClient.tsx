@@ -6,11 +6,13 @@ import Sidebar from "@/components/shared/Sidebar";
 import MemberManageSection from "@/components/admin/MemberManageSection";
 import GroupManageSection from "@/components/admin/GroupManageSection";
 import ReportManageSection from "@/components/admin/ReportManageSection";
+import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
 
 const ADMIN_MENU_ITEMS = [
   { label: "회원 관리", value: "members" },
   { label: "그룹 관리", value: "groups" },
   { label: "보고서 관리", value: "reports" },
+  { label: "신청서 조회", value: "new-members" },
 ] as const;
 
 type AdminMenuValue = (typeof ADMIN_MENU_ITEMS)[number]["value"];
@@ -19,7 +21,7 @@ export default function AdminPageClient() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [selectedMenu, setSelectedMenu] = useState<AdminMenuValue>(() => {
-    if (tabParam === "groups" || tabParam === "reports") {
+    if (tabParam === "groups" || tabParam === "reports" || tabParam === "new-members") {
       return tabParam as AdminMenuValue;
     }
     return "members";
@@ -41,6 +43,7 @@ export default function AdminPageClient() {
           {selectedMenu === "members" && <MemberManageSection />}
           {selectedMenu === "groups" && <GroupManageSection />}
           {selectedMenu === "reports" && <ReportManageSection />}
+          {selectedMenu === "new-members" && <NewMemberManageSection />}
         </div>
       </div>
     </main>
