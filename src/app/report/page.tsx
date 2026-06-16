@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Sparkles, Search, CalendarIcon } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,14 +12,14 @@ import { Calendar } from "@/components/ui/calendar";
 import RequireMember from "@/components/auth/RequireMember";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
-import { groupApi, type MyGroupItem } from "@/api";
+import {
+  groupApi,
+  reportApi,
+  type MyGroupItem,
+  type ReportPreviewItem,
+} from "@/api";
 
-// TODO: API 연동 후 교체
-const MOCK_REPORTS = [
-  { id: 1, tag: "프론트엔드", title: "2026년 4월 정기활동 보고서", author: "15기 김민주", date: "04.18", files: ["HWP", "PDF"] },
-  { id: 2, tag: "프론트엔드", title: "3월 스프린트 회고", author: "15기 김민주", date: "03.31", files: ["HWP", "PDF"] },
-  { id: 3, tag: "기획", title: "4월 유저 인터뷰 결과", author: "15기 김민주", date: "04.12", files: ["HWP", "PDF"] },
-];
+const PAGE_SIZE = 9;
 
 function extractMyGroups(raw: unknown): MyGroupItem[] {
   if (!raw || typeof raw !== "object") return [];
@@ -33,19 +33,31 @@ function extractMyGroups(raw: unknown): MyGroupItem[] {
   return [];
 }
 
-export default function ReportPage() {
-  return (
-    <Suspense fallback={null}>
-      <ReportContent />
-    </Suspense>
-  );
+/** 날짜 범위 필터 (start~end 사이 여부, 일 단위) */
+function inDateRange(createdAt: string, start?: Date, end?: Date): boolean {
+  if (!start && !end) return true;
+  const d = new Date(createdAt);
+  if (start) {
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    if (d < s) return false;
+  }
+  if (end) {
+    const e = new Date(
+      end.getFullYear(),
+      end.getMonth(),
+      end.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+    if (d > e) return false;
+  }
+  return true;
 }
 
-function ReportContent() {
+export default function ReportPage() {
   const router = useRouter();
-  // TODO: API 연동 후 아래 두 줄 및 관련 조건 제거 (isPreview 사용처 모두 삭제)
-  const searchParams = useSearchParams();
-  const isPreview = searchParams.get("preview") === "1";
   const [activeGroup, setActiveGroup] = useState("전체");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -64,23 +76,43 @@ function ReportContent() {
   }, []);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = [1]; // TODO: API 연동 후 실제 totalPages로 교체
+  const pageIndex = currentPage - 1;
 
-  const { data: res, isLoading, isError } = useQuery({
+  const {
+    data: groupRes,
+    isLoading: groupsLoading,
+    isError: groupsError,
+  } = useQuery({
     queryKey: ["myGroups"],
     queryFn: () => groupApi.getMyGroups(),
   });
 
-  const allGroups = extractMyGroups(res?.data ?? null);
-  const mockTags = ["전체", ...Array.from(new Set(MOCK_REPORTS.map((r) => r.tag)))];
-  const groupTabs = allGroups.length > 0
-    ? ["전체", ...allGroups.map((g: MyGroupItem) => g.groupName)]
-    : mockTags;
+  const {
+    data: reportRes,
+    isLoading: reportsLoading,
+    isError: reportsError,
+  } = useQuery({
+    queryKey: ["reports", pageIndex],
+    queryFn: () => reportApi.getList({ page: pageIndex, size: PAGE_SIZE }),
+  });
 
-  const filtered = MOCK_REPORTS.filter((r) => {
-    const matchGroup = activeGroup === "전체" || r.tag === activeGroup;
-    const matchSearch = r.title.includes(search) || r.author.includes(search);
-    return matchGroup && matchSearch;
+  const isLoading = groupsLoading || reportsLoading;
+  const isError = groupsError || reportsError;
+
+  const allGroups = extractMyGroups(groupRes?.data ?? null);
+  const groupTabs = ["전체", ...allGroups.map((g: MyGroupItem) => g.groupName)];
+
+  const reportPage = reportRes?.data?.data;
+  const reports: ReportPreviewItem[] = reportPage?.content ?? [];
+  const totalPagesCount = Math.max(1, reportPage?.totalPages ?? 1);
+  const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
+
+  const filtered = reports.filter((item) => {
+    const matchGroup = activeGroup === "전체" || item.groupName === activeGroup;
+    const matchSearch =
+      item.title.includes(search) || item.authorName.includes(search);
+    const matchDate = inDateRange(item.createdAt, startDate, endDate);
+    return matchGroup && matchSearch && matchDate;
   });
 
   return (
@@ -100,7 +132,7 @@ function ReportContent() {
           )}
 
           {/* 그룹 없음 — 빈 상태 */}
-          {!isLoading && !isError && allGroups.length === 0 && !isPreview && (
+          {!isLoading && !isError && allGroups.length === 0 && (
             <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 px-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8F5E3]">
                 <Sparkles className="h-8 w-8 text-[#5a9b4a]" strokeWidth={2} />
@@ -117,7 +149,7 @@ function ReportContent() {
           )}
 
           {/* 그룹 있음 — 보고서 뷰 */}
-          {!isLoading && !isError && (allGroups.length > 0 || isPreview) && (
+          {!isLoading && !isError && allGroups.length > 0 && (
             <>
               {/* 업로드 버튼 */}
               <div className="flex justify-end mb-6">
@@ -200,8 +232,15 @@ function ReportContent() {
 
               {/* 카드 그리드 */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-                {filtered.map((r) => (
-                  <ReportCard key={r.id} {...r} />
+                {filtered.map((item) => (
+                  <ReportCard
+                    key={item.postId}
+                    id={item.postId}
+                    tag={item.groupName}
+                    title={item.title}
+                    author={item.authorName}
+                    date={format(new Date(item.createdAt), "MM.dd")}
+                  />
                 ))}
                 {filtered.length === 0 && (
                   <div className="col-span-full py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>

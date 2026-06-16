@@ -61,7 +61,14 @@ export {
 } from "./codingTest.api";
 
 // Report
-export { reportApi, type ReportListParams } from "./report.api";
+export {
+  reportApi,
+  type ReportListParams,
+  type ReportPreviewItem,
+  type ReportPreviewPage,
+  type ReportDetail,
+  type ReportMember,
+} from "./report.api";
 
 // Comment
 export { commentApi } from "./comment.api";
@@ -71,6 +78,8 @@ export {
   groupApi,
   type MyGroupItem,
   type GroupMemberItem,
+  type GroupDetailData,
+  type GroupMemberDetail,
 } from "./group.api";
 
 // Post (공통)

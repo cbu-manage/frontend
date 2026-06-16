@@ -6,7 +6,7 @@ type ReportCardProps = {
   title: string;
   author: string;
   date: string;
-  files: string[];
+  files?: string[];
 };
 
 export default function ReportCard({ id, tag, title, author, date, files }: ReportCardProps) {
@@ -24,16 +24,18 @@ export default function ReportCard({ id, tag, title, author, date, files }: Repo
       <p className="text-xs text-gray-400 mb-4">
         {author} · {date}
       </p>
-      <div className="flex justify-end gap-1 mt-auto">
-        {files.map((f, i) => (
-          <span
-            key={`${f}-${i}`}
-            className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-500 font-medium"
-          >
-            {f}
-          </span>
-        ))}
-      </div>
+      {files && files.length > 0 && (
+        <div className="flex justify-end gap-1 mt-auto">
+          {files.map((f, i) => (
+            <span
+              key={`${f}-${i}`}
+              className="rounded border border-gray-200 px-2 py-0.5 text-xs text-gray-500 font-medium"
+            >
+              {f}
+            </span>
+          ))}
+        </div>
+      )}
     </Link>
   );
 }

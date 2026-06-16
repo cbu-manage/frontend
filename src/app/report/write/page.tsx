@@ -1,31 +1,32 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Check, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
-
-// TODO: API 연동 후 교체 (GET /api/v1/my/studies)
-const MOCK_STUDIES = [
-  { id: 1, name: "알고리즘 스터디" },
-  { id: 2, name: "React 스터디" },
-  { id: 3, name: "백엔드 프로젝트" },
-];
-
-// TODO: API 연동 후 교체 (GET /api/v1/study/{id}/members)
-const MOCK_PARTICIPANTS: Record<number, string[]> = {
-  1: ["15기 김민주", "15기 나도현", "15기 정재준", "14기 이서연"],
-  2: ["15기 김민주", "14기 공도식", "14기 최준호"],
-  3: ["14기 이서연", "14기 최준호", "15기 정재준"],
-};
+import { groupApi, reportApi, type MyGroupItem } from "@/api";
+import { useUserStore } from "@/store/userStore";
 
 export default function ReportUploadPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReportUploadContent />
+    </Suspense>
+  );
+}
+
+function ReportUploadContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+  const isEdit = editId !== null;
+  const userName = useUserStore((s) => s.name);
 
   const [title, setTitle] = useState("");
-  const [studyId, setStudyId] = useState<number | null>(null);
+  const [groupId, setGroupId] = useState<number | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +39,7 @@ export default function ReportUploadPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -51,24 +53,102 @@ export default function ReportUploadPage() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const [location, setLocation] = useState("");
   const [files, setFiles] = useState<{ name: string; size: string }[]>([]);
   const [activity, setActivity] = useState("");
   const [reflection, setReflection] = useState("");
   const [nextPlan, setNextPlan] = useState("");
-  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+  const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  const participants = studyId ? (MOCK_PARTICIPANTS[studyId] ?? []) : [];
+  // 내가 속한 그룹 목록 (드롭다운)
+  const { data: groupsRes } = useQuery({
+    queryKey: ["myGroups"],
+    queryFn: () => groupApi.getMyGroups(),
+  });
+  const groups: MyGroupItem[] = groupsRes?.data?.data ?? [];
 
-  const toggleParticipant = (name: string) => {
-    setSelectedParticipants((prev) =>
-      prev.includes(name) ? prev.filter((p) => p !== name) : [...prev, name]
+  // 선택한 그룹의 멤버 (참여자 체크박스)
+  const { data: groupDetailRes } = useQuery({
+    queryKey: ["groupDetail", groupId],
+    queryFn: () => groupApi.getById(groupId as number),
+    enabled: groupId != null,
+  });
+  const members = (groupDetailRes?.data?.data?.members ?? []).filter(
+    (m) => m.groupMemberStatus === "ACTIVE",
+  );
+
+  // 수정 모드: 기존 보고서 불러와 폼 채우기
+  const { data: editRes } = useQuery({
+    queryKey: ["report", editId],
+    queryFn: () => reportApi.getById(Number(editId)),
+    enabled: isEdit,
+  });
+
+  const prefilledRef = useRef(false);
+  useEffect(() => {
+    const detail = editRes?.data?.data;
+    if (!detail || prefilledRef.current) return;
+    prefilledRef.current = true;
+    const { postInfoDTO: post, reportInfoDTO: report } = detail;
+    setTitle(post.title);
+    setActivity(post.content);
+    setReflection(report.reflection);
+    setNextPlan(report.nextPlan);
+    setLocation(report.location ?? "");
+    setStartDate(report.date ? new Date(report.date) : undefined);
+    setGroupId(report.groupInfoDTO.groupId);
+    setSelectedMemberIds(report.reportMembers.map((m) => m.userId));
+  }, [editRes]);
+
+  const toggleMember = (userId: number) => {
+    setSelectedMemberIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
   };
 
-  const handleStudyChange = (id: number) => {
-    setStudyId(id);
-    setSelectedParticipants([]);
+  const handleGroupChange = (id: number) => {
+    setGroupId(id);
+    setSelectedMemberIds([]);
   };
+
+  const handleSubmit = async () => {
+    if (!title.trim()) {
+      alert("보고서 제목을 입력하세요.");
+      return;
+    }
+    if (groupId == null) {
+      alert("스터디/프로젝트를 선택하세요.");
+      return;
+    }
+    // TODO(특이사항): type(서버 자동판단 가정), reportImage/reportFile(업로드 보류) 미전송
+    const body = {
+      title,
+      content: activity,
+      reflection,
+      nextPlan,
+      location,
+      date: startDate ? startDate.toISOString() : null,
+      groupId,
+      memberIds: selectedMemberIds,
+    };
+    try {
+      setSubmitting(true);
+      if (isEdit && editId) {
+        await reportApi.update(Number(editId), body);
+      } else {
+        await reportApi.create(body);
+      }
+      router.push("/report");
+    } catch {
+      alert(isEdit ? "수정에 실패했습니다." : "저장에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const selectedGroupName = groups.find((g) => g.groupId === groupId)?.groupName;
 
   return (
     <main className="min-h-screen bg-white">
@@ -76,7 +156,7 @@ export default function ReportUploadPage() {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 border-0 no-underline">새 보고서 업로드</h1>
+          <h1 className="text-2xl font-bold text-gray-900 border-0 no-underline">{isEdit ? "보고서 수정" : "새 보고서 업로드"}</h1>
           <div className="flex gap-2">
             <button
               type="button"
@@ -87,9 +167,11 @@ export default function ReportUploadPage() {
             </button>
             <button
               type="button"
-              className="px-4 py-2 rounded-lg bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="px-4 py-2 rounded-lg bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-50"
             >
-              저장
+              {isEdit ? "수정" : "저장"}
             </button>
           </div>
         </div>
@@ -116,25 +198,29 @@ export default function ReportUploadPage() {
                   onClick={() => setDropdownOpen((v) => !v)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-300 bg-white"
                 >
-                  <span className={studyId ? "text-gray-700" : "text-gray-400"}>
-                    {studyId ? MOCK_STUDIES.find((s) => s.id === studyId)?.name : "선택 가능 (본인이 속한 스터디)"}
+                  <span className={groupId ? "text-gray-700" : "text-gray-400"}>
+                    {selectedGroupName ?? "선택 가능 (본인이 속한 스터디)"}
                   </span>
                   <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
                 </button>
                 {dropdownOpen && (
                   <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
-                    {MOCK_STUDIES.map((s) => (
-                      <li key={s.id}>
-                        <button
-                          type="button"
-                          onClick={() => { handleStudyChange(s.id); setDropdownOpen(false); }}
-                          className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          {s.name}
-                          {studyId === s.id && <Check size={13} className="text-gray-700" />}
-                        </button>
-                      </li>
-                    ))}
+                    {groups.length === 0 ? (
+                      <li className="px-3 py-2 text-sm text-gray-400">가입한 스터디/프로젝트가 없습니다</li>
+                    ) : (
+                      groups.map((g) => (
+                        <li key={g.groupId}>
+                          <button
+                            type="button"
+                            onClick={() => { handleGroupChange(g.groupId); setDropdownOpen(false); }}
+                            className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            {g.groupName}
+                            {groupId === g.groupId && <Check size={13} className="text-gray-700" />}
+                          </button>
+                        </li>
+                      ))
+                    )}
                   </ul>
                 )}
               </div>
@@ -171,7 +257,7 @@ export default function ReportUploadPage() {
               <label className="text-sm font-medium text-gray-700">작성자 (자동)</label>
               <input
                 type="text"
-                value="15기 김민주"
+                value={userName}
                 readOnly
                 autoComplete="off"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-500 bg-gray-50 cursor-not-allowed"
@@ -179,7 +265,21 @@ export default function ReportUploadPage() {
             </div>
           </div>
 
-          {/* 파일 업로드 */}
+          {/* 활동 장소 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-gray-700">활동 장소</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="예: 동아리방, 온라인 등"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
+              />
+            </div>
+          </div>
+
+          {/* 파일 업로드 (TODO: 업로드 경로 연결 - 특이사항 6번) */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">파일 업로드</label>
             <div className="flex items-center gap-3 border border-gray-200 rounded-lg px-4 py-3">
@@ -245,23 +345,30 @@ export default function ReportUploadPage() {
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-gray-700">참여자 명단</label>
               <div className="w-full border border-gray-200 rounded-lg px-3 py-2 min-h-[120px]">
-                {participants.length === 0 ? (
+                {groupId == null ? (
                   <p className="text-sm text-gray-400">스터디/프로젝트를 먼저 선택하세요</p>
+                ) : members.length === 0 ? (
+                  <p className="text-sm text-gray-400">참여 가능한 멤버가 없습니다</p>
                 ) : (
                   <div className="flex flex-wrap gap-x-4 gap-y-2">
-                    {participants.map((name) => {
-                      const checked = selectedParticipants.includes(name);
+                    {members.map((m) => {
+                      const checked = selectedMemberIds.includes(m.userId);
                       return (
-                        <label key={name} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                        <label key={m.userId} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleMember(m.userId)}
+                            className="sr-only peer"
+                          />
                           <span
-                            onClick={() => toggleParticipant(name)}
-                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-gray-400 ${
                               checked ? "bg-gray-800 border-gray-800" : "bg-white border-gray-300"
                             }`}
                           >
                             {checked && <Check size={10} className="text-white" strokeWidth={3} />}
                           </span>
-                          {name}
+                          {m.userGeneration}기 {m.userName}
                         </label>
                       );
                     })}
@@ -296,24 +403,6 @@ export default function ReportUploadPage() {
           </div>
 
         </div>
-
-        {/* 하단 버튼 
-        <div className="flex justify-end gap-2 mt-10">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 rounded-lg bg-gray-800 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
-          >
-            저장
-          </button>
-        </div>*/}
-
       </div>
     </main>
   );
