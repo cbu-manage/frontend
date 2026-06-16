@@ -83,6 +83,13 @@ export {
 // Member
 export { memberApi, type MemberInfo } from "./member.api";
 
+// Applicant (신입 부원)
+export {
+  applicantApi,
+  type ApplicantItem,
+  type ApplicantStatus,
+} from "./applicant.api";
+
 // Image
 export { imageApi } from "./image.api";
 

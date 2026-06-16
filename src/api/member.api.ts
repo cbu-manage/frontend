@@ -34,4 +34,10 @@ export const memberApi = {
 
   getAll: (page = 0, size = 10) =>
     api.get<MembersResponse>("/members", { params: { page, size } }),
+
+  updateDue: (id: number, due: boolean) =>
+    api.patch(`/members/${id}/due`, { due }),
+
+  activate: (id: number) =>
+    api.patch(`/members/${id}/activate`),
 };
