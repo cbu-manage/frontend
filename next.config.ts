@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: `${process.env.API_BASE_URL}/:path*`,
-        destination: `${process.env.BACKEND_URL}${process.env.API_BASE_URL}/:path*`,
+        source: "/api/v1/:path*",
+        destination: `${API_URL}/api/v1/:path*`,
       },
     ];
   },
