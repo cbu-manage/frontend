@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -132,11 +133,10 @@ export default function Home() {
             {/* 호버 시 주변 장식 아이콘들 */}
             {/* 좌측 상단 - 200 OK */}
             <div
-              className={`pointer-events-none absolute -top-15 -left-25 sm:-top-15 sm:-left-25 md:-top-15 md:-left-25 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute -top-15 -left-25 sm:-top-15 sm:-left-25 md:-top-15 md:-left-25 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-2"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/200ok.svg"
@@ -149,11 +149,10 @@ export default function Home() {
 
             {/* 좌측 중앙 - Developer */}
             <div
-              className={`pointer-events-none absolute top-5 -left-40 sm:-left-40 md:-left-40 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute top-5 -left-40 sm:-left-40 md:-left-40 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-2"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/Developer.svg"
@@ -166,11 +165,10 @@ export default function Home() {
 
             {/* 좌측 하단 - PM 아이콘 */}
             <div
-              className={`pointer-events-none absolute bottom-5 -left-32 sm:bottom-5 sm:-left-32 md:bottom-5 md:-left-32 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute bottom-5 -left-32 sm:bottom-5 sm:-left-32 md:bottom-5 md:-left-32 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-2"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/PM.svg"
@@ -183,11 +181,10 @@ export default function Home() {
 
             {/* 우측 상단 - IF */}
             <div
-              className={`pointer-events-none absolute -top-14 -right-10 sm:-top-16 sm:-right-10 md:-top-18 md:-right-10 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute -top-14 -right-10 sm:-top-16 sm:-right-10 md:-top-18 md:-right-10 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 -translate-y-2"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/IF.svg"
@@ -217,11 +214,10 @@ export default function Home() {
 
             {/* 우측 중앙 - Design (붓 아이콘) */}
             <div
-              className={`pointer-events-none absolute -top-10 -right-35 sm:-top-10 sm:-right-35 md:-top-10 md:-right-35 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute -top-10 -right-35 sm:-top-10 sm:-right-35 md:-top-10 md:-right-35 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-x-3"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/Design.svg"
@@ -234,11 +230,10 @@ export default function Home() {
 
             {/* 우측 중앙 - Let's CBU */}
             <div
-              className={`pointer-events-none absolute top-8 right-[-200px] sm:top-10 sm:right-[-200px] md:top-12 md:right-[-200px] transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute top-8 right-[-200px] sm:top-10 sm:right-[-200px] md:top-12 md:right-[-200px] transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 translate-x-3"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/lets_cbu.svg"
@@ -251,11 +246,10 @@ export default function Home() {
 
             {/* 우측 하단 - DE (코드 아이콘, 조금 위쪽) */}
             <div
-              className={`pointer-events-none absolute -bottom-5 -right-35 sm:-bottom-5 sm:-right-35 md:-bottom-5 md:-right-35 transition-all duration-300 ${
-                isHeroHovered
+              className={`pointer-events-none absolute -bottom-5 -right-35 sm:-bottom-5 sm:-right-35 md:-bottom-5 md:-right-35 transition-all duration-300 ${isHeroHovered
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-2"
-              }`}
+                }`}
             >
               <Image
                 src="/assets/DE.svg"
@@ -269,9 +263,8 @@ export default function Home() {
 
           {/* 호버 시 부엉이 밑 환영 문구 */}
           <div
-            className={`flex flex-col items-center gap-3 mt-20 text-center transition-opacity duration-300 ${
-              isHeroHovered ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`flex flex-col items-center gap-3 mt-20 text-center transition-opacity duration-300 ${isHeroHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
           >
             <h2
               className="font-bold tracking-tight text-xl sm:text-3xl lg:text-[42px] leading-tight"
@@ -289,10 +282,8 @@ export default function Home() {
               본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인
               회원관리를 위한 웹사이트입니다.
             </p>
-            <a
-              href="https://forms.gle/mjibpj7qBiKRrChm8"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/apply"
               className="
                 mt-4 inline-flex h-10 px-5 py-2
                 items-center justify-center gap-3
@@ -303,8 +294,8 @@ export default function Home() {
                 transition-colors transition-shadow
               "
             >
-              28기 씨부엉 신청하기
-            </a>
+              30기 씨부엉 신청하기
+            </Link>
           </div>
 
           {/* SCROLL DOWN - 메인 페이지 & 맨 위일 때만 표시 */}
@@ -442,10 +433,9 @@ export default function Home() {
                   key={tab}
                   onClick={() => setSelectedTab(tab)}
                   className={`px-4 py-2 rounded-full text-sm sm:text-base font-medium transition-all
-                    ${
-                      selectedTab === tab
-                        ? "bg-[#50C38A] text-black"
-                        : "bg-transparent text-zinc-300 hover:text-white"
+                    ${selectedTab === tab
+                      ? "bg-[#50C38A] text-black"
+                      : "bg-transparent text-zinc-300 hover:text-white"
                     }`}
                 >
                   {tab}
