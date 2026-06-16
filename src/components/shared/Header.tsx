@@ -16,11 +16,11 @@ export default function Header() {
   const isBlockHeader = pathname === "/memberManage";
   const isHome = pathname === "/";
 
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openedAtPathname, setOpenedAtPathname] = useState<string | null>(null);
+  const mobileOpen = openedAtPathname === pathname && openedAtPathname !== null;
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  const toggleMenu = () => setOpenedAtPathname(mobileOpen ? null : pathname);
+  const closeMenu = () => setOpenedAtPathname(null);
 
   useEffect(() => {
     if (mobileOpen) {
@@ -128,7 +128,7 @@ export default function Header() {
 
         <button
           type="button"
-          onClick={() => setMobileOpen((v) => !v)}
+          onClick={toggleMenu}
           aria-label={mobileOpen ? "메뉴 닫기" : "메뉴 열기"}
           aria-expanded={mobileOpen}
           className={`md:hidden ml-auto inline-flex items-center justify-center w-11 h-11 rounded-lg -mr-2 ${
@@ -143,7 +143,7 @@ export default function Header() {
         <>
           <div
             className="md:hidden absolute left-0 right-0 top-full h-screen bg-black/40 z-30"
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMenu}
             aria-hidden="true"
           />
           <div

@@ -19,21 +19,18 @@ export function useVerifyEmail() {
       const fullEmail = addSuffixIfMissing(email);
       return mailApi.verify(fullEmail, code);
     },
-    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
-    onSuccess: (res) => {
-      if (res.data.success) alert("인증되었습니다!");
-      else alert(`❌ 인증 실패: ${res.data.responseMessage}`);
-    },
   });
 
-  const sendEmailToServer = async (mail: string): Promise<boolean> => {
+  const sendEmailToServer = async (mail: string): Promise<{ success: boolean; responseMessage: string }> => {
     try {
       const res = await sendMutation.mutateAsync(mail);
-      if (res.data.success) return true;
-      sendMutation.reset();
-      return false;
-    } catch {
-      return false;
+      return {
+        success: res.data.data.success,
+        responseMessage: res.data.data.responseMessage || "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
+      };
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      return { success: false, responseMessage: message || "네트워크 오류가 발생했습니다." };
     }
   };
 
@@ -44,11 +41,12 @@ export function useVerifyEmail() {
     try {
       const res = await verifyMutation.mutateAsync({ email, code });
       return {
-        success: res.data.success,
-        responseMessage: res.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
+        success: res.data.data.success,
+        responseMessage: res.data.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
       };
-    } catch {
-      return { success: false, responseMessage: "네트워크 오류가 발생했습니다." };
+    } catch (err) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      return { success: false, responseMessage: message || "네트워크 오류가 발생했습니다." };
     }
   };
 
@@ -56,7 +54,7 @@ export function useVerifyEmail() {
     emailError: sendMutation.isError,
     emailErrorMessage: sendMutation.error
       ? "서버 요청에 실패했습니다. 다시 시도해주세요."
-      : sendMutation.data?.data?.responseMessage || "",
+      : sendMutation.data?.data?.data?.responseMessage || "",
     verificationError: verifyMutation.isError,
     verificationErrorMessage: "",
     isVerificationSent: sendMutation.isSuccess,
