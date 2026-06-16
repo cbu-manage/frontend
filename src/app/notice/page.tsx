@@ -78,7 +78,7 @@ export default function NoticePage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="제목 · 내용으로 검색"
+                placeholder="제목 · 작성자로 검색"
                 className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
               />
             </div>
