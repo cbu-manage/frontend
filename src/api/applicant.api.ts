@@ -24,8 +24,8 @@ export const applicantApi = {
     api.get<ApiEnvelope<ApplicantItem[]>>("/admin/applicants"),
 
   updateStatus: (id: number, status: "PASS" | "FAIL") =>
-    api.patch(`/admin/applicants/${id}/status`, { status }),
+    api.patch<ApiEnvelope<null>>(`/admin/applicants/${id}/status`, { status }),
 
   notifyPass: () =>
-    api.post("/admin/applicants/notify-pass"),
+    api.post<ApiEnvelope<null>>("/admin/applicants/notify-pass"),
 };

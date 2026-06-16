@@ -75,6 +75,21 @@ export default function NewMemberManageSection() {
     },
   });
 
+  const saveStatusMutation = useMutation({
+    mutationFn: () =>
+      Promise.all(
+        applicants.map((a) =>
+          applicantApi.updateStatus(a.id, getStatus(a.id, a) as "PASS" | "FAIL")
+        )
+      ),
+    onSuccess: () => {
+      notifyMutation.mutate();
+    },
+    onError: () => {
+      alert("상태 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    },
+  });
+
   const handleStatusSelect = (id: number, value: "PASS" | "FAIL") => {
     setLocalStatuses((prev) => ({ ...prev, [id]: value }));
     setOpenStatusId(null);
@@ -116,7 +131,7 @@ export default function NewMemberManageSection() {
       )
     ) return;
 
-    notifyMutation.mutate();
+    saveStatusMutation.mutate();
   };
 
   return (
@@ -206,12 +221,14 @@ export default function NewMemberManageSection() {
                           {openStatusId === item.id && (
                             <ul className="absolute left-1/2 -translate-x-1/2 z-30 mt-1 w-24 rounded-md border border-gray-200 bg-white shadow-lg">
                               {STATUS_OPTIONS.map((opt) => (
-                                <li
-                                  key={opt.value}
-                                  onClick={() => handleStatusSelect(item.id, opt.value)}
-                                  className="px-3 py-2 text-xs text-gray-700 cursor-pointer hover:bg-gray-50 text-center"
-                                >
-                                  {opt.label}
+                                <li key={opt.value}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStatusSelect(item.id, opt.value)}
+                                    className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 text-center"
+                                  >
+                                    {opt.label}
+                                  </button>
                                 </li>
                               ))}
                             </ul>
@@ -242,10 +259,10 @@ export default function NewMemberManageSection() {
         <button
           type="button"
           onClick={handleFinalize}
-          disabled={holdCount > 0 || notifyMutation.isPending}
+          disabled={holdCount > 0 || saveStatusMutation.isPending || notifyMutation.isPending}
           className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
-          {notifyMutation.isPending ? "메일 발송 중..." : "모집 마감 및 합격자 결정"}
+          {saveStatusMutation.isPending ? "상태 저장 중..." : notifyMutation.isPending ? "메일 발송 중..." : "모집 마감 및 합격자 결정"}
         </button>
       </div>
 
