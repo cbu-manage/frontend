@@ -120,7 +120,7 @@ function formatDeadline(iso?: string): string {
 function extractContent(raw: unknown): PostListItem[] {
   if (!raw || typeof raw !== "object") return [];
   const obj = raw as Record<string, unknown>;
-  let data: unknown = obj.data ?? obj;
+  const data: unknown = obj.data ?? obj;
   if (Array.isArray(data)) return data as PostListItem[];
   if (data && typeof data === "object") {
     const d = data as Record<string, unknown>;
@@ -544,6 +544,7 @@ export default function MyPostsSection() {
     allTabQueries,
     singleTabQuery.data,
     categoryParam,
+    pageIndex,
   ]);
 
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
