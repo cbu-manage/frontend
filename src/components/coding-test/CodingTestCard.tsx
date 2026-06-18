@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 import type { SolveStatus } from "./CodingTestRow";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 interface CodingTestCardProps {
   id: number;
@@ -40,13 +41,12 @@ export function CodingTestCard({
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span
-            className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-caption font-medium text-white ${
-              isSolved ? "bg-[#45CD89]" : "bg-[#FC5E6E]"
-            }`}
+          <StatusBadge
+            tone={isSolved ? "success" : "danger"}
+            className="px-2.5 py-1 text-caption font-medium"
           >
             {status}
-          </span>
+          </StatusBadge>
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-caption font-medium bg-gray-100 text-gray-700">
             {platform}
           </span>
