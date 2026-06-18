@@ -108,7 +108,7 @@ export default function Header() {
 
         {/* 데스크탑 카테고리 네비 — 메가메뉴(헤더 전체폭 펼침) */}
         <nav className="hidden md:flex flex-1 justify-center group/cats">
-          <ul className={`flex items-center gap-14 lg:gap-20 text-base font-medium ${text}`}>
+          <ul className={`flex items-center gap-20 lg:gap-24 text-base font-medium ${text}`}>
             {NAV.map((cat) => {
               const active = isCategoryActive(cat);
               return (
