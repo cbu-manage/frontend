@@ -14,6 +14,8 @@
 import Link from "next/link";
 import { Clock, Eye } from "lucide-react";
 import { PersonIcon } from "@/components/icons/PersonIcon";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { Tag } from "@/components/common/Tag";
 
 // ============================================
 // 타입 정의
@@ -131,15 +133,9 @@ export function StudyCard({
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             {/* 모집 상태 배지 */}
-            <span
-              className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
-                isCompleted
-                  ? "bg-[#FC5E6E]" // 모집 완료
-                  : "bg-[#45CD89]" // 모집 중
-              }`}
-            >
+            <StatusBadge tone={isCompleted ? "danger" : "success"}>
               {status}
-            </span>
+            </StatusBadge>
             {typeof activeMemberCount === "number" &&
               typeof maxMembers === "number" &&
               maxMembers > 0 && (
@@ -165,12 +161,7 @@ export function StudyCard({
               ? categoriesProp
               : [category]
             ).map((cat) => (
-              <span
-                key={cat}
-                className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold"
-              >
-                {cat}
-              </span>
+              <Tag key={cat}>{cat}</Tag>
             ))}
           </div>
         </div>
