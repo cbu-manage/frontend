@@ -118,7 +118,7 @@ export default function Header() {
                 <li key={cat.name} className="group relative">
                   <button
                     type="button"
-                    className={`inline-flex items-center gap-1 pb-1.5 border-b-2 transition-colors ${
+                    className={`pb-1.5 border-b-4 transition-colors ${
                       active
                         ? "border-brand text-brand font-semibold"
                         : "border-transparent group-hover:text-brand"
@@ -126,10 +126,6 @@ export default function Header() {
                     aria-haspopup="true"
                   >
                     {cat.name}
-                    <ChevronDown
-                      size={16}
-                      className="opacity-70 transition-transform group-hover:rotate-180"
-                    />
                   </button>
                   {/* 드롭다운 — 마우스 hover + 키보드 focus-within에서 노출. 바깥 div의 pt-3=hover 브릿지 */}
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute left-0 top-full pt-3 transition-opacity">
