@@ -125,7 +125,7 @@ export default function Header() {
                     {cat.name}
                   </button>
                   {/* 항목 — 카테고리 바로 아래 정렬, 셸프 위에 표시 (pt-5=hover 브릿지) */}
-                  <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100 absolute left-1/2 -translate-x-1/2 top-full z-40 pt-5 transition-opacity">
+                  <div className="invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 group-focus-within/cats:visible group-focus-within/cats:opacity-100 absolute left-1/2 -translate-x-1/2 top-full z-40 pt-5 transition-opacity">
                     <ul className="flex flex-col gap-1 min-w-44">
                       {cat.items.map((item) => {
                         const itemActive = pathname.startsWith(item.path);
