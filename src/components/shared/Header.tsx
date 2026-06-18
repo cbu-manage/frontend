@@ -125,7 +125,7 @@ export default function Header() {
                     {cat.name}
                   </button>
                   {/* 항목 — 카테고리 바로 아래 정렬, 셸프 위에 표시 (pt-5=hover 브릿지) */}
-                  <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100 absolute left-0 top-full z-40 pt-5 transition-opacity">
+                  <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100 absolute left-1/2 -translate-x-1/2 top-full z-40 pt-5 transition-opacity">
                     <ul className="flex flex-col gap-1 min-w-44">
                       {cat.items.map((item) => {
                         const itemActive = pathname.startsWith(item.path);
@@ -133,14 +133,12 @@ export default function Header() {
                           <li key={item.path}>
                             <Link
                               href={item.path}
-                              className={`block rounded-xl px-4 py-2.5 text-base font-medium transition-colors ${
+                              className={`block text-center rounded-xl px-4 py-2.5 text-base font-medium transition-colors ${
                                 itemActive
-                                  ? isHome
-                                    ? "bg-white/10 text-brand"
-                                    : "bg-gray-100 text-brand"
+                                  ? "bg-brand/15 text-brand font-semibold"
                                   : isHome
-                                    ? "text-white/90 hover:bg-white/10"
-                                    : "text-gray-700 hover:bg-gray-100"
+                                    ? "text-white/90 hover:bg-white/10 hover:text-brand"
+                                    : "text-gray-700 hover:bg-brand/10 hover:text-brand"
                               }`}
                             >
                               {item.name}
