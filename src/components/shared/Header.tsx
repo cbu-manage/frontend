@@ -84,9 +84,6 @@ export default function Header() {
 
   // 테마 토큰 (홈=다크, 나머지=라이트). 추후 #177에서 테마 상태 기반으로 일반화.
   const text = isHome ? "text-white" : "text-gray-700";
-  const panelBg = isHome
-    ? "bg-[#1f1f22] border-white/10"
-    : "bg-gray-0 border-gray-200";
   const itemHover = isHome
     ? "text-white/90 hover:bg-white/10"
     : "text-gray-700 hover:bg-gray-50";
@@ -109,45 +106,61 @@ export default function Header() {
           <img src="/assets/logo.png" alt="씨부엉" className="h-7 md:h-8 w-auto" />
         </Link>
 
-        {/* 데스크탑 카테고리 네비 (hover/focus 드롭다운) */}
-        <nav className="hidden md:flex flex-1 justify-center">
+        {/* 데스크탑 카테고리 네비 — 메가메뉴(헤더 전체폭 펼침) */}
+        <nav className="hidden md:flex flex-1 justify-center group/cats">
           <ul className={`flex items-center gap-10 lg:gap-14 text-base font-medium ${text}`}>
             {NAV.map((cat) => {
               const active = isCategoryActive(cat);
               return (
-                <li key={cat.name} className="group relative">
+                <li key={cat.name} className="group/cat relative">
                   <button
                     type="button"
                     className={`pb-1.5 border-b-4 transition-colors ${
                       active
                         ? "border-brand text-brand font-semibold"
-                        : "border-transparent group-hover:text-brand"
+                        : "border-transparent group-hover/cat:text-brand"
                     }`}
                     aria-haspopup="true"
                   >
                     {cat.name}
                   </button>
-                  {/* 드롭다운 — 마우스 hover + 키보드 focus-within에서 노출. 바깥 div의 pt-3=hover 브릿지 */}
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 absolute left-0 top-full pt-3 transition-opacity">
-                    <ul className={`min-w-44 rounded-2xl border p-2 shadow-lg ${panelBg}`}>
-                      {cat.items.map((item) => (
-                        <li key={item.path}>
-                          <Link
-                            href={item.path}
-                            className={`block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                              pathname.startsWith(item.path) ? "text-brand" : itemHover
-                            }`}
-                          >
-                            {item.name}
-                          </Link>
-                        </li>
-                      ))}
+                  {/* 항목 — 카테고리 바로 아래 정렬, 셸프 위에 표시 (pt-5=hover 브릿지) */}
+                  <div className="invisible opacity-0 group-hover/cat:visible group-hover/cat:opacity-100 group-focus-within/cat:visible group-focus-within/cat:opacity-100 absolute left-0 top-full z-40 pt-5 transition-opacity">
+                    <ul className="flex flex-col gap-1 min-w-44">
+                      {cat.items.map((item) => {
+                        const itemActive = pathname.startsWith(item.path);
+                        return (
+                          <li key={item.path}>
+                            <Link
+                              href={item.path}
+                              className={`block rounded-xl px-4 py-2.5 text-base font-medium transition-colors ${
+                                itemActive
+                                  ? isHome
+                                    ? "bg-white/10 text-brand"
+                                    : "bg-gray-100 text-brand"
+                                  : isHome
+                                    ? "text-white/90 hover:bg-white/10"
+                                    : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                            >
+                              {item.name}
+                            </Link>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 </li>
               );
             })}
           </ul>
+          {/* 전체폭 셸프 — 카테고리 hover 시 헤더가 통째로 펼쳐지는 배경 */}
+          <div
+            aria-hidden="true"
+            className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 absolute inset-x-0 top-full z-30 h-44 border-b transition-opacity ${
+              isHome ? "bg-[#151517] border-white/10" : "bg-gray-0 border-gray-200"
+            }`}
+          />
         </nav>
 
         {/* 데스크탑 우측 — 로그인 상태 */}
