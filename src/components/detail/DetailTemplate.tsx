@@ -77,13 +77,13 @@ export default function DetailTemplate({
   const getStatusDisplay = () => {
     switch (status) {
       case "recruiting":
-        return { text: "모집 중", className: "bg-[#45CD89] text-white" };
+        return { text: "모집 중", className: "bg-success text-white" };
       case "completed":
-        return { text: "모집 완료", className: "bg-[#FC5E6E] text-white" };
+        return { text: "모집 완료", className: "bg-danger text-white" };
       case "solved":
-        return { text: "해결", className: "bg-[#45CD89] text-white" };
+        return { text: "해결", className: "bg-success text-white" };
       case "unsolved":
-        return { text: "미해결", className: "bg-[#FC5E6E] text-white" };
+        return { text: "미해결", className: "bg-danger text-white" };
       default:
         return { text: "", className: "" };
     }

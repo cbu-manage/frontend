@@ -28,6 +28,9 @@
   --color-gray-900: #222222;
   --color-brand: #95c674;
   --color-notice: #ff4e4e;
+  /* 모집/해결 상태 색 (기존 카드들에 #45cd89·#fc5e6e로 하드코딩돼 있던 값) */
+  --color-success: #45cd89;
+  --color-danger: #fc5e6e;
   --font-size-sm: 0.875rem; /* 14px */
   --font-size-base: 1rem; /* 16px */
   --font-size-lg: 1.25rem; /* 20px */
