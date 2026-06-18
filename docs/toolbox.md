@@ -41,6 +41,8 @@ import { formatDate, formatRelativeTime } from "@/lib/date";
 
 | 컴포넌트 | 위치 | 용도 |
 |---|---|---|
+| `StatusBadge` | common | 모집/해결 상태 배지(success/danger). 상태색 HEX 하드코딩 금지, 이거 써라 |
+| `Tag` | common | 카테고리·포지션 칩(gray/brand) |
 | `InputBox` | common | 폼 입력(라벨·에러·success) |
 | `LongBtn` / `ShortBtn` / `OutlineBtn` | common | 버튼 변형 |
 | `Toggle` | common | 토글 스위치 |
@@ -52,7 +54,8 @@ import { formatDate, formatRelativeTime } from "@/lib/date";
 | `Button` | ui | shadcn 프리미티브 |
 | `RequireMember` / `RequireAdmin` | auth | 페이지 접근 가드 |
 
-> ⚠️ Figma 디자인 시스템 컴포넌트(버튼/칩/모달 등)는 **Storybook 브랜치에서 추출 예정**. 중복 만들지 말고 그쪽 확인.
+> 🎨 Figma 디자인 시스템 추출 진행 중 — 전체 매핑·진행 상황은 [design-system.md](./design-system.md).
+> Storybook으로 실물 확인: `npm run storybook`. 버튼/칩/모달 등 추가 추출 시 중복 만들지 말고 그쪽 먼저.
 
 ---
 

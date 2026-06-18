@@ -275,7 +275,7 @@ export default function ApplicantsModal({
                                 accept: true,
                               });
                             }}
-                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#45CD89] text-white hover:opacity-90 disabled:opacity-50"
+                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-success text-white hover:opacity-90 disabled:opacity-50"
                           >
                             수락
                           </button>
@@ -289,7 +289,7 @@ export default function ApplicantsModal({
                                 accept: false,
                               });
                             }}
-                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#FC5E6E] text-white hover:opacity-90 disabled:opacity-50"
+                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-danger text-white hover:opacity-90 disabled:opacity-50"
                           >
                             거부
                           </button>

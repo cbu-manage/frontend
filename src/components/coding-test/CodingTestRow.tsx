@@ -15,6 +15,7 @@
 
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
+import { StatusBadge } from "@/components/common/StatusBadge";
 
 // ============================================
 // 타입 정의
@@ -88,13 +89,12 @@ export function CodingTestRow({
     >
       {/* 상태 */}
       <td className="py-4 px-3 text-center w-20 sm:w-25">
-        <span
-          className={`inline-flex items-center justify-center px-3 py-2 rounded-full text-sm font-medium text-white min-w-[65px] ${
-            isSolved ? "bg-[#45CD89]" : "bg-[#FC5E6E]"
-          }`}
+        <StatusBadge
+          tone={isSolved ? "success" : "danger"}
+          className="text-sm font-medium min-w-[65px]"
         >
           {status}
-        </span>
+        </StatusBadge>
       </td>
 
       {/* 문제 */}

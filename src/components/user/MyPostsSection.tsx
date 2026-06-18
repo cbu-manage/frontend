@@ -780,7 +780,7 @@ function AllViewCardContent({ post }: { post: MyPost }) {
           ) : (
             <span
               className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
-                post.status === "모집 완료" ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
+                post.status === "모집 완료" ? "bg-danger" : "bg-success"
               }`}
             >
               {post.status}
