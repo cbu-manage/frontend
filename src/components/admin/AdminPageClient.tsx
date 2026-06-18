@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Sidebar from "@/components/shared/Sidebar";
 import MemberManageSection from "@/components/admin/MemberManageSection";
 import GroupManageSection from "@/components/admin/GroupManageSection";
-import ReportManageSection from "@/components/admin/ReportManageSection";
+import ReportManageSection from "@/components/manage/ReportManageSection";
 import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
 
 const ADMIN_MENU_ITEMS = [
