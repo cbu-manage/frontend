@@ -47,6 +47,7 @@ export function useLogin() {
 
       if (isAdmin) {
         setUser({
+          role: data.role,
           name: data.name,
           studentNumber,
           email: loginEmail,
@@ -64,6 +65,7 @@ export function useLogin() {
       const isEmailNull = !hasValidEmail;
 
       setUser({
+        role: data.role,
         name: data.name,
         studentNumber,
         email: hasValidEmail ? loginEmail : null,

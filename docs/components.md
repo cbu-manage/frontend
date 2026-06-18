@@ -81,6 +81,21 @@ app/manage/page.tsx        ← 얇음. 인증가드 + PageClient만
 
 ---
 
-## 6. 새 컴포넌트 어디에?
+## 6. 본인 게시물 수정/삭제 버튼 — `useIsAuthor`
+
+게시판 어디서든 "내 글일 때만 수정/삭제"는 **`useIsAuthor` 훅**으로 통일한다 (직접 `userId` 비교 X).
+
+```tsx
+import { useIsAuthor } from "@/hooks/auth";
+
+const { canModify } = useIsAuthor(post.authorId, post.isAuthor);
+// ...
+{canModify && <EditDeleteButtons />}
+```
+- 서버가 `isAuthor`를 주면(study/codingTest 등) 그걸 우선, 없으면 내 `userId === authorId` 비교.
+- `canModify` = 본인 || 관리자(isAdmin).
+- ⚠️ **UI 게이팅일 뿐** — 실제 권한은 서버가 401/200으로 최종 판정. 버튼 숨겼다고 끝 아님.
+
+## 7. 새 컴포넌트 어디에?
 
 범용 폼입력 → `common/` · 전역 레이아웃 → `shared/` · 관리자 기능 → `admin/` + `*Section` · 마이 기능 → `user/` + `*Section` · 리스트 카드 → 도메인 폴더 + `*Card` · 인증 가드 → `auth/` + `Require*` · 멀티스텝 폼 → `signup/` + `Step*` · 페이지 래퍼 → 라우트명 + `*PageClient` · SVG 아이콘 → `icons/`.
