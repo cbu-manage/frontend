@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 type UserInfo = {
+  userId: string; // 서버 식별자(uuid). 본인 게시물 판별(authorId 비교)용 — useIsAuthor 참고
+  role: string; // 서버가 내려주는 권한 문자열 (권한 세분화용). isAdmin은 이걸로 파생
   name: string;
   studentNumber: number;
   email: string | null;
@@ -26,6 +28,8 @@ type UserStore = UserInfo & {
 };
 
 const initialState: UserInfo = {
+  userId: '',
+  role: '',
   name: '',
   studentNumber: 0,
   email: null,
@@ -64,6 +68,8 @@ export const useUserStore = create<UserStore>()(
       setUser: (info) =>
         set((s) => ({
           ...s,
+          userId: info.userId ?? s.userId,
+          role: info.role ?? s.role,
           name: info.name ?? s.name,
           studentNumber: info.studentNumber ?? s.studentNumber,
           email: info.email ?? s.email,
@@ -101,6 +107,8 @@ export const useUserStore = create<UserStore>()(
         return localStorage;
       }),
       partialize: (state) => ({
+        userId: state.userId,
+        role: state.role,
         name: state.name,
         studentNumber: state.studentNumber,
         email: state.email,
