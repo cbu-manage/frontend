@@ -108,17 +108,17 @@ export default function Header() {
 
         {/* 데스크탑 카테고리 네비 — 메가메뉴(헤더 전체폭 펼침) */}
         <nav className="hidden md:flex flex-1 justify-center group/cats">
-          <ul className={`flex items-center gap-20 lg:gap-24 text-base font-medium ${text}`}>
+          <ul className={`flex items-center gap-20 lg:gap-32 text-lg font-semibold ${text}`}>
             {NAV.map((cat) => {
               const active = isCategoryActive(cat);
               return (
                 <li key={cat.name} className="group/cat relative">
                   <button
                     type="button"
-                    className={`pb-1.5 border-b-4 transition-colors ${
+                    className={`pb-1.5 border-b-4 font-semibold transition-colors ${
                       active
-                        ? "border-brand text-brand font-semibold"
-                        : "border-transparent group-hover/cat:text-brand"
+                        ? "border-brand text-brand"
+                        : `border-transparent group-hover/cat:text-brand ${isHome ? "text-white" : "text-gray-900"}`
                     }`}
                     aria-haspopup="true"
                   >
