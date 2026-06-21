@@ -11,6 +11,6 @@ import { useUserStore } from "@/store/userStore";
  */
 export function useCanManageReports(): boolean {
   const role = useUserStore((s) => s.role);
-  const normalized = role.toUpperCase();
+  const normalized = (role ?? "").toUpperCase();
   return normalized !== "" && normalized !== "ROLE_USER";
 }
