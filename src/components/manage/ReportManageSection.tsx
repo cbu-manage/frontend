@@ -1,72 +1,110 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { Upload, Search, CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
+import Pagination from "@/components/shared/Pagination";
+import { reportApi, type ReportPreviewItem } from "@/api";
 
-const TEAM_TABS = ["전체", "프론트엔드", "백엔드", "기획", "디자인"] as const;
-type Team = (typeof TEAM_TABS)[number];
+const PAGE_SIZE = 9;
 
-// TODO: API 연동 후 실제 데이터로 교체
-const MOCK_REPORTS = [
-  {
-    id: 1,
-    tag: "프론트엔드팀",
-    title: "2026년 4월 정기활동 보고서",
-    author: "15기 김민주",
-    date: "04.18",
-    files: ["HWP", "PDF"], // 첨부 파일 형식 (추후 다운로드 링크로 교체)
-  },
-  {
-    id: 2,
-    tag: "프론트엔드팀",
-    title: "3월 스프린트 회고",
-    author: "15기 나도현",
-    date: "03.31",
-    files: ["HWP", "PDF"],
-  },
-  {
-    id: 3,
-    tag: "백엔드팀",
-    title: "API v2 릴리즈 보고서",
-    author: "14기 이서연",
-    date: "04.14",
-    files: ["HWP", "PDF"],
-  },
-  {
-    id: 4,
-    tag: "백엔드팀",
-    title: "3월 정기활동 보고서",
-    author: "14기 최준호",
-    date: "03.30",
-    files: ["HWP", "PDF"],
-  },
-  {
-    id: 5,
-    tag: "기획팀",
-    title: "4월 유저 인터뷰 결과",
-    author: "15기 정재준",
-    date: "04.12",
-    files: ["HWP", "PDF"],
-  },
-  {
-    id: 6,
-    tag: "디자인팀",
-    title: "디자인 시스템 v1.2",
-    author: "14기 공도식",
-    date: "04.09",
-    files: ["HWP", "PDF"],
-  },
-];
+function formatDate(iso: string): string {
+  try {
+    return format(new Date(iso), "MM.dd");
+  } catch {
+    return iso;
+  }
+}
+
+/** createdAt(ISO)이 start~end 사이 여부 (일 단위) */
+function inDateRange(createdAt: string, start?: Date, end?: Date): boolean {
+  if (!start && !end) return true;
+  const d = new Date(createdAt);
+  if (start) {
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    if (d < s) return false;
+  }
+  if (end) {
+    const e = new Date(
+      end.getFullYear(),
+      end.getMonth(),
+      end.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+    if (d > e) return false;
+  }
+  return true;
+}
 
 export default function ReportManageSection() {
   const router = useRouter();
-  const [team, setTeam] = useState<Team>("전체");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [calendarOpenStart, setCalendarOpenStart] = useState(false);
+  const [calendarOpenEnd, setCalendarOpenEnd] = useState(false);
+  const startRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (startRef.current && !startRef.current.contains(e.target as Node)) setCalendarOpenStart(false);
+      if (endRef.current && !endRef.current.contains(e.target as Node)) setCalendarOpenEnd(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const [search, setSearch] = useState("");
   const [groupByTeam, setGroupByTeam] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageIndex = currentPage - 1;
+
+  // 관리자는 role 기준으로 전체 보고서가 내려옴 (서버 페이징)
+  const { data: res, isLoading, isError } = useQuery({
+    queryKey: ["reports", "manage", pageIndex],
+    queryFn: () => reportApi.getList({ page: pageIndex, size: PAGE_SIZE }),
+  });
+
+  const reportPage = res?.data?.data;
+  const reports: ReportPreviewItem[] = reportPage?.content ?? [];
+  const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
+  const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
+
+  // 검색·기간은 목록 API에 파라미터가 없어 현재 페이지 내 클라 필터
+  const filtered = reports.filter((r) => {
+    const matchSearch =
+      r.title.includes(search) || r.authorName.includes(search);
+    const matchDate = inDateRange(r.createdAt, startDate, endDate);
+    return matchSearch && matchDate;
+  });
+
+  // "팀으로 그룹핑" 토글 시 groupName별로 묶기
+  const grouped = filtered.reduce<Record<string, ReportPreviewItem[]>>(
+    (acc, r) => {
+      (acc[r.groupName] ??= []).push(r);
+      return acc;
+    },
+    {},
+  );
+
+  const renderCard = (r: ReportPreviewItem) => (
+    <ReportCard
+      key={r.postId}
+      id={r.postId}
+      tag={r.groupName}
+      title={r.title}
+      author={r.authorName}
+      date={formatDate(r.createdAt)}
+    />
+  );
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -86,42 +124,45 @@ export default function ReportManageSection() {
       {/* 필터 영역 */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
 
-        {/* 팀 탭 */}
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-gray-700 shrink-0 w-8">팀</span>
-          {TEAM_TABS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTeam(t)}
-              className={
-                team === t
-                  ? "px-3 py-1 rounded-full text-sm font-medium bg-gray-800 text-white transition-colors"
-                  : "px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
-              }
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-
         {/* 기간 + 팀으로 그룹핑 */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
             <span className="font-medium text-gray-700 shrink-0 w-8">기간</span>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
-            />
+            <div ref={startRef} className="relative">
+              <button
+                type="button"
+                onClick={() => { setCalendarOpenStart((v) => !v); setCalendarOpenEnd(false); }}
+                className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
+              >
+                <span className={startDate ? "text-gray-700" : "text-gray-400"}>
+                  {startDate ? format(startDate, "yyyy.MM.dd", { locale: ko }) : "시작일"}
+                </span>
+                <CalendarIcon size={14} className="text-gray-400" />
+              </button>
+              {calendarOpenStart && (
+                <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
+                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); }} />
+                </div>
+              )}
+            </div>
             <span className="shrink-0">~</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-300"
-            />
+            <div ref={endRef} className="relative">
+              <button
+                type="button"
+                onClick={() => { setCalendarOpenEnd((v) => !v); setCalendarOpenStart(false); }}
+                className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
+              >
+                <span className={endDate ? "text-gray-700" : "text-gray-400"}>
+                  {endDate ? format(endDate, "yyyy.MM.dd", { locale: ko }) : "종료일"}
+                </span>
+                <CalendarIcon size={14} className="text-gray-400" />
+              </button>
+              {calendarOpenEnd && (
+                <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
+                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); }} />
+                </div>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-sm text-gray-600">팀으로 그룹핑</span>
@@ -129,6 +170,7 @@ export default function ReportManageSection() {
               type="button"
               role="switch"
               aria-checked={groupByTeam}
+              aria-label="팀으로 그룹핑"
               onClick={() => setGroupByTeam((v) => !v)}
               className={`relative w-10 h-6 rounded-full transition-colors ${
                 groupByTeam ? "bg-gray-800" : "bg-gray-200"
@@ -157,12 +199,40 @@ export default function ReportManageSection() {
 
       </div>
 
-      {/* 보고서 카드 그리드: 1열(모바일) → 2열(태블릿) → 3열(데스크탑) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {MOCK_REPORTS.map((report) => (
-          <ReportCard key={report.id} {...report} />
-        ))}
-      </div>
+      {/* 상태 표시 */}
+      {isLoading && (
+        <div className="text-center py-16 text-gray-500">불러오는 중...</div>
+      )}
+      {isError && (
+        <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
+      )}
+
+      {!isLoading && !isError && (
+        <>
+          {filtered.length === 0 ? (
+            <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
+          ) : groupByTeam ? (
+            /* 팀(그룹)별 묶음 보기 */
+            <div className="space-y-8 mb-6">
+              {Object.entries(grouped).map(([groupName, items]) => (
+                <div key={groupName}>
+                  <h2 className="text-sm font-semibold text-gray-700 mb-3">{groupName}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {items.map(renderCard)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* 평면 그리드 */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {filtered.map(renderCard)}
+            </div>
+          )}
+
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        </>
+      )}
 
     </div>
   );
