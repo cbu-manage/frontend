@@ -1,42 +1,56 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Download } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { Download, Pencil } from "lucide-react";
+import { format } from "date-fns";
+import { reportApi, type ReportDetail } from "@/api";
+import { useIsAuthor, useCanManageReports, useMe } from "@/hooks/auth";
 
-// TODO: API 연동 후 실제 데이터로 교체 (GET /api/v1/report/{id})
-const MOCK_DETAIL = {
-  title: "2026년 4월 정기활동 보고서",
-  tag: "프론트엔드팀",
-  author: "15기 김민주",
-  updatedAt: "2026.04.18",
-  files: ["HWP", "PDF"],
-  meta: [
-    { label: "활동 기간", value: "04.01 — 04.18" },
-    { label: "참여 인원", value: "12명" },
-    { label: "활동 주제", value: "Next.js 마이그레이션" },
-    { label: "주요 결과", value: "라우팅 전면 개편 완료" },
-  ],
-  sections: [
-    {
-      title: "활동 내용",
-      content: "활동 내용을 입력하세요.",
-      hasImagePlaceholder: true,
-    },
-    {
-      title: "참여자 명단",
-      content: "참여자 명단을 입력하세요.",
-      hasImagePlaceholder: false,
-    },
-    {
-      title: "소감",
-      content: "소감을 입력하세요.",
-      hasImagePlaceholder: false,
-    },
-  ],
+const TYPE_LABEL: Record<string, string> = {
+  STUDY: "스터디",
+  PROJECT: "프로젝트",
+  MENTORING: "멘토링",
 };
+
+function formatDate(iso?: string): string {
+  if (!iso) return "-";
+  try {
+    return format(new Date(iso), "yyyy.MM.dd");
+  } catch {
+    return iso;
+  }
+}
 
 export default function ReportDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const postId = Number(params.id);
+  useMe(); // userId·role 하이드레이트 (수정 버튼 작성자 검증·HWP 권한용)
+
+  const { data: res, isLoading, isError } = useQuery({
+    queryKey: ["report", postId],
+    queryFn: () => reportApi.getById(postId),
+    enabled: Number.isFinite(postId),
+  });
+
+  const detail = res?.data?.data;
+
+  const handleExport = async () => {
+    try {
+      const fileRes = await reportApi.exportHwp(postId);
+      const url = URL.createObjectURL(fileRes.data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${detail?.postInfoDTO.title ?? "report"}.hwp`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("HWP 추출에 실패했습니다.");
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -50,75 +64,158 @@ export default function ReportDetailPage() {
           ← 목록으로
         </button>
 
-        {/* 제목 + 파일 다운로드 */}
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {MOCK_DETAIL.title}
-          </h1>
-          <div className="flex gap-2 shrink-0">
-            {MOCK_DETAIL.files.map((f) => (
-              <button
-                key={f}
-                className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <Download size={14} />
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
+        {isLoading && (
+          <div className="text-center py-16 text-gray-500">불러오는 중...</div>
+        )}
+        {isError && (
+          <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
+        )}
 
-        {/* 팀 뱃지 + 작성자 + 날짜 */}
-        <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-          <span className="rounded border border-gray-300 px-2 py-0.5 text-xs font-medium text-gray-700">
-            {MOCK_DETAIL.tag}
-          </span>
-          <span>{MOCK_DETAIL.author}</span>
-          <span>·</span>
-          <span>최종일 {MOCK_DETAIL.updatedAt}</span>
-        </div>
-
-        {/* 메타 정보 카드 4개 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
-          {MOCK_DETAIL.meta.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-xl border border-gray-200 bg-white p-4"
-            >
-              <p className="text-xs text-gray-400 mb-1">{item.label}</p>
-              <p className="text-sm font-semibold text-gray-900">{item.value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* 상세 내용 */}
-        <h2 className="text-base font-bold text-gray-900 mb-6">상세 내용</h2>
-
-        <div className="divide-y divide-gray-200">
-          {MOCK_DETAIL.sections.map((section, i) => (
-            <div key={section.title} className="py-8 first:pt-0">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                {i + 1}. {section.title}
-              </h3>
-
-              {/* TODO: 실제 내용 렌더링 */}
-              <div className="space-y-2 mb-4">
-                <div className="h-3 rounded bg-gray-200 w-full" />
-                <div className="h-3 rounded bg-gray-200 w-full" />
-                <div className="h-3 rounded bg-gray-200 w-full" />
-              </div>
-
-              {/* 활동 내용에만 이미지 플레이스홀더 */}
-              {section.hasImagePlaceholder && (
-                <div className="rounded-xl border border-gray-200 bg-gray-50 flex items-center justify-center h-48 text-sm text-gray-400">
-                  활동 사진 / 별내일
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
+        {!isLoading && !isError && detail && (
+          <ReportDetailView
+            detail={detail}
+            onExport={handleExport}
+            onEdit={() => router.push(`/report/write?edit=${postId}`)}
+          />
+        )}
       </div>
     </main>
+  );
+}
+
+function ReportDetailView({
+  detail,
+  onExport,
+  onEdit,
+}: {
+  detail: ReportDetail;
+  onExport: () => void;
+  onEdit: () => void;
+}) {
+  const { postInfoDTO: post, reportInfoDTO: report } = detail;
+  const canManage = useCanManageReports();
+  const { canModify } = useIsAuthor(post.authorId);
+
+  const meta = [
+    { label: "활동 일자", value: formatDate(report.date) },
+    { label: "활동 장소", value: report.location || "-" },
+    { label: "유형", value: TYPE_LABEL[report.type] ?? report.type },
+    { label: "참여 인원", value: `${report.reportMembers.length}명` },
+  ];
+
+  return (
+    <>
+      {/* 제목 + HWP 추출 */}
+      <div className="flex items-start justify-between gap-4 mb-3">
+        <h1 className="text-2xl font-bold text-gray-900">{post.title}</h1>
+        {canManage && (
+          <div className="flex gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={onExport}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <Download size={14} />
+              HWP 추출
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 팀 뱃지 + 작성자 + 날짜 */}
+      <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
+        <span className="rounded border border-gray-300 px-2 py-0.5 text-xs font-medium text-gray-700">
+          {report.groupInfoDTO.groupName}
+        </span>
+        <span>
+          {post.generation}기 {post.authorName}
+        </span>
+        <span>·</span>
+        <span>최종일 {formatDate(post.updatedAt)}</span>
+      </div>
+
+      {/* 메타 정보 카드 4개 */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+        {meta.map((item) => (
+          <div
+            key={item.label}
+            className="rounded-xl border border-gray-200 bg-white p-4"
+          >
+            <p className="text-xs text-gray-400 mb-1">{item.label}</p>
+            <p className="text-sm font-semibold text-gray-900">{item.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 상세 내용 */}
+      <h2 className="text-base font-bold text-gray-900 mb-6">상세 내용</h2>
+
+      <div className="divide-y divide-gray-200">
+        {/* 1. 활동 내용 */}
+        <section className="py-8 first:pt-0">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">1. 활동 내용</h3>
+          <p className="text-sm leading-6 text-gray-700 whitespace-pre-wrap mb-4">
+            {post.content || "내용이 없습니다."}
+          </p>
+          {report.reportImage && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={report.reportImage}
+              alt="활동 사진"
+              className="rounded-xl border border-gray-200 w-full object-cover"
+            />
+          )}
+        </section>
+
+        {/* 2. 참여자 명단 */}
+        <section className="py-8">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">2. 참여자 명단</h3>
+          {report.reportMembers.length === 0 ? (
+            <p className="text-sm text-gray-400">참여자 정보가 없습니다.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {report.reportMembers.map((m) => (
+                <span
+                  key={m.userId}
+                  className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+                >
+                  {m.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* 3. 소감 */}
+        <section className="py-8">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">3. 스터디 후 느낀 점</h3>
+          <p className="text-sm leading-6 text-gray-700 whitespace-pre-wrap">
+            {report.reflection || "내용이 없습니다."}
+          </p>
+        </section>
+
+        {/* 4. 다음 주 계획 */}
+        <section className="py-8">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">4. 다음 주 계획</h3>
+          <p className="text-sm leading-6 text-gray-700 whitespace-pre-wrap">
+            {report.nextPlan || "내용이 없습니다."}
+          </p>
+        </section>
+      </div>
+
+      {/* 수정 버튼 (작성자 본인 또는 관리자만) */}
+      {canModify && (
+        <div className="flex justify-end mt-10">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex items-center gap-1.5 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
+          >
+            <Pencil size={14} />
+            수정
+          </button>
+        </div>
+      )}
+    </>
   );
 }
