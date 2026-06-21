@@ -132,6 +132,9 @@ export default function ReportManageSection() {
               <button
                 type="button"
                 onClick={() => { setCalendarOpenStart((v) => !v); setCalendarOpenEnd(false); }}
+                aria-haspopup="dialog"
+                aria-expanded={calendarOpenStart}
+                aria-label="시작일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={startDate ? "text-gray-700" : "text-gray-400"}>
@@ -150,6 +153,9 @@ export default function ReportManageSection() {
               <button
                 type="button"
                 onClick={() => { setCalendarOpenEnd((v) => !v); setCalendarOpenStart(false); }}
+                aria-haspopup="dialog"
+                aria-expanded={calendarOpenEnd}
+                aria-label="종료일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={endDate ? "text-gray-700" : "text-gray-400"}>

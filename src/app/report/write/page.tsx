@@ -135,6 +135,10 @@ function ReportUploadContent() {
       alert("스터디/프로젝트를 선택하세요.");
       return;
     }
+    if (!reportType) {
+      alert("활동 유형을 선택하세요.");
+      return;
+    }
     // TODO(특이사항): reportImage/reportFile(업로드 보류) 미전송
     // type은 수정 모드에선 기존 보고서 값을 그대로 전송 (신규 작성은 서버 자동판단 가정 → 미전송)
     const body: Record<string, unknown> = {
