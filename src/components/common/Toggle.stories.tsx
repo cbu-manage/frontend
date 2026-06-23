@@ -24,18 +24,23 @@ const OPTIONS = [
   { label: "모집 완료", value: "closed" },
 ];
 
+// 훅은 대문자 컴포넌트 안에서만 호출 가능 — render 화살표함수에서 직접 호출 시 rules-of-hooks 위반
+function ToggleDefaultStory() {
+  const [value, setValue] = useState("open");
+  return <Toggle options={OPTIONS} value={value} onChange={setValue} />;
+}
+
+function ToggleWithLabelStory() {
+  const [value, setValue] = useState("open");
+  return (
+    <Toggle label="모집 상태" options={OPTIONS} value={value} onChange={setValue} size="md" />
+  );
+}
+
 export const Default: Story = {
-  render: () => {
-    const [value, setValue] = useState("open");
-    return <Toggle options={OPTIONS} value={value} onChange={setValue} />;
-  },
+  render: () => <ToggleDefaultStory />,
 };
 
 export const WithLabel: Story = {
-  render: () => {
-    const [value, setValue] = useState("open");
-    return (
-      <Toggle label="모집 상태" options={OPTIONS} value={value} onChange={setValue} size="md" />
-    );
-  },
+  render: () => <ToggleWithLabelStory />,
 };
