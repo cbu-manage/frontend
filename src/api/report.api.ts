@@ -78,6 +78,15 @@ export const reportApi = {
   /** 보고서 게시글 생성 */
   create: (data: unknown) => api.post("/report", data),
 
+  /** 이미지 업로드 (S3) — 응답 data가 업로드된 이미지 URL 문자열 */
+  uploadImage: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api.post<ApiResponse<string>>("/file/image", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
   /** 보고서 게시글 단건 조회 */
   getById: (postId: number) =>
     api.get<ApiResponse<ReportDetail>>(`/report/${postId}`),
