@@ -20,12 +20,13 @@ export default function ReportDetailPage() {
   const router = useRouter();
   const params = useParams();
   const postId = Number(params.id);
+  const invalidId = !Number.isFinite(postId); // /report/abc 같은 잘못된 경로
   useMe(); // userId·role 하이드레이트 (수정 버튼 작성자 검증·HWP 권한용)
 
   const { data: res, isLoading, isError } = useQuery({
     queryKey: ["report", postId],
     queryFn: () => reportApi.getById(postId),
-    enabled: Number.isFinite(postId),
+    enabled: !invalidId,
   });
 
   const detail = res?.data?.data;
@@ -58,14 +59,17 @@ export default function ReportDetailPage() {
           ← 목록으로
         </button>
 
-        {isLoading && (
+        {invalidId && (
+          <div className="text-center py-16 text-gray-500">잘못된 보고서 주소입니다.</div>
+        )}
+        {!invalidId && isLoading && (
           <div className="text-center py-16 text-gray-500">불러오는 중...</div>
         )}
-        {isError && (
+        {!invalidId && isError && (
           <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
         )}
 
-        {!isLoading && !isError && detail && (
+        {!invalidId && !isLoading && !isError && detail && (
           <ReportDetailView
             detail={detail}
             onExport={handleExport}
