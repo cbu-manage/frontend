@@ -236,7 +236,6 @@ function ReportUploadContent() {
             <div className="space-y-1.5" ref={dropdownRef}>
               <label className="text-sm font-medium text-gray-700">
                 스터디/프로젝트 명
-                {isEdit && <span className="ml-1 text-xs text-gray-400">(수정 시 변경 불가)</span>}
               </label>
               <div className="relative">
                 <button
