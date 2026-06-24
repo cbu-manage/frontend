@@ -56,11 +56,11 @@ function ReportUploadContent() {
 
   const [location, setLocation] = useState("");
   const [files, setFiles] = useState<{ name: string; size: string }[]>([]);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [activity, setActivity] = useState("");
   const [reflection, setReflection] = useState("");
   const [nextPlan, setNextPlan] = useState("");
   const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
-  const [reportType, setReportType] = useState<string | null>(null);
   // 수정 모드에서 기존 첨부(활동 사진/파일) URL 보존 — 서버 필수값이라 그대로 재전송
   const [reportImage, setReportImage] = useState<string | null>(null);
   const [reportFile, setReportFile] = useState<string | null>(null);
@@ -104,7 +104,6 @@ function ReportUploadContent() {
     setStartDate(report.date ? new Date(report.date) : undefined);
     setGroupId(report.groupInfoDTO.groupId);
     setSelectedMemberIds(report.reportMembers.map((m) => m.userId));
-    setReportType(report.type);
     setReportImage(report.reportImage ?? null);
     setReportFile(report.reportFile ?? null);
   }, [editRes]);
@@ -120,10 +119,16 @@ function ReportUploadContent() {
     setSelectedMemberIds([]);
   };
 
-  // 사진 1장만 — 새로 고르면 교체 (TODO: 실제 업로드 연결 - 특이사항 6번)
+  // 사진 1장만 — 새로 고르면 교체. 제출 시 S3 업로드 후 URL을 reportImage로 전송.
   const pickPhoto = (f?: File | null) => {
     if (!f) return;
+    setPhotoFile(f);
     setFiles([{ name: f.name, size: (f.size / (1024 * 1024)).toFixed(1) + " MB" }]);
+  };
+
+  const clearPhoto = () => {
+    setPhotoFile(null);
+    setFiles([]);
   };
 
   const handleSubmit = async () => {
@@ -135,29 +140,40 @@ function ReportUploadContent() {
       alert("스터디/프로젝트를 선택하세요.");
       return;
     }
-    if (!reportType) {
-      alert("활동 유형을 선택하세요.");
+    if (!startDate) {
+      alert("활동 일자를 선택하세요.");
       return;
     }
-    // TODO(특이사항): reportImage/reportFile(업로드 보류) 미전송
-    // type은 수정 모드에선 기존 보고서 값을 그대로 전송 (신규 작성은 서버 자동판단 가정 → 미전송)
-    const body: Record<string, unknown> = {
-      title,
-      content: activity,
-      reflection,
-      nextPlan,
-      location,
-      date: startDate ? startDate.toISOString() : null,
-      groupId,
-      memberIds: selectedMemberIds,
-    };
-    if (reportType) body.type = reportType;
-    // TODO(임시): 이미지 업로드 경로(/api/image/upload)가 BFF 밖이라 미연결 →
-    // reportImage 필수 검증 통과용 placeholder. 업로드 연결되면 실제 URL로 교체.
-    body.reportImage = reportImage ?? "https://placehold.co/600x400?text=report";
-    if (reportFile) body.reportFile = reportFile;
+    // reportImage는 서버 필수값 — 신규 작성은 사진 첨부 필수 (수정은 기존 이미지 유지 가능)
+    if (!isEdit && !photoFile) {
+      alert("활동 사진을 첨부하세요.");
+      return;
+    }
     try {
       setSubmitting(true);
+
+      // 사진을 새로 골랐으면 S3 업로드 → URL 획득. 수정 모드에서 안 바꿨으면 기존 URL 유지.
+      let imageUrl = reportImage;
+      if (photoFile) {
+        const up = await reportApi.uploadImage(photoFile);
+        imageUrl = up.data.data;
+      }
+
+      // type은 서버가 그룹 기준으로 자동 판단하므로 전송하지 않음.
+      const body: Record<string, unknown> = {
+        title,
+        content: activity,
+        reflection,
+        nextPlan,
+        location,
+        date: startDate.toISOString(),
+        memberIds: selectedMemberIds,
+        reportImage: imageUrl,
+      };
+      // 수정 시 그룹은 변경 불가(백엔드가 groupId 미수용) → 신규 작성만 전송
+      if (!isEdit) body.groupId = groupId;
+      if (reportFile) body.reportFile = reportFile;
+
       if (isEdit && editId) {
         await reportApi.update(Number(editId), body);
       } else {
@@ -218,19 +234,25 @@ function ReportUploadContent() {
               />
             </div>
             <div className="space-y-1.5" ref={dropdownRef}>
-              <label className="text-sm font-medium text-gray-700">스터디/프로젝트 명</label>
+              <label className="text-sm font-medium text-gray-700">
+                스터디/프로젝트 명
+                {isEdit && <span className="ml-1 text-xs text-gray-400">(수정 시 변경 불가)</span>}
+              </label>
               <div className="relative">
                 <button
                   type="button"
+                  disabled={isEdit}
                   onClick={() => setDropdownOpen((v) => !v)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-report-ring bg-white"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-report-ring bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
                 >
                   <span className={groupId ? "text-gray-700" : "text-gray-400"}>
                     {selectedGroupName ?? "선택 가능 (본인이 속한 스터디)"}
                   </span>
-                  <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  {!isEdit && (
+                    <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                  )}
                 </button>
-                {dropdownOpen && (
+                {dropdownOpen && !isEdit && (
                   <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
                     {groups.length === 0 ? (
                       <li className="px-3 py-2 text-sm text-gray-400">가입한 스터디/프로젝트가 없습니다</li>
@@ -294,36 +316,25 @@ function ReportUploadContent() {
             </div>
           </div>
 
-          {/* 활동 장소 + 활동 유형(임시: 디자인엔 없음, type 필수라 추가 — 백엔드 자동판단되면 제거) */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">활동 장소</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="예: 동아리방, 온라인 등"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-report-ring"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">활동 유형 <span className="text-xs text-gray-400">(임시)</span></label>
-              <select
-                value={reportType ?? ""}
-                onChange={(e) => setReportType(e.target.value || null)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-report-ring bg-white text-gray-700"
-              >
-                <option value="">유형을 선택하세요</option>
-                <option value="STUDY">스터디</option>
-                <option value="PROJECT">프로젝트</option>
-                <option value="MENTORING">멘토링</option>
-              </select>
-            </div>
+          {/* 활동 장소 (유형은 서버가 그룹 기준으로 자동 판단 → 입력 UI 불필요) */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700">활동 장소</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="예: 동아리방, 온라인 등"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-report-ring"
+            />
           </div>
 
-          {/* 파일 업로드 (사진 1장, TODO: 업로드 경로 연결 - 특이사항 6번) */}
+          {/* 파일 업로드 (사진 1장 — 제출 시 S3 업로드 후 URL 전송) */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">파일 업로드</label>
+
+            {isEdit && reportImage && !photoFile && (
+              <p className="text-xs text-gray-400">기존 사진이 첨부되어 있습니다. 새로 올리면 교체됩니다.</p>
+            )}
 
             {files.length === 0 ? (
               /* 빈 상태 — 드래그&드롭 존 */
@@ -361,7 +372,7 @@ function ReportUploadContent() {
                   <span className="text-xs text-gray-400">{files[0].size}</span>
                   <button
                     type="button"
-                    onClick={() => setFiles([])}
+                    onClick={clearPhoto}
                     className="text-gray-400 hover:text-gray-600 transition-colors"
                   >
                     × 제거

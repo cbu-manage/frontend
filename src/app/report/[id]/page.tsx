@@ -7,12 +7,6 @@ import { format } from "date-fns";
 import { reportApi, type ReportDetail } from "@/api";
 import { useIsAuthor, useCanManageReports, useMe } from "@/hooks/auth";
 
-const TYPE_LABEL: Record<string, string> = {
-  STUDY: "스터디",
-  PROJECT: "프로젝트",
-  MENTORING: "멘토링",
-};
-
 function formatDate(iso?: string): string {
   if (!iso) return "-";
   try {
@@ -99,7 +93,7 @@ function ReportDetailView({
   const meta = [
     { label: "활동 일자", value: formatDate(report.date) },
     { label: "활동 장소", value: report.location || "-" },
-    { label: "유형", value: TYPE_LABEL[report.type] ?? report.type },
+    { label: "스터디/프로젝트", value: report.groupInfoDTO.groupName },
     { label: "참여 인원", value: `${report.reportMembers.length}명` },
   ];
 
@@ -124,7 +118,7 @@ function ReportDetailView({
 
       {/* 팀 뱃지 + 작성자 + 날짜 */}
       <div className="flex items-center gap-2 mb-6 text-sm text-gray-500">
-        <span className="rounded border border-gray-300 px-2 py-0.5 text-xs font-medium text-gray-700">
+        <span className="rounded-full bg-report-badge px-3 py-1 text-xs font-medium text-white">
           {report.groupInfoDTO.groupName}
         </span>
         <span>
