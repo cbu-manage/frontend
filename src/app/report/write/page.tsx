@@ -122,6 +122,11 @@ function ReportUploadContent() {
   // 사진 1장만 — 새로 고르면 교체. 제출 시 S3 업로드 후 URL을 reportImage로 전송.
   const pickPhoto = (f?: File | null) => {
     if (!f) return;
+    // accept="image/*"는 파일선택기 힌트일 뿐 → 드래그&드롭 등 모든 경로에서 타입 검증
+    if (!f.type.startsWith("image/")) {
+      alert("이미지 파일만 첨부할 수 있습니다.");
+      return;
+    }
     setPhotoFile(f);
     setFiles([{ name: f.name, size: (f.size / (1024 * 1024)).toFixed(1) + " MB" }]);
   };
@@ -144,8 +149,8 @@ function ReportUploadContent() {
       alert("활동 일자를 선택하세요.");
       return;
     }
-    // reportImage는 서버 필수값 — 신규 작성은 사진 첨부 필수 (수정은 기존 이미지 유지 가능)
-    if (!isEdit && !photoFile) {
+    // reportImage는 서버 필수값 — 새 사진 또는 기존 이미지(수정 시) 중 하나는 반드시 있어야 함
+    if (!photoFile && !reportImage) {
       alert("활동 사진을 첨부하세요.");
       return;
     }
