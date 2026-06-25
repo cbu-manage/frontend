@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Download, Pencil } from "lucide-react";
+import { Download, Pencil, Trash2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { reportApi, type ReportDetail } from "@/api";
 import { useIsAuthor, useCanManageReports, useMe } from "@/hooks/auth";
@@ -31,6 +32,23 @@ export default function ReportDetailPage() {
 
   const detail = res?.data?.data;
 
+  // 수정/삭제 권한 (작성자 본인 또는 최고관리자) — 상단 ⋮ 메뉴 노출용
+  // ⚠️ store의 isAdmin은 /login/me가 안 내려줘서 항상 false → role 기반 useCanManageReports로 판정
+  const { isAuthor } = useIsAuthor(detail?.postInfoDTO.authorId);
+  const canManageReports = useCanManageReports();
+  const canModify = isAuthor || canManageReports;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   const handleExport = async () => {
     try {
       const fileRes = await reportApi.exportHwp(postId);
@@ -47,17 +65,71 @@ export default function ReportDetailPage() {
     }
   };
 
+  const handleDelete = async () => {
+    setMenuOpen(false);
+    if (!window.confirm("이 보고서를 삭제할까요? 삭제 후 되돌릴 수 없습니다.")) return;
+    try {
+      setDeleting(true);
+      await reportApi.remove(postId);
+      router.push("/report");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      alert("삭제에 실패했습니다." + (msg ? `\n(${msg})` : ""));
+      setDeleting(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-6 py-10">
 
-        {/* 목록으로 */}
-        <button
-          onClick={() => router.push("/report")}
-          className="mb-6 text-sm text-gray-900 font-medium hover:text-gray-600 transition-colors"
-        >
-          ← 목록으로
-        </button>
+        {/* 목록으로 + ⋮(수정/삭제) */}
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => router.push("/report")}
+            className="text-sm text-gray-900 font-medium hover:text-gray-600 transition-colors"
+          >
+            ← 목록으로
+          </button>
+          {detail && canModify && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                disabled={deleting}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="더보기"
+                className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                <MoreVertical size={18} />
+              </button>
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 z-10 mt-1 w-28 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-md"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setMenuOpen(false); router.push(`/report/write?edit=${postId}`); }}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <Pencil size={14} /> 수정
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleDelete}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-gray-50 transition-colors"
+                  >
+                    <Trash2 size={14} /> 삭제
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {invalidId && (
           <div className="text-center py-16 text-gray-500">잘못된 보고서 주소입니다.</div>
@@ -70,11 +142,7 @@ export default function ReportDetailPage() {
         )}
 
         {!invalidId && !isLoading && !isError && detail && (
-          <ReportDetailView
-            detail={detail}
-            onExport={handleExport}
-            onEdit={() => router.push(`/report/write?edit=${postId}`)}
-          />
+          <ReportDetailView detail={detail} onExport={handleExport} />
         )}
       </div>
     </main>
@@ -84,15 +152,12 @@ export default function ReportDetailPage() {
 function ReportDetailView({
   detail,
   onExport,
-  onEdit,
 }: {
   detail: ReportDetail;
   onExport: () => void;
-  onEdit: () => void;
 }) {
   const { postInfoDTO: post, reportInfoDTO: report } = detail;
   const canManage = useCanManageReports();
-  const { canModify } = useIsAuthor(post.authorId);
 
   const meta = [
     { label: "활동 일자", value: formatDate(report.date) },
@@ -200,20 +265,6 @@ function ReportDetailView({
           </p>
         </section>
       </div>
-
-      {/* 수정 버튼 (작성자 본인 또는 관리자만) */}
-      {canModify && (
-        <div className="flex justify-end mt-10">
-          <button
-            type="button"
-            onClick={onEdit}
-            className="flex items-center gap-1.5 rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 transition-colors"
-          >
-            <Pencil size={14} />
-            수정
-          </button>
-        </div>
-      )}
     </>
   );
 }
