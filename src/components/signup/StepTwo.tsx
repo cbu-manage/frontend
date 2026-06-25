@@ -3,7 +3,7 @@ import React from "react";
 import { useSignUp } from "@/hooks/auth";
 import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
-import LongBtn from "../common/LongBtn";
+import { Button } from "@/components/ui/button";
 
 export default function StepTwo({
   email,
@@ -67,9 +67,13 @@ export default function StepTwo({
         disabled
       />
       <div className="pt-4">
-        <LongBtn type="submit">
+        <Button
+          type="submit"
+          variant="brand"
+          className="w-full h-auto rounded-lg p-4 text-base font-semibold"
+        >
           회원가입
-        </LongBtn>
+        </Button>
       </div>
     </form>
   );

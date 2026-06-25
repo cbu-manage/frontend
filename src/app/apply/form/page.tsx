@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { applyApi } from "@/api/apply.api";
 import InputBox from "@/components/common/InputBox";
-import ShortBtn from "@/components/common/ShortBtn";
+import { Button } from "@/components/ui/button";
 import RecruitmentNotice from "@/components/apply/RecruitmentNotice";
 import EmailVerificationField from "@/components/apply/EmailVerificationField";
 import DepartmentSelect from "@/components/apply/DepartmentSelect";
@@ -361,9 +361,13 @@ export default function ApplyFormPage() {
           </div>
 
           <div className="flex justify-end pt-2">
-            <ShortBtn type="submit">
+            <Button
+              type="submit"
+              variant="default"
+              className="h-auto rounded-lg px-8 py-4 text-base font-medium"
+            >
               지원하기
-            </ShortBtn>
+            </Button>
           </div>
         </form>
       </div>

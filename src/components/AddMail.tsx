@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useVerifyEmail } from "@/hooks/mail";
 import { useMailUpdate } from "@/hooks/mail";
-import LongBtn from "@/components/common/LongBtn";
+import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => void }) {
@@ -48,9 +48,10 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
             @tukorea.ac.kr
           </span>
         </div>
-        <LongBtn
+        <Button
           type="button"
-          className="w-full"
+          variant="brand"
+          className="w-full h-auto rounded-lg p-4 text-base font-semibold"
           disabled={cooldown > 0 || !email || isSending}
           onClick={async () => {
             if (!email || cooldown > 0 || isSending) return;
@@ -63,7 +64,7 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
           }}
         >
           {cooldown > 0 ? `인증번호 재전송 (${cooldown}s)` : "인증번호 보내기"}
-        </LongBtn>
+        </Button>
       </div>
 
       {isVerificationSent && (
@@ -79,9 +80,10 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
               이메일 등록을 진행 중입니다. 잠시만 기다려 주세요.
             </p>
           )}
-          <LongBtn
+          <Button
             type="button"
-            className="w-full flex items-center justify-center gap-2"
+            variant="brand"
+            className="w-full h-auto rounded-lg p-4 text-base font-semibold flex items-center justify-center gap-2"
             disabled={isProcessingVerify || !code}
             onClick={async () => {
               if (isProcessingVerify || !code) return;
@@ -100,7 +102,7 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
             ) : (
               "인증 및 저장"
             )}
-          </LongBtn>
+          </Button>
         </div>
       )}
     </div>

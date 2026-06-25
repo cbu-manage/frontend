@@ -5,7 +5,7 @@ import { useValidateUser } from "@/hooks/user/useValidateUser";
 import { useVerifyEmail } from "@/hooks/mail";
 import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
-import ShortBtn from "../common/ShortBtn";
+import { Button } from "@/components/ui/button";
 
 export default function StepOne({
   onVerified,
@@ -89,13 +89,15 @@ export default function StepOne({
           />
         </div>
         <div className="flex items-end">
-          <ShortBtn
+          <Button
             type="button"
+            variant="default"
+            className="h-auto rounded-lg px-8 py-4 text-base font-medium"
             onClick={handleUserVerification}
             disabled={!studentNumber || !nickName}
           >
             합격자 인증
-          </ShortBtn>
+          </Button>
         </div>
       </div>
 
@@ -138,13 +140,15 @@ export default function StepOne({
           </div>
         </div>
         <div className="flex items-end">
-          <ShortBtn
+          <Button
             type="button"
+            variant="default"
+            className="h-auto rounded-lg px-8 py-4 text-base font-medium"
             onClick={handleEmailSend}
             disabled={!verifiedUserInfo || !email || cooldown > 0 || isSending}
           >
             {cooldown > 0 ? `${cooldown}초 후 재전송` : "인증번호 받기"}
-          </ShortBtn>
+          </Button>
         </div>
       </div>
 
@@ -160,13 +164,15 @@ export default function StepOne({
             />
           </div>
           <div className="flex items-end">
-            <ShortBtn
+            <Button
               type="button"
+              variant="default"
+              className="h-auto rounded-lg px-8 py-4 text-base font-medium"
               onClick={handleCodeVerification}
               disabled={!verificationCode}
             >
               인증하기
-            </ShortBtn>
+            </Button>
           </div>
         </div>
       )}
