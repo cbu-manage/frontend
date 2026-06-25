@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { resourcesApi } from "@/api";
 import RequireMember from "@/components/auth/RequireMember";
 import InputBox from "@/components/common/InputBox";
-import LongBtn from "@/components/common/LongBtn";
+import { Button } from "@/components/ui/button";
 
 export default function ArchiveWritePage() {
   const [title, setTitle] = useState("");
@@ -98,7 +98,13 @@ export default function ArchiveWritePage() {
 
           {/* 버튼 */}
           <div className="pt-6">
-            <LongBtn type="submit">게시하기</LongBtn>
+            <Button
+              type="submit"
+              variant="brand"
+              className="w-full h-auto rounded-lg p-4 text-base font-semibold"
+            >
+              게시하기
+            </Button>
           </div>
         </form>
       </div>

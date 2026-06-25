@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import InputBox from "@/components/common/InputBox";
-import LongBtn from "@/components/common/LongBtn";
+import { Button } from "@/components/ui/button";
 
 import { useChangePassword } from "@/hooks/auth";
 
@@ -95,9 +95,14 @@ export default function ChangePasswordSection() {
 
           {/* 버튼 영역 - 세로 배치 */}
           <div className="flex flex-col gap-3 pt-6">
-            <LongBtn type="submit" disabled={!isFormValid} className="text-lg">
+            <Button
+              type="submit"
+              variant="brand"
+              disabled={!isFormValid}
+              className="w-full h-auto rounded-lg p-4 text-lg font-semibold"
+            >
               확인
-            </LongBtn>
+            </Button>
             <button
               type="button"
               onClick={handleCancel}

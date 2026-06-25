@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
-import LongBtn from "@/components/common/LongBtn";
+import { Button } from "@/components/ui/button";
 
 interface SignupCompleteModalProps {
   open: boolean;
@@ -79,9 +79,13 @@ export default function SignupCompleteModal({ open, onClose }: SignupCompleteMod
             </button>
           </Link>
           <Link href="/login" className="flex-1 min-w-0" onClick={onClose}>
-            <LongBtn type="button" className="w-full">
+            <Button
+              type="button"
+              variant="brand"
+              className="w-full h-auto rounded-lg p-4 text-base font-semibold"
+            >
               로그인
-            </LongBtn>
+            </Button>
           </Link>
         </div>
       </div>

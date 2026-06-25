@@ -8,8 +8,8 @@
 
 | 폴더 | 무엇이 들어가나 |
 |---|---|
-| `ui/` | shadcn 프리미티브(Button, Calendar). **디자인 토큰만**, 앱 로직 없음 |
-| `common/` | 앱 공용 UI 킷 — 폼/상태 컴포넌트(InputBox, LongBtn, MultiSelect, LoadingSpinner, ErrorFallback). ui/와 차이: **앱 스타일+동작 있음** |
+| `ui/` | shadcn 프리미티브(**Button**, Calendar). **디자인 토큰만**, 앱 로직 없음. 버튼은 여기 `Button(variant)` 하나만 — common에 새 버튼 만들지 말 것 |
+| `common/` | 앱 공용 UI 킷 — InputBox·SearchBar·MultiSelect·Tabs·Chip·Modal·Card·Mascot·Toggle·StatusBadge·Tag·LoadingSpinner·ErrorFallback. ui/와 차이: **앱 스타일+동작 있음**. 새 UI는 직접 만들기 전 여기부터 확인 |
 | `shared/` | 전역 레이아웃(Header, Footer, Sidebar, Pagination). 2+페이지에서 쓰는 것 |
 | `providers/` | 전역 프로바이더(QueryProvider 등) |
 | `auth/` | 라우트 가드(`RequireMember`, `RequireAdmin`) |

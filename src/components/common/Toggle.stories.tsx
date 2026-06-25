@@ -24,18 +24,29 @@ const OPTIONS = [
   { label: "모집 완료", value: "closed" },
 ];
 
+function ToggleDemo({
+  label,
+  size,
+}: {
+  label?: string;
+  size?: "sm" | "base" | "md";
+}) {
+  const [value, setValue] = useState("open");
+  return (
+    <Toggle
+      label={label}
+      options={OPTIONS}
+      value={value}
+      onChange={setValue}
+      size={size}
+    />
+  );
+}
+
 export const Default: Story = {
-  render: () => {
-    const [value, setValue] = useState("open");
-    return <Toggle options={OPTIONS} value={value} onChange={setValue} />;
-  },
+  render: () => <ToggleDemo />,
 };
 
 export const WithLabel: Story = {
-  render: () => {
-    const [value, setValue] = useState("open");
-    return (
-      <Toggle label="모집 상태" options={OPTIONS} value={value} onChange={setValue} size="md" />
-    );
-  },
+  render: () => <ToggleDemo label="모집 상태" size="md" />,
 };
