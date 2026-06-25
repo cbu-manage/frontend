@@ -95,6 +95,9 @@ export const reportApi = {
   update: (postId: number, data: unknown) =>
     api.patch(`/report/${postId}`, data),
 
+  /** 보고서 게시글 삭제 — 보고서 전용 DELETE가 없어 공용 게시글 삭제 사용 */
+  remove: (postId: number) => api.delete(`/post/${postId}`),
+
   /** 그룹별 보고서 게시글 미리보기 페이징 조회 */
   getGroupList: (groupId: number, params?: ReportListParams) =>
     api.get<ApiResponse<ReportPreviewPage>>(`/report/group/${groupId}`, {
