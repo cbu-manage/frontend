@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pin } from "lucide-react";
+import { Pin, Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
@@ -53,37 +53,37 @@ export default function BoardPage() {
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16 pb-6 flex items-start justify-between">
-            <div>
-              <h1 className="text-h1 text-gray-900 mb-2">자유게시판</h1>
-              <p className="text-base text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
-            </div>
-            <Link
-              href="/board/write"
-              className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors"
-            >
-              + 글쓰기
-            </Link>
+          <div className="pt-6 lg:pt-16 pb-6">
+            <h1 className="text-h1 text-gray-900 mb-2">자유게시판</h1>
+            <p className="text-base text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
           </div>
 
-          {/* 탭 + 검색 */}
+          {/* 탭 + 검색 + 글 작성 */}
           <div className="flex items-center justify-between gap-4 mb-4">
             <Tabs
               items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as CategoryTab)}
             />
-            <SearchBar
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="제목 · 작성자로 검색"
-              className="w-96 shrink-0"
-            />
+            <div className="flex shrink-0 items-center gap-3">
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="제목 · 내용으로 검색해주세요."
+                className="w-80"
+              />
+              <Link
+                href="/board/write"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+              >
+                <Pencil size={16} /> 글 작성하기
+              </Link>
+            </div>
           </div>
 
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center gap-4 px-2 py-3 bg-brand text-sm font-bold text-white">
+            <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
               <span className="w-16 text-center shrink-0">카테고리</span>
               <span className="flex-1 text-center">제목</span>
               <span className="w-28 text-center shrink-0">작성자</span>
@@ -94,7 +94,7 @@ export default function BoardPage() {
               <Link
                 key={post.id}
                 href={`/board/${post.id}`}
-                className={`flex items-center gap-4 px-2 py-5 border-b border-gray-100 transition-colors ${
+                className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors ${
                   post.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
                 }`}
               >

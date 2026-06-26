@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pin } from "lucide-react";
+import { Pin, Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
-import { useUserStore } from "@/store/userStore";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
@@ -37,7 +36,6 @@ const MOCK_NOTICES: NoticeItem[] = [
 ];
 
 export default function NoticePage() {
-  const isAdmin = useUserStore((s) => s.isAdmin);
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,39 +53,37 @@ export default function NoticePage() {
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16 pb-6 flex items-start justify-between">
-            <div>
-              <h1 className="text-h1 text-gray-900 mb-2">씨부엉 소식</h1>
-              <p className="text-base text-gray-700">동아리 공지와 새 소식을 확인하세요</p>
-            </div>
-            {isAdmin && (
-              <Link
-                href="/notice/write"
-                className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors"
-              >
-                + 글쓰기
-              </Link>
-            )}
+          <div className="pt-6 lg:pt-16 pb-6">
+            <h1 className="text-h1 text-gray-900 mb-2">씨부엉 소식</h1>
+            <p className="text-base text-gray-700">동아리 공지와 새 소식을 확인하세요</p>
           </div>
 
-          {/* 탭 + 검색 */}
+          {/* 탭 + 검색 + 글 작성 */}
           <div className="flex items-center justify-between gap-4 mb-4">
             <Tabs
               items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as CategoryTab)}
             />
-            <SearchBar
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="제목 · 작성자로 검색"
-              className="w-96 shrink-0"
-            />
+            <div className="flex shrink-0 items-center gap-3">
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="제목 · 내용으로 검색해주세요."
+                className="w-80"
+              />
+              <Link
+                href="/notice/write"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+              >
+                <Pencil size={16} /> 글 작성하기
+              </Link>
+            </div>
           </div>
 
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center gap-4 px-2 py-3 bg-brand text-sm font-bold text-white">
+            <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
               <span className="w-28 text-center shrink-0">카테고리</span>
               <span className="flex-1 text-center">제목</span>
               <span className="w-28 text-center shrink-0">작성자</span>
@@ -98,7 +94,7 @@ export default function NoticePage() {
               <Link
                 key={notice.id}
                 href={`/notice/${notice.id}`}
-                className={`flex items-center gap-4 px-2 py-5 border-b border-gray-100 transition-colors ${
+                className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors ${
                   notice.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
                 }`}
               >
