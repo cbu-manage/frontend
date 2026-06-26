@@ -26,20 +26,15 @@ const MOCK_NEWS = {
 ‣ 자료방에 4월 세미나 발표자료 업로드 완료
 
 다음 주에도 알찬 소식으로 찾아올게요!`,
-  comments: [
-    {
-      id: 1,
-      author: "14기 이서연",
-      userId: 21,
-      date: "2026.04.28",
-      content: "이번 주 소식 잘 봤어요! 해커톤 후기도 따로 올라오나요?",
-      replies: [
-        { id: 11, author: "15기 김민주", userId: 1, date: "2026.04.28", content: "네, 다음 주 뉴스레터에 해커톤 후기 특집으로 올라갈 예정이에요!" },
-      ],
-    },
-    { id: 2, author: "15기 박도윤", userId: 22, date: "2026.04.28", content: "워크샵 신청 링크는 어디서 확인할 수 있나요?" },
-    { id: 3, author: "14기 윤지우", userId: 23, date: "2026.04.29", content: "세미나 발표자료 공유 감사합니다 🙌" },
-  ],
+  // 빈 상태(댓글 없음) 확인용 — API 연동 시 실제 댓글로 교체
+  comments: [] as {
+    id: number;
+    author: string;
+    userId?: number;
+    date: string;
+    content: string;
+    replies?: { id: number; author: string; userId?: number; date: string; content: string }[];
+  }[],
 };
 
 export default function NewsDetailPage() {
