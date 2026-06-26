@@ -226,6 +226,20 @@ body {
   line-height: var(--leading-snug);
 }
 
+/* ========== Figma 타이포 스케일 (고정 px · 디자인 스펙 1:1) ==========
+   Figma "Text styles" 패널 기준. 표기 = 폰트크기/줄높이(%). 반응형이 필요 없는
+   버튼·라벨·카드 등 디자인이 px로 못박은 곳에 사용(섹션 제목 등 반응형은 위 시맨틱 유틸). */
+@utility text-display-md  { font-size: 45px; line-height: 1.6; font-weight: 500; } /* Display/Medium */
+@utility text-headline-lg { font-size: 32px; line-height: 1.6; font-weight: 700; } /* Headline/Large */
+@utility text-headline-md { font-size: 28px; line-height: 1.6; font-weight: 700; } /* Headline/Medium */
+@utility text-headline-sm { font-size: 24px; line-height: 1.6; font-weight: 600; } /* Headline/small */
+@utility text-title-lg    { font-size: 20px; line-height: 1.6; font-weight: 600; } /* Title/Large */
+@utility text-title-md    { font-size: 16px; line-height: 1.6; font-weight: 600; } /* Title/Medium */
+@utility text-title-sm    { font-size: 14px; line-height: 1.6; font-weight: 600; } /* Title/small */
+@utility text-body-md     { font-size: 16px; line-height: 26px; }                  /* body/body 16·26 */
+@utility text-body-rg     { font-size: 14px; line-height: 21px; }                  /* body/small 14·21 */
+@utility text-body-loose  { font-size: 14px; line-height: 1.6; }                   /* body/small2 14 */
+
 /* ========== 레이아웃 유틸 ========== */
 @utility container-x {
   padding-left: var(--container-px);

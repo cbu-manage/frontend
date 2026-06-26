@@ -231,7 +231,7 @@ export default function MeetingDetailPage() {
                       }`}
                     >
                       <Mascot emotion={opt.emotion} size="sm" />
-                      <span className="text-sm font-semibold text-gray-900">{opt.label}</span>
+                      <span className="text-title-lg text-gray-900">{opt.label}</span>
                     </button>
                   );
                 })}
@@ -243,7 +243,7 @@ export default function MeetingDetailPage() {
                   type="button"
                   disabled={!choice}
                   onClick={() => setVoted(true)}
-                  className="mt-4 w-full rounded-full bg-gradient-to-b from-[#48c281] to-[#58d4c5] py-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-4 w-full rounded-full bg-gradient-to-b from-[#48c281] to-[#58d4c5] py-4 text-headline-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   제출하기
                 </button>

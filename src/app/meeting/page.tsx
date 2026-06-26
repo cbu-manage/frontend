@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pencil, Calendar, MapPin, CheckCircle2, Mail } from "lucide-react";
+import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
-import { StatusBadge } from "@/components/common/StatusBadge";
+import MeetingCard from "@/components/meeting/MeetingCard";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
 // TODO: API 연동 후 교체
@@ -36,13 +36,6 @@ const MOCK_MEETINGS: Meeting[] = [
 ];
 
 type StatusTab = "전체" | "진행 예정" | "지난 모임";
-
-// 분류 칩 색(연한 틴트) — 모임/MT/회식, 그 외는 회색 폴백
-const CATEGORY_STYLE: Record<string, string> = {
-  모임: "bg-pink-50 text-pink-500",
-  MT: "bg-orange-50 text-orange-500",
-  회식: "bg-amber-50 text-amber-600",
-};
 
 export default function MeetingPage() {
   const isStaff = useIsStaff();
@@ -95,59 +88,17 @@ export default function MeetingPage() {
           {/* 카드 그리드 — 3열 × 4행 = 최대 12개 */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
             {filtered.map((m) => (
-              <Link
+              <MeetingCard
                 key={m.id}
                 href={`/meeting/${m.id}`}
-                className={`flex justify-between gap-4 rounded-2xl border border-gray-200 p-6 transition-shadow hover:shadow-md ${
-                  m.done ? "bg-gray-50" : "bg-white"
-                }`}
-              >
-                <div className="flex min-w-0 flex-col">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                        CATEGORY_STYLE[m.category] ?? "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {m.category}
-                    </span>
-                    <StatusBadge tone={m.done ? "danger" : "success"}>
-                      {m.done ? "모집 완료" : "모집 중"}
-                    </StatusBadge>
-                  </div>
-
-                  <h3 className="mt-4 truncate text-lg font-bold text-gray-900">
-                    {m.title}
-                  </h3>
-
-                  <div className="mt-6 space-y-2 text-sm text-gray-600">
-                    <p className="flex items-center gap-2">
-                      <Calendar size={15} className="shrink-0 text-gray-400" />
-                      {m.date}
-                    </p>
-                    <p className="flex items-center gap-2">
-                      <MapPin size={15} className="shrink-0 text-gray-400" />
-                      {m.location}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 참석 응답 / 최종 참석 원형 */}
-                <div className="flex h-24 w-24 shrink-0 flex-col items-center justify-center rounded-full bg-white text-center shadow-sm">
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-gray-500">
-                    {m.done ? (
-                      <Mail size={12} className="text-gray-400" />
-                    ) : (
-                      <CheckCircle2 size={12} className="text-success" />
-                    )}
-                    {m.done ? "최종 참석" : "참석 응답"}
-                  </span>
-                  <span className="mt-0.5">
-                    <span className="text-xl font-bold text-gray-900">{m.responded}</span>
-                    <span className="text-xs text-gray-400"> /{m.capacity}</span>
-                  </span>
-                </div>
-              </Link>
+                category={m.category}
+                done={m.done}
+                title={m.title}
+                date={m.date}
+                location={m.location}
+                responded={m.responded}
+                capacity={m.capacity}
+              />
             ))}
           </div>
 
