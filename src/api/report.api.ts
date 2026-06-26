@@ -11,9 +11,10 @@ export type ReportPreviewItem = {
   postId: number;
   title: string;
   createdAt: string;
+  /** 활동 일자 (목록 카드·정렬용) — createdAt(생성일)과 다름 */
+  date: string;
   authorId: number;
   authorName: string;
-  type: "STUDY" | "PROJECT" | "MENTORING";
   isAccepted: boolean;
   groupId: number;
   groupName: string;
@@ -60,7 +61,6 @@ export type ReportDetail = {
       groupId: number;
       groupName: string;
     };
-    type: "STUDY" | "PROJECT" | "MENTORING";
     isAccepted: boolean;
     reflection: string;
     nextPlan: string;

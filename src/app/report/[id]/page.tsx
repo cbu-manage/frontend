@@ -161,8 +161,6 @@ function ReportDetailView({
 
   const meta = [
     { label: "활동 일자", value: formatDate(report.date) },
-    { label: "활동 장소", value: report.location || "-" },
-    { label: "스터디/프로젝트", value: report.groupInfoDTO.groupName },
     { label: "참여 인원", value: `${report.reportMembers.length}명` },
   ];
 
@@ -197,8 +195,8 @@ function ReportDetailView({
         <span>최종일 {formatDate(post.updatedAt)}</span>
       </div>
 
-      {/* 메타 정보 카드 4개 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
+      {/* 메타 정보 카드 (활동 일자 · 참여 인원) */}
+      <div className="grid grid-cols-2 gap-3 mb-10">
         {meta.map((item) => (
           <div
             key={item.label}
