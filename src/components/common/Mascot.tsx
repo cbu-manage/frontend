@@ -10,6 +10,8 @@ type MascotProps = {
   size?: MascotSize;
   className?: string;
   title?: string;
+  /** 장식용(의미 없는 이미지)일 때 true → 스크린리더에서 숨김(aria-hidden) */
+  decorative?: boolean;
 };
 
 /**
@@ -26,9 +28,17 @@ export default function Mascot({
   size = "md",
   className,
   title = "씨부엉 마스코트",
+  decorative = false,
 }: MascotProps) {
   const px = SIZE_PX[size];
-  const common = { width: px, height: px, className: cn("select-none", className) };
+  const common = {
+    width: px,
+    height: px,
+    className: cn("select-none", className),
+    ...(decorative
+      ? { "aria-hidden": true }
+      : { role: "img", "aria-label": title }),
+  };
 
   if (emotion === "heart") {
     return (
@@ -37,8 +47,6 @@ export default function Mascot({
         viewBox="0 0 93 86"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label={title}
       >
         <path
           d="M50.8704 6.6131C73.7565 9.54057 90.1977 28.4203 87.5931 48.7823C86.4308 57.8682 81.6707 65.7112 74.7238 71.3543L75.4325 82.6232C75.4882 83.5095 74.5267 84.0949 73.7648 83.6385L63.8146 77.6785C57.0659 80.3235 49.3865 81.3669 41.4383 80.3502C18.5523 77.4227 2.11115 58.5429 4.71563 38.181C7.32021 17.8191 27.9843 3.68571 50.8704 6.6131Z"
@@ -101,8 +109,6 @@ export default function Mascot({
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label={title}
       >
         <path
           d="M54.5481 13.7459C77.4343 16.6734 93.8764 35.5532 91.2718 55.9152C90.1096 65.0012 85.3485 72.844 78.4015 78.4871L79.1102 89.756C79.1659 90.6423 78.2045 91.2277 77.4425 90.7713L67.4913 84.8121C60.7428 87.4568 53.0637 88.4996 45.1161 87.483C22.2301 84.5554 5.78881 65.6757 8.39336 45.3139C10.9979 24.952 31.662 10.8186 54.5481 13.7459Z"
@@ -163,8 +169,6 @@ export default function Mascot({
         viewBox="0 0 100 100"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label={title}
       >
         <path
           d="M54.5481 13.7459C77.4343 16.6734 93.8764 35.5532 91.2718 55.9152C90.1096 65.0012 85.3485 72.844 78.4015 78.4871L79.1102 89.756C79.1659 90.6423 78.2045 91.2277 77.4425 90.7713L67.4913 84.8121C60.7428 87.4568 53.0637 88.4996 45.1161 87.483C22.2301 84.5554 5.78881 65.6757 8.39336 45.3139C10.9979 24.952 31.662 10.8186 54.5481 13.7459Z"
@@ -225,8 +229,6 @@ export default function Mascot({
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label={title}
     >
       <path
         d="M54.5481 13.7459C77.4343 16.6734 93.8764 35.5532 91.2718 55.9152C90.1096 65.0012 85.3485 72.844 78.4015 78.4871L79.1102 89.756C79.1659 90.6423 78.2045 91.2277 77.4425 90.7713L67.4913 84.8121C60.7428 87.4568 53.0637 88.4996 45.1161 87.483C22.2301 84.5554 5.78881 65.6757 8.39336 45.3139C10.9979 24.952 31.662 10.8186 54.5481 13.7459Z"

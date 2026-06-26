@@ -65,7 +65,7 @@ export default function MeetingPage() {
           </div>
 
           {/* 탭 + 글 작성 */}
-          <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Tabs
               items={[
                 { label: "전체", value: "전체" },

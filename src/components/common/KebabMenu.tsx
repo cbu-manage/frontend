@@ -31,8 +31,15 @@ export default function KebabMenu({
     const handle = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
     document.addEventListener("mousedown", handle);
-    return () => document.removeEventListener("mousedown", handle);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handle);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [open]);
 
   if (!onEdit && !onDelete && !onReport) return null;
@@ -44,6 +51,8 @@ export default function KebabMenu({
       <button
         type="button"
         aria-label="더보기"
+        aria-haspopup="menu"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
           "flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50",
@@ -53,10 +62,14 @@ export default function KebabMenu({
         <MoreVertical size={20} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-1 min-w-[160px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-1 min-w-[160px] rounded-xl border border-gray-200 bg-white py-1 shadow-lg"
+        >
           {onEdit && (
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 onEdit();
                 setOpen(false);
@@ -71,6 +84,7 @@ export default function KebabMenu({
           {onDelete && (
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 onDelete();
                 setOpen(false);
@@ -84,6 +98,7 @@ export default function KebabMenu({
           {onReport && (
             <button
               type="button"
+              role="menuitem"
               onClick={() => {
                 onReport();
                 setOpen(false);

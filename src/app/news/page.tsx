@@ -59,18 +59,18 @@ export default function NewsPage() {
           </div>
 
           {/* 탭 + 검색 + 글 작성 */}
-          <div className="flex items-center justify-between gap-4 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <Tabs
               items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as CategoryTab)}
             />
-            <div className="flex shrink-0 items-center gap-3">
+            <div className="flex w-full items-center gap-3 sm:w-auto">
               <SearchBar
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="제목 · 내용으로 검색해주세요."
-                className="w-80"
+                className="w-full sm:w-80"
               />
               {isStaff && (
                 <Link

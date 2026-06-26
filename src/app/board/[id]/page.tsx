@@ -50,7 +50,10 @@ export default function BoardDetailPage() {
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
   const isAuthor = currentUserId != null && currentUserId === MOCK_POST.userId;
-  const commentCount = MOCK_POST.comments.length;
+  const commentCount = MOCK_POST.comments.reduce(
+    (n, c) => n + 1 + (c.replies?.length ?? 0),
+    0,
+  );
 
   return (
     <RequireMember>
@@ -132,6 +135,7 @@ export default function BoardDetailPage() {
                 maxLength={1000}
                 rows={4}
                 placeholder="씨부엉 회원들과 함께 이야기를 나눠보세요!"
+                aria-label="댓글 입력"
                 className="w-full resize-none text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
               />
               <div className="mt-2 flex items-center justify-between">
@@ -140,6 +144,7 @@ export default function BoardDetailPage() {
                   <button
                     type="button"
                     onClick={() => setAnonymous((v) => !v)}
+                    aria-pressed={anonymous}
                     className={`flex items-center gap-1.5 text-sm transition-colors ${
                       anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
                     }`}
@@ -150,7 +155,7 @@ export default function BoardDetailPage() {
                       }`}
                     >
                       {anonymous && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
                           <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       )}

@@ -188,6 +188,7 @@ export default function PostWriteForm({
               <button
                 type="button"
                 onClick={() => setAnonymous((v) => !v)}
+                    aria-pressed={anonymous}
                 className={`mr-1 flex items-center gap-1.5 text-sm transition-colors ${
                   anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
                 }`}
@@ -198,7 +199,7 @@ export default function PostWriteForm({
                   }`}
                 >
                   {anonymous && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
                       <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   )}

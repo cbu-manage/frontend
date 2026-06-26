@@ -82,7 +82,7 @@ const VOTE_GROUPS: {
     key: "maybe",
     en: "Waiting",
     ko: "참석 대기",
-    tone: "text-[#3bc1e0]",
+    tone: "text-waiting",
     base: [
       { gen: "14기", name: "장잇프" }, { gen: "14기", name: "명자동구" },
       { gen: "15기", name: "고은성" },
@@ -93,11 +93,11 @@ const VOTE_GROUPS: {
 function MemberList({ members, highlight }: { members: Member[]; highlight?: Member }) {
   return (
     <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
-      {members.map((m, i) => {
+      {members.map((m) => {
         const isMe =
           highlight && m.gen === highlight.gen && m.name === highlight.name;
         return (
-          <div key={i} className="flex items-center gap-2">
+          <div key={`${m.gen}-${m.name}`} className="flex items-center gap-2">
             <span
               className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
                 isMe ? "bg-success/15 text-success" : "bg-gray-100 text-gray-500"
@@ -230,7 +230,7 @@ export default function MeetingDetailPage() {
                           : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
-                      <Mascot emotion={opt.emotion} size="sm" />
+                      <Mascot emotion={opt.emotion} size="sm" decorative />
                       <span className="text-title-lg text-gray-900">{opt.label}</span>
                     </button>
                   );
