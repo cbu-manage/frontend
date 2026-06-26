@@ -6,6 +6,7 @@ export default function NewsWritePage() {
       boardName="뉴스레터"
       heading="글 작성"
       categories={["주간", "특집", "공지"]}
+      staffOnly
       backPath="/news"
     />
   );

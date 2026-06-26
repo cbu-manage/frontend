@@ -6,6 +6,7 @@ export default function NoticeWritePage() {
       boardName="씨부엉 소식"
       heading="글 작성"
       categories={["공지", "이벤트", "IT소식"]}
+      staffOnly
       backPath="/notice"
     />
   );

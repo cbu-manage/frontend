@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Check, Paperclip, Monitor } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
 type PostWriteFormProps = {
   /** breadcrumb 게시판명 */
@@ -16,6 +17,8 @@ type PostWriteFormProps = {
   categories: string[];
   /** 익명 작성 체크박스 노출 (자유게시판만) */
   showAnonymous?: boolean;
+  /** 운영진만 작성 가능 (공지·뉴스레터). 일반 회원은 권한 없음 안내 */
+  staffOnly?: boolean;
   /** 취소/게시 후 이동 경로 (목록) */
   backPath: string;
   contentPlaceholder?: string;
@@ -31,10 +34,12 @@ export default function PostWriteForm({
   subtitle,
   categories,
   showAnonymous = false,
+  staffOnly = false,
   backPath,
   contentPlaceholder = "내용을 입력해 주세요.",
 }: PostWriteFormProps) {
   const router = useRouter();
+  const isStaff = useIsStaff();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState<string | null>(null);
@@ -57,6 +62,27 @@ export default function PostWriteForm({
     // TODO: API 연동 (POST). 현재는 목록으로 이동만.
     router.push(backPath);
   };
+
+  if (staffOnly && !isStaff) {
+    return (
+      <RequireMember>
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
+            <h1 className="text-h1 text-gray-900">운영진만 작성할 수 있어요</h1>
+            <p className="text-base text-gray-600">
+              권한이 있는 계정으로 로그인해주세요.
+            </p>
+            <button
+              onClick={() => router.push(backPath)}
+              className="mt-2 inline-flex items-center gap-1 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+            >
+              목록으로
+            </button>
+          </div>
+        </main>
+      </RequireMember>
+    );
+  }
 
   return (
     <RequireMember>

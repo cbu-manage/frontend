@@ -7,6 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
+import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
 const CATEGORY_TABS = ["전체", "공지", "이벤트", "IT소식"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
@@ -36,6 +37,7 @@ const MOCK_NOTICES: NoticeItem[] = [
 ];
 
 export default function NoticePage() {
+  const isStaff = useIsStaff();
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -72,12 +74,14 @@ export default function NoticePage() {
                 placeholder="제목 · 내용으로 검색해주세요."
                 className="w-80"
               />
-              <Link
-                href="/notice/write"
-                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
-              >
-                <Pencil size={16} /> 글 작성하기
-              </Link>
+              {isStaff && (
+                <Link
+                  href="/notice/write"
+                  className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+                >
+                  <Pencil size={16} /> 글 작성하기
+                </Link>
+              )}
             </div>
           </div>
 

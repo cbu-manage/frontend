@@ -7,6 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
+import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
 const CATEGORY_TABS = ["전체", "주간", "특집"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
@@ -35,6 +36,7 @@ const MOCK_NEWS: NewsItem[] = [
 ];
 
 export default function NewsPage() {
+  const isStaff = useIsStaff();
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,12 +72,14 @@ export default function NewsPage() {
                 placeholder="제목 · 내용으로 검색해주세요."
                 className="w-80"
               />
-              <Link
-                href="/news/write"
-                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
-              >
-                <Pencil size={16} /> 글 작성하기
-              </Link>
+              {isStaff && (
+                <Link
+                  href="/news/write"
+                  className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+                >
+                  <Pencil size={16} /> 글 작성하기
+                </Link>
+              )}
             </div>
           </div>
 
