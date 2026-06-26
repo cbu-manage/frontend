@@ -8,7 +8,7 @@ import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
 
-const CATEGORY_TABS = ["전체", "월간", "주간", "공지", "특집"] as const;
+const CATEGORY_TABS = ["전체", "주간", "특집"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
 // TODO: API 연동 후 교체
@@ -21,17 +21,17 @@ type NewsItem = {
   views: number;
 };
 const MOCK_NEWS: NewsItem[] = [
-  { id: 1, category: "월간", title: "4월 월간 뉴스레터 — 신입 모집·해커톤 소식", author: "15기 김민주", date: "2026.04.30", views: 210 },
-  { id: 2, category: "주간", title: "4월 4주차 주간 뉴스레터", author: "14기 이서연", date: "2026.04.28", views: 88 },
+  { id: 1, category: "주간", title: "4월 4주차 주간 뉴스레터", author: "15기 김민주", date: "2026.04.28", views: 210 },
+  { id: 2, category: "특집", title: "[특집] 2026 신입 모집 결산", author: "14기 이서연", date: "2026.04.25", views: 255 },
   { id: 3, category: "주간", title: "4월 3주차 주간 뉴스레터", author: "14기 이서연", date: "2026.04.21", views: 96 },
-  { id: 4, category: "공지", title: "뉴스레터 구독 안내 — 메일 수신 설정", author: "15기 최준호", date: "2026.04.18", views: 134 },
+  { id: 4, category: "특집", title: "[특집] 졸업 선배 인터뷰 모음", author: "15기 정하인", date: "2026.04.18", views: 188 },
   { id: 5, category: "주간", title: "4월 2주차 주간 뉴스레터", author: "14기 박도윤", date: "2026.04.14", views: 72 },
-  { id: 6, category: "월간", title: "3월 월간 뉴스레터 — 1분기 회고", author: "15기 김민주", date: "2026.03.31", views: 255 },
-  { id: 7, category: "주간", title: "3월 4주차 주간 뉴스레터", author: "14기 이서연", date: "2026.03.24", views: 61 },
-  { id: 8, category: "특집", title: "[특집] 졸업 선배 인터뷰 모음", author: "15기 정하인", date: "2026.03.20", views: 188 },
-  { id: 9, category: "주간", title: "3월 3주차 주간 뉴스레터", author: "14기 박도윤", date: "2026.03.17", views: 54 },
-  { id: 10, category: "월간", title: "2월 월간 뉴스레터", author: "15기 김민주", date: "2026.02.28", views: 143 },
-  { id: 11, category: "공지", title: "뉴스레터 작성 가이드 (운영진용)", author: "15기 최준호", date: "2026.02.20", views: 77 },
+  { id: 6, category: "특집", title: "[특집] 씨부엉 해커톤 2026 후기", author: "15기 최준호", date: "2026.04.10", views: 201 },
+  { id: 7, category: "주간", title: "4월 1주차 주간 뉴스레터", author: "14기 이서연", date: "2026.04.07", views: 64 },
+  { id: 8, category: "특집", title: "[특집] 1분기 활동 회고", author: "15기 김민주", date: "2026.03.31", views: 143 },
+  { id: 9, category: "주간", title: "3월 4주차 주간 뉴스레터", author: "14기 박도윤", date: "2026.03.24", views: 61 },
+  { id: 10, category: "주간", title: "3월 3주차 주간 뉴스레터", author: "14기 이서연", date: "2026.03.17", views: 54 },
+  { id: 11, category: "특집", title: "[특집] 신규 부원 환영 인터뷰", author: "15기 정하인", date: "2026.03.12", views: 177 },
 ];
 
 export default function NewsPage() {
@@ -78,7 +78,7 @@ export default function NewsPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="제목 · 작성자로 검색"
-              className="w-72 shrink-0"
+              className="w-96 shrink-0"
             />
           </div>
 

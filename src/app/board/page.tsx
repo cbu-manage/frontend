@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Pin } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
@@ -11,8 +12,17 @@ const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as cons
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
 // TODO: API 연동 후 교체
-const MOCK_POSTS = [
-  { id: 1, category: "공지", title: "🚩 자유게시판 이용 가이드 — 익명·실명·신고 기능 안내", author: "운영진 15기 김민주", date: "2026.04.18", views: 248 },
+type PostItem = {
+  id: number;
+  category: string;
+  title: string;
+  author: string;
+  date: string;
+  views: number;
+  pinned?: boolean;
+};
+const MOCK_POSTS: PostItem[] = [
+  { id: 1, category: "공지", title: "🚩 자유게시판 이용 가이드 — 익명·실명·신고 기능 안내", author: "운영진 15기 김민주", date: "2026.04.18", views: 248, pinned: true },
   { id: 2, category: "일반", title: "코딩테스트 준비 같이 봐 게신가요?", author: "익명47", date: "2026.04.15", views: 172 },
   { id: 3, category: "잡담", title: "이번 주말 점심 카페 추천 좀 부탁드려요", author: "14기 정하은", date: "2026.04.12", views: 89 },
   { id: 4, category: "질문", title: "백엔드 면접 후기 — 너무 떨려서 망친 듯ㅠ", author: "익명12", date: "2026.04.10", views: 156 },
@@ -32,11 +42,12 @@ export default function BoardPage() {
   // 페이지당 최대 11개 게시물 (API 연동 시 size=11로 요청). 현재는 목데이터.
   const totalPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
+  // 상단 고정(pinned) 먼저, 그 외는 기존 순서
   const filtered = MOCK_POSTS.filter((p) => {
     const matchTab = activeTab === "전체" || p.category === activeTab;
     const matchSearch = p.title.includes(search) || p.author.includes(search);
     return matchTab && matchSearch;
-  });
+  }).sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false));
 
   return (
     <RequireMember>
@@ -66,7 +77,7 @@ export default function BoardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="제목 · 작성자로 검색"
-              className="w-72 shrink-0"
+              className="w-96 shrink-0"
             />
           </div>
 
@@ -83,10 +94,17 @@ export default function BoardPage() {
               <Link
                 key={post.id}
                 href={`/board/${post.id}`}
-                className="flex items-center gap-4 px-2 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className={`flex items-center gap-4 px-2 py-5 border-b border-gray-100 transition-colors ${
+                  post.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
+                }`}
               >
                 <span className="w-16 text-center shrink-0 text-sm text-gray-900">[{post.category}]</span>
-                <span className="flex-1 text-sm text-gray-900 truncate">{post.title}</span>
+                <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                  {post.pinned && (
+                    <Pin size={13} className="shrink-0 text-brand fill-brand" />
+                  )}
+                  <span className="truncate">{post.title}</span>
+                </span>
                 <span className="w-28 text-center shrink-0 text-sm text-gray-900 truncate">{post.author}</span>
                 <span className="w-28 text-center shrink-0 text-sm text-gray-900">{post.date}</span>
                 <span className="w-20 text-center shrink-0 text-sm text-gray-900">{post.views}</span>

@@ -81,7 +81,7 @@ export default function NoticePage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="제목 · 작성자로 검색"
-              className="w-72 shrink-0"
+              className="w-96 shrink-0"
             />
           </div>
 

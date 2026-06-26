@@ -124,7 +124,7 @@ export default function Header() {
                 <li key={cat.name} className="group/cat relative">
                   <button
                     type="button"
-                    className={`pb-1.5 border-b-4 font-semibold transition-colors ${
+                    className={`pb-0.5 px-2 border-b-4 font-semibold whitespace-nowrap transition-colors ${
                       active
                         ? "border-brand text-brand"
                         : `border-transparent group-hover/cat:text-brand ${isHome ? "text-white" : "text-gray-900"}`
