@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const SIZE_PX = { sm: 40, md: 80, lg: 160 } as const;
 
-export type MascotEmotion = "default" | "heart";
+export type MascotEmotion = "default" | "heart" | "sad";
 export type MascotSize = keyof typeof SIZE_PX;
 
 type MascotProps = {
@@ -17,7 +17,7 @@ type MascotProps = {
  * 빈 상태·완료 안내 등에 사용. (Figma: Component/Mascot)
  *
  * 인라인 SVG로 가져온 이유: 크기 변해도 깨지지 않고(벡터), 추가 네트워크 요청 없음.
- * ⚠️ sad/loading 변형은 디자인 에셋이 래스터 임베드(sadowl.svg)라 제외 — 벡터 재추출되면 추가.
+ * sad = Figma Mascot form=sad,size=L 기준 인라인(감은 눈+눈물). 댓글 빈 상태 등에 사용.
  *
  * @example <Mascot emotion="heart" size="lg" />
  */
@@ -84,6 +84,67 @@ export default function Mascot({
             cy="0"
             r="1"
             gradientTransform="matrix(10.5744 20.366 -47.4411 24.6334 47.0609 20.4673)"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#155848" />
+            <stop offset="1" stopColor="#278655" />
+          </radialGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  if (emotion === "sad") {
+    return (
+      <svg
+        {...common}
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label={title}
+      >
+        <path
+          d="M54.5481 13.7459C77.4343 16.6734 93.8764 35.5532 91.2718 55.9152C90.1096 65.0012 85.3485 72.844 78.4015 78.4871L79.1102 89.756C79.1659 90.6423 78.2045 91.2277 77.4425 90.7713L67.4913 84.8121C60.7428 87.4568 53.0637 88.4996 45.1161 87.483C22.2301 84.5554 5.78881 65.6757 8.39336 45.3139C10.9979 24.952 31.662 10.8186 54.5481 13.7459Z"
+          fill="url(#mascot_sad_body)"
+          fillOpacity="0.97"
+        />
+        <path
+          d="M64.835 34.6484C73.9195 34.6485 81.2842 42.0131 81.2842 51.0977C81.2841 60.0401 74.1479 67.3157 65.2598 67.541L64.835 67.5469H35.8535V67.5273C27.1326 67.1186 20.1876 59.9196 20.1875 51.0977C20.1875 42.0131 27.5522 34.6484 36.6367 34.6484C42.6204 34.6485 47.8571 37.844 50.7354 42.6211C53.6136 37.8437 58.8511 34.6484 64.835 34.6484Z"
+          fill="white"
+        />
+        <path
+          d="M44.3125 59.5326L50.8719 53.3184L57.4312 59.5326L50.8719 67.6242L44.3125 59.5326Z"
+          fill="#FBED68"
+        />
+        {/* 감은 눈 */}
+        <path d="M30.5 49C33 53.5 41.4 53.5 43.9 49" stroke="#242731" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+        <path d="M57.9 49C60.4 53.5 68.8 53.5 71.3 49" stroke="#242731" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+        {/* 눈물 */}
+        <path d="M75 48.5C77.3 51.8 78.4 53.9 78.4 55.7C78.4 57.6 76.9 59.2 75 59.2C73.1 59.2 71.6 57.6 71.6 55.7C71.6 53.9 72.7 51.8 75 48.5Z" fill="#9FEDFC" />
+        <path
+          d="M81.7571 11.4579C81.3695 16.0247 80.6083 25.5038 80.6634 26.886L51.0453 34.2614L22.7618 22.7816C23.0114 21.421 23.5949 11.9293 23.8555 7.35352C29.4247 8.45017 42.7538 14.0336 51.5169 27.5944C62.1053 15.4053 76.0888 11.758 81.7571 11.4579Z"
+          fill="url(#mascot_sad_brow)"
+          fillOpacity="0.93"
+        />
+        <defs>
+          <linearGradient
+            id="mascot_sad_body"
+            x1="35.9412"
+            y1="11.3658"
+            x2="76.3879"
+            y2="124.352"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#48C281" />
+            <stop offset="1" stopColor="#58D4C5" />
+          </linearGradient>
+          <radialGradient
+            id="mascot_sad_brow"
+            cx="0"
+            cy="0"
+            r="1"
+            gradientTransform="matrix(10.5744 20.366 -47.4411 24.6334 50.7367 27.6001)"
             gradientUnits="userSpaceOnUse"
           >
             <stop stopColor="#155848" />

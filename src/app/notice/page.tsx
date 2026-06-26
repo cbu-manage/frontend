@@ -9,7 +9,7 @@ import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
 
-const CATEGORY_TABS = ["전체", "공지", "이벤트", "뉴스레터", "IT소식"] as const;
+const CATEGORY_TABS = ["전체", "공지", "이벤트", "IT소식"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
 // TODO: API 연동 후 교체
@@ -25,15 +25,15 @@ type NoticeItem = {
 const MOCK_NOTICES: NoticeItem[] = [
   { id: 1, category: "공지", title: "2026학년도 16기 정기 모집 안내 — 신규 부원 환영합니다", author: "15기 김민주", date: "2026.04.18", views: 248, pinned: true },
   { id: 2, category: "이벤트", title: "씨부엉 해커톤 2026 개최 · 팀 구성 / 상품 · 멘토 안내", author: "14기 이서연", date: "2026.04.15", views: 172 },
-  { id: 3, category: "뉴스레터", title: "4월 3주차 뉴스레터", author: "14기 박도윤", date: "2026.04.12", views: 89 },
+  { id: 3, category: "공지", title: "4월 정기 세미나 일정 안내", author: "14기 박도윤", date: "2026.04.12", views: 89 },
   { id: 4, category: "공지", title: "4월 정기 모임 일정 변경 (4/21 → 4/23)", author: "15기 최준호", date: "2026.04.10", views: 156 },
   { id: 5, category: "이벤트", title: "알고리즘 챌린지 4월 배점 및 경품 수령 안내", author: "15기 정하인", date: "2026.04.08", views: 103 },
   { id: 6, category: "IT소식", title: "Claude Max 이용 한도 상향", author: "14기 윤지우", date: "2026.04.05", views: 84 },
   { id: 7, category: "공지", title: "동아리방 이용 규칙 업데이트", author: "15기 김민주", date: "2026.04.02", views: 212, pinned: true },
-  { id: 8, category: "뉴스레터", title: "3월 월간 회고 · 뉴스레터 준비 이야기", author: "14기 이서연", date: "2026.03.31", views: 98 },
+  { id: 8, category: "이벤트", title: "동아리 봄 MT 사전 수요조사", author: "14기 이서연", date: "2026.03.31", views: 98 },
   { id: 9, category: "이벤트", title: "5월 워크샵 사전 신청 안내", author: "15기 김민주", date: "2026.03.28", views: 77 },
   { id: 10, category: "IT소식", title: "GitHub Copilot 학생 인증 가이드", author: "14기 윤지우", date: "2026.03.25", views: 142 },
-  { id: 11, category: "뉴스레터", title: "3월 4주차 뉴스레터", author: "14기 이서연", date: "2026.03.22", views: 61 },
+  { id: 11, category: "IT소식", title: "GitHub Organization 초대 안내", author: "14기 이서연", date: "2026.03.22", views: 61 },
 ];
 
 export default function NoticePage() {
