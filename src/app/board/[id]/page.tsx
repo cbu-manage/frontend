@@ -91,7 +91,7 @@ export default function BoardDetailPage() {
             </div>
 
             {/* 본문 */}
-            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-700">
+            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900">
               {MOCK_POST.content}
             </div>
 
