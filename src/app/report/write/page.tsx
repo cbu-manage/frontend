@@ -171,7 +171,7 @@ function ReportUploadContent() {
         reflection,
         nextPlan,
         location,
-        date: startDate.toISOString(),
+        date: format(startDate, "yyyy-MM-dd'T'HH:mm:ss"),
         memberIds: selectedMemberIds,
         reportImage: imageUrl,
       };

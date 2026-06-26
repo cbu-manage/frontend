@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Sparkles, Search, CalendarIcon } from "lucide-react";
+import { Sparkles, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { ko } from "date-fns/locale";
-import { Calendar } from "@/components/ui/calendar";
 
 import RequireMember from "@/components/auth/RequireMember";
 import ReportCard from "@/components/report/ReportCard";
@@ -33,47 +31,9 @@ function extractMyGroups(raw: unknown): MyGroupItem[] {
   return [];
 }
 
-/** 날짜 범위 필터 (start~end 사이 여부, 일 단위) */
-function inDateRange(createdAt: string, start?: Date, end?: Date): boolean {
-  if (!start && !end) return true;
-  const d = new Date(createdAt);
-  if (start) {
-    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    if (d < s) return false;
-  }
-  if (end) {
-    const e = new Date(
-      end.getFullYear(),
-      end.getMonth(),
-      end.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
-    if (d > e) return false;
-  }
-  return true;
-}
-
 export default function ReportPage() {
   const router = useRouter();
   const [activeGroup, setActiveGroup] = useState("전체");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [calendarOpenStart, setCalendarOpenStart] = useState(false);
-  const [calendarOpenEnd, setCalendarOpenEnd] = useState(false);
-  const startRef = useRef<HTMLDivElement>(null);
-  const endRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (startRef.current && !startRef.current.contains(e.target as Node)) setCalendarOpenStart(false);
-      if (endRef.current && !endRef.current.contains(e.target as Node)) setCalendarOpenEnd(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
@@ -120,13 +80,10 @@ export default function ReportPage() {
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
 
-  // 검색·기간은 목록 API에 파라미터가 없어 현재 페이지 내 클라 필터 (백엔드 파라미터 추가 시 서버로 이전)
-  const filtered = reports.filter((item) => {
-    const matchSearch =
-      item.title.includes(search) || item.authorName.includes(search);
-    const matchDate = inDateRange(item.createdAt, startDate, endDate);
-    return matchSearch && matchDate;
-  });
+  // 검색은 목록 API에 파라미터가 없어 현재 페이지 내 클라 필터 (백엔드 파라미터 추가 시 서버로 이전)
+  const filtered = reports.filter(
+    (item) => item.title.includes(search) || item.authorName.includes(search),
+  );
 
   return (
     <RequireMember>
@@ -193,50 +150,6 @@ export default function ReportPage() {
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700 shrink-0 w-8">기간</span>
-                  <div ref={startRef} className="relative">
-                    <button
-                      type="button"
-                      onClick={() => { setCalendarOpenStart((v) => !v); setCalendarOpenEnd(false); }}
-                aria-haspopup="dialog"
-                aria-expanded={calendarOpenStart}
-                aria-label="시작일 선택"
-                      className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
-                    >
-                      <span className={startDate ? "text-gray-700" : "text-gray-400"}>
-                        {startDate ? format(startDate, "yyyy.MM.dd", { locale: ko }) : "시작일"}
-                      </span>
-                      <CalendarIcon size={14} className="text-gray-400" />
-                    </button>
-                    {calendarOpenStart && (
-                      <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                        <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); }} />
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm text-gray-400 shrink-0">~</span>
-                  <div ref={endRef} className="relative">
-                    <button
-                      type="button"
-                      onClick={() => { setCalendarOpenEnd((v) => !v); setCalendarOpenStart(false); }}
-                aria-haspopup="dialog"
-                aria-expanded={calendarOpenEnd}
-                aria-label="종료일 선택"
-                      className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
-                    >
-                      <span className={endDate ? "text-gray-700" : "text-gray-400"}>
-                        {endDate ? format(endDate, "yyyy.MM.dd", { locale: ko }) : "종료일"}
-                      </span>
-                      <CalendarIcon size={14} className="text-gray-400" />
-                    </button>
-                    {calendarOpenEnd && (
-                      <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                        <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); }} />
-                      </div>
-                    )}
-                  </div>
-                </div>
                 {/* 검색 */}
                 <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5">
                   <Search size={14} className="text-gray-400 shrink-0" />
@@ -259,7 +172,7 @@ export default function ReportPage() {
                     tag={item.groupName}
                     title={item.title}
                     author={item.authorName}
-                    date={format(new Date(item.createdAt), "MM.dd")}
+                    date={format(new Date(item.date), "MM.dd")}
                   />
                 ))}
                 {filtered.length === 0 && (
