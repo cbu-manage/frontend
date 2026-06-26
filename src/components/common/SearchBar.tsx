@@ -29,7 +29,7 @@ export default function SearchBar({
       <input
         type="search"
         placeholder={placeholder}
-        className="flex-1 bg-transparent text-base text-gray-900 outline-none placeholder:text-gray-500"
+        className="flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-500"
         {...props}
       />
       <Search className="size-5 shrink-0 text-gray-500" aria-hidden />

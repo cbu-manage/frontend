@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
+import Tabs from "@/components/common/Tabs";
+import SearchBar from "@/components/common/SearchBar";
 
 const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
@@ -19,12 +20,16 @@ const MOCK_POSTS = [
   { id: 6, category: "홍보", title: "동아리방 와이파이 자꾸 끊겨요", author: "15기 박도윤", date: "2026.04.05", views: 84 },
   { id: 7, category: "잡담", title: "Claude Max 같이 쓰실 분 3명 더 모집", author: "익명28", date: "2026.04.02", views: 212 },
   { id: 8, category: "질문", title: "OT 단체사진 어디서 받을 수 있나요", author: "익명54", date: "2026.03.31", views: 98 },
+  { id: 9, category: "질문", title: "리액트 상태관리 다들 뭐 쓰세요?", author: "익명61", date: "2026.03.28", views: 134 },
+  { id: 10, category: "일상", title: "기말 끝나고 다들 뭐하세요", author: "15기 박도윤", date: "2026.03.25", views: 76 },
+  { id: 11, category: "홍보", title: "사이드 프로젝트 팀원 구해요 (디자이너)", author: "익명19", date: "2026.03.22", views: 95 },
 ];
 
 export default function BoardPage() {
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  // 페이지당 최대 11개 게시물 (API 연동 시 size=11로 요청). 현재는 목데이터.
   const totalPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   const filtered = MOCK_POSTS.filter((p) => {
@@ -52,58 +57,43 @@ export default function BoardPage() {
 
           {/* 탭 + 검색 */}
           <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-1">
-              {CATEGORY_TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={
-                    activeTab === tab
-                      ? "px-3 py-1 rounded-full text-sm font-medium bg-gray-800 text-white transition-colors"
-                      : "px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
-                  }
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 w-56">
-              <Search size={14} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="제목 · 작성자로 검색"
-                className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
-              />
-            </div>
+            <Tabs
+              items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as CategoryTab)}
+            />
+            <SearchBar
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="제목 · 작성자로 검색"
+              className="w-72 shrink-0"
+            />
           </div>
 
           {/* 테이블 */}
-          <div className="border-t border-gray-200">
-            <div className="flex items-center gap-4 px-2 py-2.5 border-b border-gray-100 text-xs text-gray-400">
-              <span className="w-16 shrink-0">카테고리</span>
-              <span className="flex-1">제목</span>
-              <span className="w-24 text-right shrink-0">작성자</span>
-              <span className="w-24 text-right shrink-0">작성일</span>
-              <span className="w-10 text-right shrink-0">조회</span>
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="flex items-center gap-4 px-2 py-3 bg-brand text-sm font-bold text-white">
+              <span className="w-16 text-center shrink-0">카테고리</span>
+              <span className="flex-1 text-center">제목</span>
+              <span className="w-28 text-center shrink-0">작성자</span>
+              <span className="w-28 text-center shrink-0">작성일</span>
+              <span className="w-20 text-center shrink-0">조회</span>
             </div>
             {filtered.map((post) => (
               <Link
                 key={post.id}
                 href={`/board/${post.id}`}
-                className="flex items-center gap-4 px-2 py-3.5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-4 px-2 py-5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
               >
-                <span className="w-16 shrink-0 text-sm text-gray-500">[{post.category}]</span>
+                <span className="w-16 text-center shrink-0 text-sm text-gray-900">[{post.category}]</span>
                 <span className="flex-1 text-sm text-gray-900 truncate">{post.title}</span>
-                <span className="w-24 text-right shrink-0 text-sm text-gray-500 truncate">{post.author}</span>
-                <span className="w-24 text-right shrink-0 text-sm text-gray-400">{post.date}</span>
-                <span className="w-10 text-right shrink-0 text-sm text-gray-400">{post.views}</span>
+                <span className="w-28 text-center shrink-0 text-sm text-gray-900 truncate">{post.author}</span>
+                <span className="w-28 text-center shrink-0 text-sm text-gray-900">{post.date}</span>
+                <span className="w-20 text-center shrink-0 text-sm text-gray-900">{post.views}</span>
               </Link>
             ))}
             {filtered.length === 0 && (
-              <div className="py-16 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
+              <div className="py-16 text-center text-sm text-gray-900">검색 결과가 없습니다.</div>
             )}
           </div>
 
