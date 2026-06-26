@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronLeft, MoreVertical, Clock, Eye, MessageCircle } from "lucide-react";
+import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import { useUserStore } from "@/store/userStore";
+import KebabMenu from "@/components/common/KebabMenu";
+import { CommentItem } from "@/components/detail/CommentSection";
 
 // TODO: API 연동 후 교체
 const MOCK_NEWS = {
@@ -23,9 +26,18 @@ const MOCK_NEWS = {
 
 다음 주에도 알찬 소식으로 찾아올게요!`,
   comments: [
-    { id: 1, author: "14기 이서연", date: "2026.04.28", content: "이번 주 소식 잘 봤어요! 해커톤 후기도 따로 올라오나요?" },
-    { id: 2, author: "15기 박도윤", date: "2026.04.28", content: "워크샵 신청 링크는 어디서 확인할 수 있나요?" },
-    { id: 3, author: "14기 윤지우", date: "2026.04.29", content: "세미나 발표자료 공유 감사합니다 🙌" },
+    {
+      id: 1,
+      author: "14기 이서연",
+      userId: 21,
+      date: "2026.04.28",
+      content: "이번 주 소식 잘 봤어요! 해커톤 후기도 따로 올라오나요?",
+      replies: [
+        { id: 11, author: "15기 김민주", userId: 1, date: "2026.04.28", content: "네, 다음 주 뉴스레터에 해커톤 후기 특집으로 올라갈 예정이에요!" },
+      ],
+    },
+    { id: 2, author: "15기 박도윤", userId: 22, date: "2026.04.28", content: "워크샵 신청 링크는 어디서 확인할 수 있나요?" },
+    { id: 3, author: "14기 윤지우", userId: 23, date: "2026.04.29", content: "세미나 발표자료 공유 감사합니다 🙌" },
   ],
 };
 
@@ -33,6 +45,8 @@ export default function NewsDetailPage() {
   const router = useRouter();
   const [comment, setComment] = useState("");
 
+  const userId = useUserStore((s) => s.userId);
+  const currentUserId = userId ? Number(userId) : null;
   const commentCount = MOCK_NEWS.comments.length;
 
   return (
@@ -49,13 +63,12 @@ export default function NewsDetailPage() {
               >
                 <ChevronLeft size={20} />
               </button>
-              {/* TODO: 수정/삭제 메뉴 (운영진) */}
-              <button
-                aria-label="더보기"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50"
-              >
-                <MoreVertical size={20} />
-              </button>
+              <KebabMenu
+                onEdit={() => router.push("/news/write")}
+                onDelete={() => {
+                  if (window.confirm("이 글을 삭제할까요?")) router.push("/news");
+                }}
+              />
             </div>
 
             {/* 카테고리 / 제목 / 작성자 / 메타 */}
@@ -91,30 +104,10 @@ export default function NewsDetailPage() {
               </span>
             </div>
 
-            {/* 댓글 목록 */}
-            <div className="divide-y divide-gray-100">
+            {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
+            <div>
               {MOCK_NEWS.comments.map((c) => (
-                <div key={c.id} className="py-5">
-                  <div className="flex items-start justify-between">
-                    <span className="font-semibold text-gray-900">{c.author}</span>
-                    {/* TODO: 댓글 수정/삭제 메뉴 */}
-                    <button
-                      aria-label="댓글 더보기"
-                      className="text-gray-400 transition-colors hover:text-gray-600"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-700">{c.content}</p>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock size={13} /> {c.date}
-                    </span>
-                    <button className="flex items-center gap-1 transition-colors hover:text-gray-600">
-                      <MessageCircle size={13} /> 답글쓰기
-                    </button>
-                  </div>
-                </div>
+                <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
               ))}
             </div>
 

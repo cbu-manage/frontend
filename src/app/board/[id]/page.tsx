@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronLeft, MoreVertical, Clock, Eye, MessageCircle } from "lucide-react";
+import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import { useUserStore } from "@/store/userStore";
+import KebabMenu from "@/components/common/KebabMenu";
+import { CommentItem } from "@/components/detail/CommentSection";
 
 // TODO: API 연동 후 교체
 const MOCK_POST = {
@@ -21,10 +24,19 @@ DB 인덱스에서는 B+ tree 구조랑 클러스터드 인덱스의 차이점�
 
 그래도 프로젝트 면접은 재미있게 했습니다. 다음 회사는 더 잘해보야지ㅠ 우리 동아리에서 도움 많이 받았는데 이렇게 끝 나는 게 보고의 답인가ㅠ`,
   comments: [
-    { id: 1, author: "익명47", date: "2026.04.18", content: "저도 지난주 비슷한 경험입니다. 면접은 결과보다 과정이 중요하니 너무 자책하지 마세요!" },
-    { id: 2, author: "15기 정하은", date: "2026.04.18", content: "면접 후기 공유 고맙워요. CS 정리 자료 필요하시면 동아리 자료방에 공유되어 있습니다." },
-    { id: 3, author: "익명83", date: "2026.04.18", content: "프로젝트 면접은 잘하셨다고 하니 그게 더 중요해요. 기술 면접 준비는 다음에 더 철저히!" },
-    { id: 4, author: "운영진 14기 최준호", date: "2026.04.19", content: "다음주 CS 스터디 쪼각으로 모이고 있으니 관심 있으시면 단톡방에 와주세요!" },
+    {
+      id: 1,
+      author: "익명47",
+      userId: 47,
+      date: "2026.04.18",
+      content: "저도 지난주 비슷한 경험입니다. 면접은 결과보다 과정이 중요하니 너무 자책하지 마세요!",
+      replies: [
+        { id: 11, author: "익명12", userId: 1, date: "2026.04.18", content: "위로 감사해요 ㅠㅠ 다음엔 더 준비해서 갈게요!" },
+      ],
+    },
+    { id: 2, author: "15기 정하은", userId: 2, date: "2026.04.18", content: "면접 후기 공유 고맙워요. CS 정리 자료 필요하시면 동아리 자료방에 공유되어 있습니다." },
+    { id: 3, author: "익명83", userId: 83, date: "2026.04.18", content: "프로젝트 면접은 잘하셨다고 하니 그게 더 중요해요. 기술 면접 준비는 다음에 더 철저히!" },
+    { id: 4, author: "운영진 14기 최준호", userId: 4, date: "2026.04.19", content: "다음주 CS 스터디 쪼각으로 모이고 있으니 관심 있으시면 단톡방에 와주세요!" },
   ],
 };
 
@@ -33,6 +45,8 @@ export default function BoardDetailPage() {
   const [comment, setComment] = useState("");
   const [anonymous, setAnonymous] = useState(true);
 
+  const userId = useUserStore((s) => s.userId);
+  const currentUserId = userId ? Number(userId) : null;
   const commentCount = MOCK_POST.comments.length;
 
   return (
@@ -49,13 +63,13 @@ export default function BoardDetailPage() {
               >
                 <ChevronLeft size={20} />
               </button>
-              {/* TODO: 수정/삭제/신고 메뉴 */}
-              <button
-                aria-label="더보기"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50"
-              >
-                <MoreVertical size={20} />
-              </button>
+              <KebabMenu
+                onEdit={() => router.push("/board/write")}
+                onDelete={() => {
+                  if (window.confirm("이 글을 삭제할까요?")) router.push("/board");
+                }}
+                onReport={() => window.alert("신고가 접수되었습니다.")}
+              />
             </div>
 
             {/* 카테고리 / 제목 / 작성자 / 메타 */}
@@ -91,30 +105,10 @@ export default function BoardDetailPage() {
               </span>
             </div>
 
-            {/* 댓글 목록 */}
-            <div className="divide-y divide-gray-100">
+            {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
+            <div>
               {MOCK_POST.comments.map((c) => (
-                <div key={c.id} className="py-5">
-                  <div className="flex items-start justify-between">
-                    <span className="font-semibold text-gray-900">{c.author}</span>
-                    {/* TODO: 댓글 수정/삭제/신고 메뉴 */}
-                    <button
-                      aria-label="댓글 더보기"
-                      className="text-gray-400 transition-colors hover:text-gray-600"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-700">{c.content}</p>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock size={13} /> {c.date}
-                    </span>
-                    <button className="flex items-center gap-1 transition-colors hover:text-gray-600">
-                      <MessageCircle size={13} /> 답글쓰기
-                    </button>
-                  </div>
-                </div>
+                <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
               ))}
             </div>
 

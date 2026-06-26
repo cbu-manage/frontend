@@ -2,8 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronLeft, MoreVertical, Clock, Eye, MessageCircle } from "lucide-react";
+import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import { useUserStore } from "@/store/userStore";
+import KebabMenu from "@/components/common/KebabMenu";
+import { CommentItem } from "@/components/detail/CommentSection";
 
 // TODO: API 연동 후 교체
 const MOCK_NOTICE = {
@@ -23,9 +26,18 @@ const MOCK_NOTICE = {
 
 신규 부원 환영합니다 — 함께 성장해요 🙌`,
   comments: [
-    { id: 1, author: "14기 이서연", date: "2026.04.18", content: "정기 모집 일정 공유 감사합니다! 디자인 분야 참여 가능할까요?" },
-    { id: 2, author: "15기 박도윤", date: "2026.04.18", content: "프론트 멘토링 일정도 같이 안내해주시면 좋을 것 같아요." },
-    { id: 3, author: "14기 윤지우", date: "2026.04.19", content: "스터디 매칭 관련 문의는 어디로 드리면 되나요?" },
+    {
+      id: 1,
+      author: "14기 이서연",
+      userId: 21,
+      date: "2026.04.18",
+      content: "정기 모집 일정 공유 감사합니다! 디자인 분야 참여 가능할까요?",
+      replies: [
+        { id: 11, author: "15기 김민주", userId: 1, date: "2026.04.18", content: "네 디자인 분야도 모집합니다! 신청서에 포트폴리오 첨부해주세요 :)" },
+      ],
+    },
+    { id: 2, author: "15기 박도윤", userId: 22, date: "2026.04.18", content: "프론트 멘토링 일정도 같이 안내해주시면 좋을 것 같아요." },
+    { id: 3, author: "14기 윤지우", userId: 23, date: "2026.04.19", content: "스터디 매칭 관련 문의는 어디로 드리면 되나요?" },
   ],
 };
 
@@ -33,6 +45,8 @@ export default function NoticeDetailPage() {
   const router = useRouter();
   const [comment, setComment] = useState("");
 
+  const userId = useUserStore((s) => s.userId);
+  const currentUserId = userId ? Number(userId) : null;
   const commentCount = MOCK_NOTICE.comments.length;
 
   return (
@@ -49,13 +63,12 @@ export default function NoticeDetailPage() {
               >
                 <ChevronLeft size={20} />
               </button>
-              {/* TODO: 수정/삭제 메뉴 (운영진) */}
-              <button
-                aria-label="더보기"
-                className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-50"
-              >
-                <MoreVertical size={20} />
-              </button>
+              <KebabMenu
+                onEdit={() => router.push("/notice/write")}
+                onDelete={() => {
+                  if (window.confirm("이 글을 삭제할까요?")) router.push("/notice");
+                }}
+              />
             </div>
 
             {/* 카테고리 / 제목 / 작성자 / 메타 */}
@@ -91,30 +104,10 @@ export default function NoticeDetailPage() {
               </span>
             </div>
 
-            {/* 댓글 목록 */}
-            <div className="divide-y divide-gray-100">
+            {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
+            <div>
               {MOCK_NOTICE.comments.map((c) => (
-                <div key={c.id} className="py-5">
-                  <div className="flex items-start justify-between">
-                    <span className="font-semibold text-gray-900">{c.author}</span>
-                    {/* TODO: 댓글 수정/삭제 메뉴 */}
-                    <button
-                      aria-label="댓글 더보기"
-                      className="text-gray-400 transition-colors hover:text-gray-600"
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-700">{c.content}</p>
-                  <div className="mt-3 flex items-center gap-4 text-xs text-gray-400">
-                    <span className="flex items-center gap-1">
-                      <Clock size={13} /> {c.date}
-                    </span>
-                    <button className="flex items-center gap-1 transition-colors hover:text-gray-600">
-                      <MessageCircle size={13} /> 답글쓰기
-                    </button>
-                  </div>
-                </div>
+                <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
               ))}
             </div>
 
