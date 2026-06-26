@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const SIZE_PX = { sm: 40, md: 80, lg: 160 } as const;
 
-export type MascotEmotion = "default" | "heart" | "sad";
+export type MascotEmotion = "default" | "heart" | "sad" | "working";
 export type MascotSize = keyof typeof SIZE_PX;
 
 type MascotProps = {
@@ -141,6 +141,70 @@ export default function Mascot({
           </linearGradient>
           <radialGradient
             id="mascot_sad_brow"
+            cx="0"
+            cy="0"
+            r="1"
+            gradientTransform="matrix(10.5744 20.366 -47.4411 24.6334 50.7367 27.6001)"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#155848" />
+            <stop offset="1" stopColor="#278655" />
+          </radialGradient>
+        </defs>
+      </svg>
+    );
+  }
+
+  if (emotion === "working") {
+    // 한쪽 눈 뜨고 윙크 + 식은땀 — "고민/미정" 표현. (Figma Mascot form=working)
+    return (
+      <svg
+        {...common}
+        viewBox="0 0 100 100"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label={title}
+      >
+        <path
+          d="M54.5481 13.7459C77.4343 16.6734 93.8764 35.5532 91.2718 55.9152C90.1096 65.0012 85.3485 72.844 78.4015 78.4871L79.1102 89.756C79.1659 90.6423 78.2045 91.2277 77.4425 90.7713L67.4913 84.8121C60.7428 87.4568 53.0637 88.4996 45.1161 87.483C22.2301 84.5554 5.78881 65.6757 8.39336 45.3139C10.9979 24.952 31.662 10.8186 54.5481 13.7459Z"
+          fill="url(#mascot_working_body)"
+          fillOpacity="0.97"
+        />
+        <path
+          d="M64.835 34.6484C73.9195 34.6485 81.2842 42.0131 81.2842 51.0977C81.2841 60.0401 74.1479 67.3157 65.2598 67.541L64.835 67.5469H35.8535V67.5273C27.1326 67.1186 20.1876 59.9196 20.1875 51.0977C20.1875 42.0131 27.5522 34.6484 36.6367 34.6484C42.6204 34.6485 47.8571 37.844 50.7354 42.6211C53.6136 37.8437 58.8511 34.6484 64.835 34.6484Z"
+          fill="white"
+        />
+        <path
+          d="M44.3125 59.5326L50.8719 53.3184L57.4312 59.5326L50.8719 67.6242L44.3125 59.5326Z"
+          fill="#FBED68"
+        />
+        {/* 뜬 눈(왼쪽) */}
+        <ellipse cx="37.2306" cy="50.9205" rx="5.98061" ry="6.02009" fill="#242731" />
+        <ellipse cx="34.8591" cy="49.1734" rx="2.05441" ry="2.06797" fill="white" />
+        {/* 윙크(오른쪽 감은 눈) */}
+        <path d="M57.9 50.5C60.4 55 68.8 55 71.3 50.5" stroke="#242731" strokeWidth="2.6" strokeLinecap="round" fill="none" />
+        {/* 식은땀 */}
+        <path d="M77 49C79.1 51.9 80.1 53.8 80.1 55.5C80.1 57.3 78.7 58.7 77 58.7C75.3 58.7 73.9 57.3 73.9 55.5C73.9 53.8 74.9 51.9 77 49Z" fill="#C8F7FF" stroke="#4FC5C7" strokeWidth="0.8" />
+        <path
+          d="M81.7571 11.4579C81.3695 16.0247 80.6083 25.5038 80.6634 26.886L51.0453 34.2614L22.7618 22.7816C23.0114 21.421 23.5949 11.9293 23.8555 7.35352C29.4247 8.45017 42.7538 14.0336 51.5169 27.5944C62.1053 15.4053 76.0888 11.758 81.7571 11.4579Z"
+          fill="url(#mascot_working_brow)"
+          fillOpacity="0.93"
+        />
+        <defs>
+          <linearGradient
+            id="mascot_working_body"
+            x1="35.9412"
+            y1="11.3658"
+            x2="76.3879"
+            y2="124.352"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#48C281" />
+            <stop offset="1" stopColor="#58D4C5" />
+          </linearGradient>
+          <radialGradient
+            id="mascot_working_brow"
             cx="0"
             cy="0"
             r="1"

@@ -37,42 +37,85 @@ type VoteKey = "yes" | "no" | "maybe";
 const VOTE_OPTIONS: { key: VoteKey; label: string; emotion: MascotEmotion }[] = [
   { key: "yes", label: "참석할게요", emotion: "default" },
   { key: "no", label: "참석이 어려워요", emotion: "sad" },
-  { key: "maybe", label: "미정이에요", emotion: "sad" },
+  { key: "maybe", label: "미정이에요", emotion: "working" },
 ];
 
 // 투표 결과(데모) — API 연동 시 교체
 type Member = { gen: string; name: string };
-const RESULT = {
-  approval: [
-    { gen: "14기", name: "이서연" }, { gen: "14기", name: "절준호" },
-    { gen: "14기", name: "윤지우" }, { gen: "14기", name: "고은성" },
-    { gen: "15기", name: "김민주" }, { gen: "15기", name: "강성주" },
-    { gen: "15기", name: "김건우" }, { gen: "15기", name: "박도윤" },
-    { gen: "15기", name: "강남규" }, { gen: "15기", name: "김광현" },
-    { gen: "15기", name: "정하은" }, { gen: "15기", name: "이도현" },
-  ] as Member[],
-  negative: [
-    { gen: "14기", name: "강순철" }, { gen: "14기", name: "김가연" },
-    { gen: "15기", name: "강여진" },
-  ] as Member[],
-  waiting: [
-    { gen: "14기", name: "장잇프" }, { gen: "14기", name: "명자동구" },
-    { gen: "15기", name: "고은성" },
-  ] as Member[],
-  noResponseCount: 6,
-};
 
-function MemberList({ members }: { members: Member[] }) {
+// 본인(데모) — API 연동 시 로그인 사용자로 교체. 내 선택에 따라 아래 그룹에 포함된다.
+const ME: Member = { gen: "15기", name: "김민주" };
+
+// 나를 제외한 다른 부원들의 응답(고정). 내 투표를 바꾸면 내가 해당 그룹으로 이동한다.
+const VOTE_GROUPS: {
+  key: VoteKey;
+  en: string;
+  ko: string;
+  tone: string;
+  base: Member[];
+}[] = [
+  {
+    key: "yes",
+    en: "Approval",
+    ko: "참석 가능",
+    tone: "text-success",
+    base: [
+      { gen: "14기", name: "이서연" }, { gen: "14기", name: "절준호" },
+      { gen: "14기", name: "윤지우" }, { gen: "14기", name: "고은성" },
+      { gen: "15기", name: "강성주" }, { gen: "15기", name: "김건우" },
+      { gen: "15기", name: "박도윤" }, { gen: "15기", name: "강남규" },
+      { gen: "15기", name: "김광현" }, { gen: "15기", name: "정하은" },
+      { gen: "15기", name: "이도현" },
+    ],
+  },
+  {
+    key: "no",
+    en: "Negative",
+    ko: "참석 불가능",
+    tone: "text-danger",
+    base: [
+      { gen: "14기", name: "강순철" }, { gen: "14기", name: "김가연" },
+      { gen: "15기", name: "강여진" },
+    ],
+  },
+  {
+    key: "maybe",
+    en: "Waiting",
+    ko: "참석 대기",
+    tone: "text-[#3bc1e0]",
+    base: [
+      { gen: "14기", name: "장잇프" }, { gen: "14기", name: "명자동구" },
+      { gen: "15기", name: "고은성" },
+    ],
+  },
+];
+
+function MemberList({ members, highlight }: { members: Member[]; highlight?: Member }) {
   return (
     <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
-      {members.map((m, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-            {m.gen}
-          </span>
-          <span className="text-sm text-gray-700">{m.name}</span>
-        </div>
-      ))}
+      {members.map((m, i) => {
+        const isMe =
+          highlight && m.gen === highlight.gen && m.name === highlight.name;
+        return (
+          <div key={i} className="flex items-center gap-2">
+            <span
+              className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                isMe ? "bg-success/15 text-success" : "bg-gray-100 text-gray-500"
+              }`}
+            >
+              {m.gen}
+            </span>
+            <span
+              className={`text-sm ${
+                isMe ? "font-semibold text-gray-900" : "text-gray-700"
+              }`}
+            >
+              {m.name}
+              {isMe ? " (나)" : ""}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -183,7 +226,7 @@ export default function MeetingDetailPage() {
                       onClick={() => setChoice(opt.key)}
                       className={`flex flex-col items-center gap-3 rounded-2xl border-2 py-8 transition-colors ${
                         selected
-                          ? "border-success bg-success/10"
+                          ? "border-success bg-[#def7eb]"
                           : "border-gray-200 bg-white hover:border-gray-300"
                       }`}
                     >
@@ -194,72 +237,39 @@ export default function MeetingDetailPage() {
                 })}
               </div>
 
-              {/* 투표 전: 제출하기 / 투표 후: 응답 명단 */}
+              {/* 투표 전: 제출하기 / 투표 후: 응답 명단 (버튼을 바꾸면 내가 해당 그룹으로 이동) */}
               {!voted ? (
                 <button
                   type="button"
                   disabled={!choice}
                   onClick={() => setVoted(true)}
-                  className="mt-4 w-full rounded-full bg-success py-4 text-sm font-semibold text-white transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-4 w-full rounded-full bg-gradient-to-r from-[#48c281] to-[#58d4c5] py-4 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   제출하기
                 </button>
               ) : (
                 <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                  {/* 참석 가능 */}
-                  <div className="rounded-2xl border border-gray-100 bg-white p-5">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-success">Approval</p>
-                        <p className="text-lg font-bold text-gray-900">참석 가능</p>
+                  {VOTE_GROUPS.map((g) => {
+                    // 내가 고른 그룹에는 본인을 맨 위에 추가 → 선택 변경 시 명단·인원수 즉시 갱신
+                    const members = choice === g.key ? [ME, ...g.base] : g.base;
+                    return (
+                      <div
+                        key={g.key}
+                        className="rounded-2xl border border-gray-100 bg-white p-5"
+                      >
+                        <div className="flex items-baseline justify-between">
+                          <div>
+                            <p className={`text-sm font-bold ${g.tone}`}>{g.en}</p>
+                            <p className="text-lg font-bold text-gray-900">{g.ko}</p>
+                          </div>
+                          <span className="text-lg font-bold text-gray-900">
+                            {members.length}명
+                          </span>
+                        </div>
+                        <MemberList members={members} highlight={ME} />
                       </div>
-                      <span className="text-lg font-bold text-gray-900">
-                        {RESULT.approval.length}명
-                      </span>
-                    </div>
-                    <MemberList members={RESULT.approval} />
-                  </div>
-
-                  {/* 참석 불가능 */}
-                  <div className="rounded-2xl border border-gray-100 bg-white p-5">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-danger">Negative</p>
-                        <p className="text-lg font-bold text-gray-900">참석 불가능</p>
-                      </div>
-                      <span className="text-lg font-bold text-gray-900">
-                        {RESULT.negative.length}명
-                      </span>
-                    </div>
-                    <MemberList members={RESULT.negative} />
-                  </div>
-
-                  {/* 참석 대기 */}
-                  <div className="rounded-2xl border border-gray-100 bg-white p-5">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-[#3bc1e0]">Waiting</p>
-                        <p className="text-lg font-bold text-gray-900">참석 대기</p>
-                      </div>
-                      <span className="text-lg font-bold text-gray-900">
-                        {RESULT.waiting.length}명
-                      </span>
-                    </div>
-                    <MemberList members={RESULT.waiting} />
-                  </div>
-
-                  {/* 미응답 — 참석 가능 카드 아래(좌측 열)로 배치됨 */}
-                  <div className="rounded-2xl border border-gray-100 bg-white p-5">
-                    <div className="flex items-baseline justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-gray-400">No response</p>
-                        <p className="text-lg font-bold text-gray-900">미응답</p>
-                      </div>
-                      <span className="text-lg font-bold text-gray-900">
-                        {RESULT.noResponseCount}명
-                      </span>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
               )}
             </section>
