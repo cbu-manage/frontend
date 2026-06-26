@@ -84,7 +84,7 @@ export default function BoardPage() {
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
-              <span className="w-16 text-center shrink-0">카테고리</span>
+              <span className="w-28 text-center shrink-0">카테고리</span>
               <span className="flex-1 text-center">제목</span>
               <span className="w-28 text-center shrink-0">작성자</span>
               <span className="w-28 text-center shrink-0">작성일</span>
@@ -98,7 +98,7 @@ export default function BoardPage() {
                   post.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
                 }`}
               >
-                <span className="w-16 text-center shrink-0 text-sm text-gray-900">[{post.category}]</span>
+                <span className="w-28 text-center shrink-0 text-sm text-gray-900">[{post.category}]</span>
                 <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
                   {post.pinned && (
                     <Pin size={13} className="shrink-0 text-brand fill-brand" />
