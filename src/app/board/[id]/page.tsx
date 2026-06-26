@@ -7,6 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
+import CommentEmpty from "@/components/detail/CommentEmpty";
 
 // TODO: API 연동 후 교체
 const MOCK_POST = {
@@ -106,11 +107,15 @@ export default function BoardDetailPage() {
             </div>
 
             {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
-            <div>
-              {MOCK_POST.comments.map((c) => (
-                <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
-              ))}
-            </div>
+            {MOCK_POST.comments.length === 0 ? (
+              <CommentEmpty />
+            ) : (
+              <div>
+                {MOCK_POST.comments.map((c) => (
+                  <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
+                ))}
+              </div>
+            )}
 
             {/* 댓글 입력 */}
             <div className="mt-6 rounded-2xl border border-gray-200 p-5">
