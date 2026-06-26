@@ -1,0 +1,202 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, Check, Paperclip, Monitor } from "lucide-react";
+import RequireMember from "@/components/auth/RequireMember";
+
+type PostWriteFormProps = {
+  /** breadcrumb 게시판명 */
+  boardName: string;
+  /** 페이지 제목 */
+  heading: string;
+  /** 제목 아래 안내문 (선택) */
+  subtitle?: string;
+  /** 분류(카테고리) 옵션 — 게시판마다 다름 */
+  categories: string[];
+  /** 익명 작성 체크박스 노출 (자유게시판만) */
+  showAnonymous?: boolean;
+  /** 취소/게시 후 이동 경로 (목록) */
+  backPath: string;
+  contentPlaceholder?: string;
+};
+
+/**
+ * 게시판 글 작성 공용 폼 — 제목+분류 / 본문 / 파일첨부 / 하단 액션.
+ * (Figma: 공지사항 작성·자유게시판 글 작성) 게시판별 차이는 props로.
+ */
+export default function PostWriteForm({
+  boardName,
+  heading,
+  subtitle,
+  categories,
+  showAnonymous = false,
+  backPath,
+  contentPlaceholder = "내용을 입력해 주세요.",
+}: PostWriteFormProps) {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [anonymous, setAnonymous] = useState(true);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handle = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+        setDropdownOpen(false);
+    };
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [dropdownOpen]);
+
+  const handleSubmit = () => {
+    if (!title.trim() || !content.trim()) return;
+    // TODO: API 연동 (POST). 현재는 목록으로 이동만.
+    router.push(backPath);
+  };
+
+  return (
+    <RequireMember>
+      <main className="min-h-screen bg-white pb-16">
+        <div className="container-x-lg pt-6 lg:pt-12">
+          {/* breadcrumb */}
+          <p className="mb-3 text-sm text-gray-400">
+            {boardName} <span className="mx-1">›</span> 글 작성하기
+          </p>
+
+          {/* 제목 영역 */}
+          <h1 className="text-2xl font-bold text-gray-900">{heading}</h1>
+          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+          <div className="mt-4 border-b border-gray-200" />
+
+          {/* 제목 + 분류 */}
+          <div className="mt-8 flex items-center gap-4 rounded-2xl border border-gray-200 p-4">
+            <div className="flex flex-1 items-center gap-3 rounded-lg bg-gray-50 px-4 py-3">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={50}
+                placeholder="제목을 입력해 주세요"
+                className="flex-1 bg-transparent text-base text-gray-900 outline-none placeholder:text-gray-400"
+              />
+              <span className="shrink-0 text-sm text-gray-400">
+                {title.length} / 50
+              </span>
+            </div>
+            <div className="relative w-52 shrink-0" ref={dropdownRef}>
+              <button
+                type="button"
+                onClick={() => setDropdownOpen((v) => !v)}
+                className="flex w-full items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm transition-colors hover:bg-gray-50"
+              >
+                <span className={category ? "text-gray-900" : "text-gray-400"}>
+                  {category ?? "분류를 선택해 주세요"}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                />
+              </button>
+              {dropdownOpen && (
+                <ul className="absolute left-0 top-full z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+                  {categories.map((c) => (
+                    <li key={c}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCategory(c);
+                          setDropdownOpen(false);
+                        }}
+                        className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 ${
+                          category === c ? "bg-brand/5 text-brand" : "text-gray-700"
+                        }`}
+                      >
+                        {c}
+                        {category === c && <Check size={15} className="text-brand" />}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* 본문 */}
+          <div className="mt-4 rounded-2xl border border-gray-200 p-5">
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              maxLength={10000}
+              rows={16}
+              placeholder={contentPlaceholder}
+              className="w-full resize-none text-base text-gray-900 outline-none placeholder:text-gray-400"
+            />
+            <div className="mt-2 text-right text-sm text-gray-400">
+              {content.length.toLocaleString()} / 10,000
+            </div>
+          </div>
+
+          {/* 파일 첨부 */}
+          <div className="mt-4 rounded-2xl border border-gray-200 p-5">
+            <p className="mb-3 text-sm font-medium text-gray-700">
+              파일 첨부{showAnonymous ? " (선택)" : ""}
+            </p>
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-4">
+              <span className="flex items-center gap-2 text-sm text-gray-500">
+                <Paperclip size={16} className="shrink-0" />
+                버튼 선택 또는 첨부파일을 선택하여 이곳에 드래그&드롭해 주세요.
+              </span>
+              <span className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600">
+                <Monitor size={14} /> 내 컴퓨터 찾기
+              </span>
+              <input type="file" multiple className="hidden" />
+            </label>
+          </div>
+
+          {/* 하단 액션 */}
+          <div className="mt-6 flex items-center justify-end gap-3">
+            {showAnonymous && (
+              <button
+                type="button"
+                onClick={() => setAnonymous((v) => !v)}
+                className={`mr-1 flex items-center gap-1.5 text-sm transition-colors ${
+                  anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                <span
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                    anonymous ? "border-gray-800 bg-gray-800" : "border-gray-300"
+                  }`}
+                >
+                  {anonymous && (
+                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                익명으로 작성
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => router.push(backPath)}
+              className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+            >
+              취소
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="rounded-full bg-gray-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+            >
+              게시하기
+            </button>
+          </div>
+        </div>
+      </main>
+    </RequireMember>
+  );
+}
