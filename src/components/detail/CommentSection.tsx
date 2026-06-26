@@ -201,7 +201,7 @@ export const CommentItem = ({
           {content}
         </p>
 
-        <div className="flex items-center gap-4 text-gray-400 text-[15px] font-medium">
+        <div className="flex items-center gap-4 text-gray-600 text-[15px] font-medium">
           <div className="flex items-center gap-1.5">
             <Clock size={14} />
             <span>{date}</span>

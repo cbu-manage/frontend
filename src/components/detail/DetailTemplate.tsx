@@ -201,8 +201,8 @@ export default function DetailTemplate({
           </h1>
 
           {/* 메타데이터 */}
-          <div className="flex items-center text-sm text-gray-400 gap-4 mb-10">
-            <span className="font-semibold text-base text-gray-700">
+          <div className="flex items-center text-sm text-gray-600 gap-4 mb-10">
+            <span className="font-semibold text-base text-gray-600">
               {author}
             </span>
             <div className="flex items-center gap-1.5">

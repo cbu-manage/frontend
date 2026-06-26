@@ -76,8 +76,8 @@ export default function NoticeDetailPage() {
               [{MOCK_NOTICE.category}]
             </span>
             <h1 className="mt-4 text-2xl font-bold text-gray-900">{MOCK_NOTICE.title}</h1>
-            <p className="mt-3 text-base text-gray-500">{MOCK_NOTICE.author}</p>
-            <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-400">
+            <p className="mt-3 text-base text-gray-600">{MOCK_NOTICE.author}</p>
+            <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Clock size={14} /> {MOCK_NOTICE.date}
               </span>
@@ -95,7 +95,7 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 하단 조회 / 댓글 카운트 */}
-            <div className="flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-400">
+            <div className="flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-700">
               <span className="flex items-center gap-1">
                 <Eye size={16} /> {MOCK_NOTICE.views}
               </span>
