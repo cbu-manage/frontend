@@ -12,6 +12,7 @@ import CommentEmpty from "@/components/detail/CommentEmpty";
 // TODO: API 연동 후 교체
 const MOCK_NEWS = {
   id: 1,
+  userId: 1, // 작성자 id (currentUserId와 비교해 본인 여부 판단)
   category: "주간",
   title: "4월 4주차 주간 뉴스레터",
   author: "15기 김민주",
@@ -43,6 +44,7 @@ export default function NewsDetailPage() {
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
+  const isAuthor = currentUserId != null && currentUserId === MOCK_NEWS.userId;
   const commentCount = MOCK_NEWS.comments.length;
 
   return (
@@ -59,10 +61,14 @@ export default function NewsDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={() => router.push("/news/write")}
-                onDelete={() => {
-                  if (window.confirm("이 글을 삭제할까요?")) router.push("/news");
-                }}
+                onEdit={isAuthor ? () => router.push("/news/write") : undefined}
+                onDelete={
+                  isAuthor
+                    ? () => {
+                        if (window.confirm("이 글을 삭제할까요?")) router.push("/news");
+                      }
+                    : undefined
+                }
               />
             </div>
 

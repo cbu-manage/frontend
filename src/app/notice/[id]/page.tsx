@@ -12,6 +12,7 @@ import CommentEmpty from "@/components/detail/CommentEmpty";
 // TODO: API 연동 후 교체
 const MOCK_NOTICE = {
   id: 1,
+  userId: 1, // 작성자 id (currentUserId와 비교해 본인 여부 판단)
   category: "공지",
   title: "2026학년도 1학기 정기 모집 안내",
   author: "15기 김민주",
@@ -48,6 +49,7 @@ export default function NoticeDetailPage() {
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
+  const isAuthor = currentUserId != null && currentUserId === MOCK_NOTICE.userId;
   const commentCount = MOCK_NOTICE.comments.length;
 
   return (
@@ -64,10 +66,14 @@ export default function NoticeDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={() => router.push("/notice/write")}
-                onDelete={() => {
-                  if (window.confirm("이 글을 삭제할까요?")) router.push("/notice");
-                }}
+                onEdit={isAuthor ? () => router.push("/notice/write") : undefined}
+                onDelete={
+                  isAuthor
+                    ? () => {
+                        if (window.confirm("이 글을 삭제할까요?")) router.push("/notice");
+                      }
+                    : undefined
+                }
               />
             </div>
 

@@ -12,6 +12,7 @@ import CommentEmpty from "@/components/detail/CommentEmpty";
 // TODO: API 연동 후 교체
 const MOCK_POST = {
   id: 1,
+  userId: 1, // 작성자 id (currentUserId와 비교해 본인 여부 판단)
   category: "질문",
   title: "백엔드 면접 후기 - 너무 떨려서 망친 듯 ㅠ",
   author: "익명12",
@@ -48,6 +49,7 @@ export default function BoardDetailPage() {
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
+  const isAuthor = currentUserId != null && currentUserId === MOCK_POST.userId;
   const commentCount = MOCK_POST.comments.length;
 
   return (
@@ -64,11 +66,17 @@ export default function BoardDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={() => router.push("/board/write")}
-                onDelete={() => {
-                  if (window.confirm("이 글을 삭제할까요?")) router.push("/board");
-                }}
-                onReport={() => window.alert("신고가 접수되었습니다.")}
+                onEdit={isAuthor ? () => router.push("/board/write") : undefined}
+                onDelete={
+                  isAuthor
+                    ? () => {
+                        if (window.confirm("이 글을 삭제할까요?")) router.push("/board");
+                      }
+                    : undefined
+                }
+                onReport={
+                  !isAuthor ? () => window.alert("신고가 접수되었습니다.") : undefined
+                }
               />
             </div>
 
