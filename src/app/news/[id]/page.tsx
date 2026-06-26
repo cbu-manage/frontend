@@ -54,10 +54,9 @@ export default function NewsDetailPage() {
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => router.push("/news")}
-                aria-label="뒤로"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50"
+                className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
                 onEdit={() => router.push("/news/write")}
@@ -130,16 +129,6 @@ export default function NewsDetailPage() {
                   등록
                 </button>
               </div>
-            </div>
-
-            {/* 목록으로 */}
-            <div className="mt-8">
-              <button
-                onClick={() => router.push("/news")}
-                className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
-              >
-                <ChevronLeft size={16} /> 목록으로
-              </button>
             </div>
           </div>
         </div>
