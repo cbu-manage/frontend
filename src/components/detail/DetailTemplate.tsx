@@ -96,7 +96,7 @@ export default function DetailTemplate({
       className={`flex-1 min-w-0 bg-white ${
         hasSidebar
           ? "container-x lg:ml-[calc(9.375vw+240px)] lg:pl-16 lg:pr-[9.375%]"
-          : "container-x"
+          : "container-x-lg"
       } py-6 lg:py-16 min-h-screen`}
     >
       <div className="w-full">

@@ -197,7 +197,7 @@ export const CommentItem = ({
           )}
         </div>
 
-        <p className="text-gray-800 text-base font-medium mb-4 leading-relaxed">
+        <p className="text-gray-800 text-sm font-medium mb-4 leading-relaxed">
           {content}
         </p>
 

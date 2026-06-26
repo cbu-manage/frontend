@@ -90,7 +90,7 @@ export default function NewsDetailPage() {
             </div>
 
             {/* 본문 */}
-            <div className="whitespace-pre-wrap py-10 text-sm leading-relaxed text-gray-700">
+            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-700">
               {MOCK_NEWS.content}
             </div>
 
