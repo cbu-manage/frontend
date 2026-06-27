@@ -4,7 +4,13 @@
  */
 import { api } from "./client";
 
-export type ReportListParams = { page?: number; size?: number };
+export type ReportListParams = {
+  page?: number;
+  size?: number;
+  /** 활동일 기준 서버 필터 (yyyy-MM-dd) */
+  startDate?: string;
+  endDate?: string;
+};
 
 /** GET /report, /report/group/{groupId} 응답의 보고서 미리보기 한 건 */
 export type ReportPreviewItem = {
@@ -15,6 +21,8 @@ export type ReportPreviewItem = {
   date: string;
   authorId: number;
   authorName: string;
+  /** 작성자 기수 */
+  generation: number;
   isAccepted: boolean;
   groupId: number;
   groupName: string;

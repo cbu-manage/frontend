@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Sparkles, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
 
 import RequireMember from "@/components/auth/RequireMember";
 import ReportCard from "@/components/report/ReportCard";
@@ -37,6 +36,7 @@ export default function ReportPage() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
+  const resetPage = () => setCurrentPage(1);
 
   const {
     data: groupRes,
@@ -66,10 +66,7 @@ export default function ReportPage() {
     queryFn: () =>
       selectedGroupId == null
         ? reportApi.getList({ page: pageIndex, size: PAGE_SIZE })
-        : reportApi.getGroupList(selectedGroupId, {
-            page: pageIndex,
-            size: PAGE_SIZE,
-          }),
+        : reportApi.getGroupList(selectedGroupId, { page: pageIndex, size: PAGE_SIZE }),
   });
 
   const isLoading = groupsLoading || reportsLoading;
@@ -80,7 +77,8 @@ export default function ReportPage() {
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
 
-  // 검색은 목록 API에 파라미터가 없어 현재 페이지 내 클라 필터 (백엔드 파라미터 추가 시 서버로 이전)
+  // TODO(API): 검색은 서버 keyword 파라미터가 없어 현재 페이지 내에서만 클라 필터됨(다른 페이지 누락).
+  //            백엔드가 GET /report에 keyword(제목·작성자) 추가하면 → 서버 파라미터로 이전하고 이 클라 필터 제거.
   const filtered = reports.filter(
     (item) => item.title.includes(search) || item.authorName.includes(search),
   );
@@ -131,7 +129,7 @@ export default function ReportPage() {
                 </button>
               </div>
 
-              {/* 필터 */}
+              {/* 필터: 그룹 탭 + 검색 */}
               <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-sm font-medium text-gray-700 shrink-0 whitespace-nowrap">내 스터디/프로젝트</span>
@@ -139,7 +137,7 @@ export default function ReportPage() {
                     <button
                       key={g}
                       type="button"
-                      onClick={() => { setActiveGroup(g); setCurrentPage(1); }}
+                      onClick={() => { setActiveGroup(g); resetPage(); }}
                       className={
                         activeGroup === g
                           ? "px-3 py-1 rounded-full text-sm font-medium bg-brand text-white transition-colors"
@@ -150,13 +148,13 @@ export default function ReportPage() {
                     </button>
                   ))}
                 </div>
-                {/* 검색 */}
+                {/* 검색 (TODO: 서버 keyword 추가 시 서버 파라미터로 이전) */}
                 <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5">
                   <Search size={14} className="text-gray-400 shrink-0" />
                   <input
                     type="text"
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => { setSearch(e.target.value); resetPage(); }}
                     placeholder="제목, 작성자로 검색"
                     className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                   />
@@ -164,16 +162,16 @@ export default function ReportPage() {
               </div>
 
               {/* 카드 그리드 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                 {filtered.map((item) => (
-                  // TODO: item.date 유효성 검사 + 안전 포맷 헬퍼(parseISO/formatDate) 적용 필요
                   <ReportCard
                     key={item.postId}
                     id={item.postId}
                     tag={item.groupName}
                     title={item.title}
                     author={item.authorName}
-                    date={format(new Date(item.date), "MM.dd")}
+                    generation={item.generation}
+                    date={item.date}
                   />
                 ))}
                 {filtered.length === 0 && (
