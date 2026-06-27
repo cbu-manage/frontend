@@ -156,6 +156,7 @@ export default function ReportPage() {
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); resetPage(); }}
                     placeholder="제목, 작성자로 검색"
+                    aria-label="제목·작성자 검색"
                     className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
                   />
                 </div>

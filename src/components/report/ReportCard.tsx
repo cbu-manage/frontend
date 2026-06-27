@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { PersonIcon } from "@/components/icons/PersonIcon";
 
 type ReportCardProps = {
@@ -14,11 +14,11 @@ type ReportCardProps = {
   date: string;
 };
 
-/** 활동일 표시 (yyyy.MM.dd) — 값이 없거나 잘못되면 "-" */
+/** 활동일 표시 (yyyy.MM.dd) — 값이 없거나 잘못되면 "-" (parseISO로 로컬 시간대 해석) */
 function formatDate(iso?: string): string {
   if (!iso) return "-";
-  const d = new Date(iso);
-  return isNaN(d.getTime()) ? "-" : format(d, "yyyy.MM.dd");
+  const d = parseISO(iso);
+  return isValid(d) ? format(d, "yyyy.MM.dd") : "-";
 }
 
 export default function ReportCard({ id, tag, title, author, generation, date }: ReportCardProps) {
@@ -27,7 +27,7 @@ export default function ReportCard({ id, tag, title, author, generation, date }:
   return (
     <Link
       href={`/report/${id}`}
-      className="flex min-h-[200px] flex-col rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+      className="flex min-h-52 flex-col rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden"
     >
       {/* 상단: 팀/스터디 태그 + 제목 */}
       <div className="flex flex-1 flex-col gap-3.5 p-6">

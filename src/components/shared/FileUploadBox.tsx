@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Paperclip, Monitor } from "lucide-react";
 
 type FileUploadBoxProps = {
@@ -18,6 +19,7 @@ type FileUploadBoxProps = {
 };
 
 function formatSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + " KB";
   return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
@@ -33,6 +35,8 @@ export default function FileUploadBox({
   imageOnly = false,
   hint = "버튼 선택 또는 첨부파일을 선택하여 이곳에 드래그&드롭해 주세요.",
 }: FileUploadBoxProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const addFiles = (picked: FileList | null) => {
     if (!picked || picked.length === 0) return;
     let list = Array.from(picked);
@@ -54,10 +58,10 @@ export default function FileUploadBox({
     <div className="space-y-2">
       {/* 드롭 존 — 다중이면 항상, 단일이면 비었을 때만 노출 */}
       {(multiple || files.length === 0) && (
-        <label
+        <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
-          className="flex items-center justify-between gap-3 border border-dashed border-gray-300 rounded-lg px-3 h-11 cursor-pointer hover:bg-gray-50 transition-colors"
+          className="flex items-center justify-between gap-3 border border-dashed border-gray-300 rounded-lg px-3 h-11 hover:bg-gray-50 transition-colors"
         >
           <div className="flex items-center gap-3 min-w-0">
             <span className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full border border-gray-200 text-gray-400">
@@ -65,17 +69,23 @@ export default function FileUploadBox({
             </span>
             <span className="text-sm text-gray-400 truncate">{hint}</span>
           </div>
-          <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-300 text-xs font-medium text-gray-600">
+          {/* 키보드 접근 가능한 파일 선택 버튼 (hidden input을 직접 트리거) */}
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-300 text-xs font-medium text-gray-600 hover:bg-white focus:outline-none focus:ring-2 focus:ring-report-ring transition-colors"
+          >
             <Monitor size={13} /> 내 컴퓨터 찾기
-          </span>
+          </button>
           <input
+            ref={inputRef}
             type="file"
             accept={accept}
             multiple={multiple}
             className="hidden"
             onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
           />
-        </label>
+        </div>
       )}
 
       {/* 선택된 파일 목록 */}

@@ -72,6 +72,11 @@ export default function PostWriteForm({
 
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) return;
+    // 카테고리 변경으로 제한이 줄어든 경우 등 — 제출 시 길이 재검사
+    if (content.length > maxLen) {
+      alert(`본문은 ${maxLen.toLocaleString()}자 이내로 작성해주세요.`);
+      return;
+    }
     // TODO: API 연동 (POST). 현재는 목록으로 이동만.
     router.push(backPath);
   };
