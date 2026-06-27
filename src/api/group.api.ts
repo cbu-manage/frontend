@@ -34,9 +34,36 @@ export type MyGroupItem = {
   members?: GroupMemberItem[];
 };
 
+/** GET /groups/{groupId} 그룹 상세의 멤버 한 명 */
+export type GroupMemberDetail = {
+  groupMemberId: number;
+  userId: number;
+  userGeneration: number;
+  userName: string;
+  grade: string;
+  major: string;
+  groupMemberRole: string;
+  groupMemberStatus: string;
+};
+
+/** GET /groups/{groupId} 그룹 상세 응답 data */
+export type GroupDetailData = {
+  groupId: number;
+  groupName: string;
+  groupStatus: string;
+  groupRecruitmentStatus: string;
+  activeMemberCount: number;
+  maxMembers: number;
+  minMembers: number;
+  members: GroupMemberDetail[];
+};
+
 export const groupApi = {
   /** 그룹 상세 정보 조회 */
-  getById: (groupId: number) => api.get(`/groups/${groupId}`),
+  getById: (groupId: number) =>
+    api.get<{ code: string; message: string; data: GroupDetailData }>(
+      `/groups/${groupId}`,
+    ),
 
   /** 그룹 가입 요청 */
   join: (groupId: number, data?: unknown) =>
