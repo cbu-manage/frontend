@@ -156,7 +156,7 @@ export const CommentItem = ({
         className={`group border-b border-gray-200 pb-6 ${isReply ? "pt-6" : "mt-10"}`}
       >
         <div className="flex justify-between items-start mb-2">
-          <span className="font-bold text-gray-900 text-base">{author}</span>
+          <span className="font-bold text-gray-900 text-[15px]">{author}</span>
           {isMine && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
@@ -197,11 +197,11 @@ export const CommentItem = ({
           )}
         </div>
 
-        <p className="text-gray-800 text-base font-medium mb-4 leading-relaxed">
+        <p className="text-gray-900 text-[15px] font-medium mb-4 leading-relaxed">
           {content}
         </p>
 
-        <div className="flex items-center gap-4 text-gray-400 text-sm font-medium">
+        <div className="flex items-center gap-4 text-gray-600 text-[15px] font-medium">
           <div className="flex items-center gap-1.5">
             <Clock size={14} />
             <span>{date}</span>

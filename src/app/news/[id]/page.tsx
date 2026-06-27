@@ -10,47 +10,42 @@ import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
 
 // TODO: API 연동 후 교체
-const MOCK_NOTICE = {
+const MOCK_NEWS = {
   id: 1,
   userId: 1, // 작성자 id (currentUserId와 비교해 본인 여부 판단)
-  category: "공지",
-  title: "2026학년도 1학기 정기 모집 안내",
+  category: "주간",
+  title: "4월 4주차 주간 뉴스레터",
   author: "15기 김민주",
-  date: "2026.04.18",
-  views: 248,
-  content: `안녕하세요, 씨부엉 운영진입니다.
+  date: "2026.04.28",
+  views: 210,
+  content: `안녕하세요, 씨부엉입니다.
 
-2026학년도 1학기 정기 모집을 시작합니다. 자세한 일정과 모집 분야는 아래 첨부 파일을 확인해주세요.
+이번 주 동아리 소식을 전해드립니다.
 
-‣ 모집 기간 : 2026.03.04 ~ 03.18
-‣ 모집 분야 : 프론트엔드 · 백엔드 · 기획 · 디자인
-‣ 면접 일정 : 2026.03.20 ~ 03.21 (개별 안내)
+‣ 씨부엉 해커톤 2026 성황리 개최 — 총 8팀 참가
+‣ 5월 워크샵 사전 신청 오픈 (선착순 30명)
+‣ 자료방에 4월 세미나 발표자료 업로드 완료
 
-신규 부원 환영합니다 — 함께 성장해요 🙌`,
-  comments: [
-    {
-      id: 1,
-      author: "14기 이서연",
-      userId: 21,
-      date: "2026.04.18",
-      content: "정기 모집 일정 공유 감사합니다! 디자인 분야 참여 가능할까요?",
-      replies: [
-        { id: 11, author: "15기 김민주", userId: 1, date: "2026.04.18", content: "네 디자인 분야도 모집합니다! 신청서에 포트폴리오 첨부해주세요 :)" },
-      ],
-    },
-    { id: 2, author: "15기 박도윤", userId: 22, date: "2026.04.18", content: "프론트 멘토링 일정도 같이 안내해주시면 좋을 것 같아요." },
-    { id: 3, author: "14기 윤지우", userId: 23, date: "2026.04.19", content: "스터디 매칭 관련 문의는 어디로 드리면 되나요?" },
-  ],
+다음 주에도 알찬 소식으로 찾아올게요!`,
+  // 빈 상태(댓글 없음) 확인용 — API 연동 시 실제 댓글로 교체
+  comments: [] as {
+    id: number;
+    author: string;
+    userId?: number;
+    date: string;
+    content: string;
+    replies?: { id: number; author: string; userId?: number; date: string; content: string }[];
+  }[],
 };
 
-export default function NoticeDetailPage() {
+export default function NewsDetailPage() {
   const router = useRouter();
   const [comment, setComment] = useState("");
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
-  const isAuthor = currentUserId != null && currentUserId === MOCK_NOTICE.userId;
-  const commentCount = MOCK_NOTICE.comments.reduce(
+  const isAuthor = currentUserId != null && currentUserId === MOCK_NEWS.userId;
+  const commentCount = MOCK_NEWS.comments.reduce(
     (n, c) => n + 1 + (c.replies?.length ?? 0),
     0,
   );
@@ -63,17 +58,17 @@ export default function NoticeDetailPage() {
             {/* 상단 바 — 뒤로 / 더보기 */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => router.push("/notice")}
+                onClick={() => router.push("/news")}
                 className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
               >
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={isAuthor ? () => router.push("/notice/write") : undefined}
+                onEdit={isAuthor ? () => router.push("/news/write") : undefined}
                 onDelete={
                   isAuthor
                     ? () => {
-                        if (window.confirm("이 글을 삭제할까요?")) router.push("/notice");
+                        if (window.confirm("이 글을 삭제할까요?")) router.push("/news");
                       }
                     : undefined
                 }
@@ -82,16 +77,16 @@ export default function NoticeDetailPage() {
 
             {/* 카테고리 / 제목 / 작성자 / 메타 */}
             <span className="inline-block rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-white">
-              [{MOCK_NOTICE.category}]
+              [{MOCK_NEWS.category}]
             </span>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">{MOCK_NOTICE.title}</h1>
-            <p className="mt-3 text-base text-gray-600">{MOCK_NOTICE.author}</p>
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">{MOCK_NEWS.title}</h1>
+            <p className="mt-3 text-base text-gray-600">{MOCK_NEWS.author}</p>
             <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
-                <Clock size={14} /> {MOCK_NOTICE.date}
+                <Clock size={14} /> {MOCK_NEWS.date}
               </span>
               <span className="flex items-center gap-1">
-                <Eye size={14} /> {MOCK_NOTICE.views}
+                <Eye size={14} /> {MOCK_NEWS.views}
               </span>
               <span className="flex items-center gap-1">
                 <MessageCircle size={14} /> {commentCount}
@@ -100,13 +95,13 @@ export default function NoticeDetailPage() {
 
             {/* 본문 */}
             <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900">
-              {MOCK_NOTICE.content}
+              {MOCK_NEWS.content}
             </div>
 
             {/* 하단 조회 / 댓글 카운트 */}
             <div className="flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-700">
               <span className="flex items-center gap-1">
-                <Eye size={16} /> {MOCK_NOTICE.views}
+                <Eye size={16} /> {MOCK_NEWS.views}
               </span>
               <span className="flex items-center gap-1">
                 <MessageCircle size={16} /> {commentCount}
@@ -114,11 +109,11 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
-            {MOCK_NOTICE.comments.length === 0 ? (
+            {MOCK_NEWS.comments.length === 0 ? (
               <CommentEmpty />
             ) : (
               <div>
-                {MOCK_NOTICE.comments.map((c) => (
+                {MOCK_NEWS.comments.map((c) => (
                   <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
                 ))}
               </div>

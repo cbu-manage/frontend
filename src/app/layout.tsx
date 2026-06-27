@@ -24,8 +24,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // suppressHydrationWarning: 한컴 HWP 등 브라우저 확장이 <html>에 data-* 속성을 주입해
+  // 생기는 hydration mismatch 억제. 최상위 노드 한정이라 내부 진짜 mismatch는 그대로 감지됨.
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body className="antialiased">
         <QueryProvider>
           <Header />
