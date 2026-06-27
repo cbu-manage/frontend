@@ -33,7 +33,8 @@ export default function ReportDetailPage() {
   const detail = res?.data?.data;
 
   // 수정/삭제 권한 (작성자 본인 또는 최고관리자) — 상단 ⋮ 메뉴 노출용
-  // ⚠️ store의 isAdmin은 /login/me가 안 내려줘서 항상 false → role 기반 useCanManageReports로 판정
+  // store의 isAdmin은 /login/me가 안 내려줘서 항상 false → role 기반 useCanManageReports로 판정
+  // TODO: 백엔드가 로그인 응답에 role 내려주기로 함 → store에 저장해 권한(isAdmin) 일괄 처리로 정리 (현재는 role 기반 우회)
   const { isAuthor } = useIsAuthor(detail?.postInfoDTO.authorId);
   const canManageReports = useCanManageReports();
   const canModify = isAuthor || canManageReports;
