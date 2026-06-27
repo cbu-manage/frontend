@@ -33,6 +33,9 @@ async function proxy(req: NextRequest) {
   res.headers.forEach((value, key) => {
     const lower = key.toLowerCase();
     if (lower === "transfer-encoding") return;
+    // fetch가 본문을 이미 압축 해제하므로 압축 관련 헤더는 제거
+    // (안 떼면 브라우저가 재해제 시도 → ERR_CONTENT_DECODING_FAILED)
+    if (lower === "content-encoding" || lower === "content-length") return;
     // Set-Cookie는 여러 줄일 수 있으므로 아래에서 별도 처리
     if (lower === "set-cookie") return;
     responseHeaders.set(key, value);

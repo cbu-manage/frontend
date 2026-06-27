@@ -32,6 +32,11 @@
   --color-success: #45cd89;
   --color-danger: #fc5e6e;
   --color-waiting: #3bc1e0; /* 참석 대기(Waiting) 청록 */
+  /* 보고서 디자인 토큰 */
+  --color-report-ring: #43d48b; /* 달력·입력 박스 포커스 외곽선 */
+  --color-report-badge: #7bc747; /* 보고서 카드 뱃지 */
+  --color-report-soft: #f4f9f1; /* 드롭다운 선택 항목 배경 */
+  --color-report-foreground: #ffffff; /* 선택/범위 셀 위 텍스트 (report-ring 대비) */
   --font-size-sm: 0.875rem; /* 14px */
   --font-size-base: 1rem; /* 16px */
   --font-size-lg: 1.25rem; /* 20px */
