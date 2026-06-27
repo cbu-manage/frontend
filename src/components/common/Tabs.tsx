@@ -30,7 +30,7 @@ export default function Tabs({
     <div
       role="tablist"
       className={cn(
-        "inline-flex items-center gap-1 rounded-full bg-gray-50 p-1",
+        "inline-flex items-center gap-2 rounded-full bg-gray-50 p-1.5",
         className,
       )}
     >
@@ -44,7 +44,7 @@ export default function Tabs({
             aria-selected={active}
             onClick={() => onValueChange(item.value)}
             className={cn(
-              "rounded-full px-4 py-2 text-base font-medium transition-colors",
+              "rounded-full px-5 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-brand text-white"
                 : "text-gray-700 hover:text-gray-900",

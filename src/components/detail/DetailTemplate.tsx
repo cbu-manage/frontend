@@ -96,7 +96,7 @@ export default function DetailTemplate({
       className={`flex-1 min-w-0 bg-white ${
         hasSidebar
           ? "container-x lg:ml-[calc(9.375vw+240px)] lg:pl-16 lg:pr-[9.375%]"
-          : "container-x"
+          : "container-x-lg"
       } py-6 lg:py-16 min-h-screen`}
     >
       <div className="w-full">
@@ -201,8 +201,8 @@ export default function DetailTemplate({
           </h1>
 
           {/* 메타데이터 */}
-          <div className="flex items-center text-sm text-gray-400 gap-4 mb-10">
-            <span className="font-semibold text-base text-gray-700">
+          <div className="flex items-center text-sm text-gray-600 gap-4 mb-10">
+            <span className="font-semibold text-base text-gray-600">
               {author}
             </span>
             <div className="flex items-center gap-1.5">

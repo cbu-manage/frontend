@@ -15,11 +15,11 @@ type NavCategory = { name: string; items: NavItem[] };
 
 const NAV: NavCategory[] = [
   {
-    name: "씨부엉 소식",
+    name: "커뮤니티",
     items: [
-      { name: "공지사항", path: "/notice" },
-      { name: "소식게시판", path: "/news" },
-      { name: "자료방", path: "/archive" },
+      { name: "씨부엉 소식", path: "/notice" },
+      { name: "뉴스레터", path: "/news" },
+      { name: "자유게시판", path: "/board" },
     ],
   },
   {
@@ -27,16 +27,19 @@ const NAV: NavCategory[] = [
     items: [
       { name: "스터디 모집", path: "/study" },
       { name: "프로젝트 모집", path: "/project" },
-      { name: "자유게시판", path: "/board" },
+      { name: "부엉이 모임", path: "/meeting" },
     ],
   },
   {
     name: "알고리즘",
-    items: [{ name: "코딩 테스트 준비", path: "/coding-test" }],
+    items: [{ name: "코딩 테스트 관리", path: "/coding-test" }],
   },
   {
     name: "아카이브",
-    items: [{ name: "보고서 업로드", path: "/report" }],
+    items: [
+      { name: "자료방", path: "/archive" },
+      { name: "보고서 업로드", path: "/report" },
+    ],
   },
 ];
 
@@ -67,6 +70,12 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+  // 데스크탑 메가메뉴는 focus-within으로도 열린다 → 서브링크 클릭(네비게이션) 후
+  // 포커스가 남아 드롭다운이 안 닫히는 문제. 경로가 바뀌면 포커스를 떼서 닫는다.
+  useEffect(() => {
+    (document.activeElement as HTMLElement | null)?.blur();
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -115,7 +124,7 @@ export default function Header() {
                 <li key={cat.name} className="group/cat relative">
                   <button
                     type="button"
-                    className={`pb-1.5 border-b-4 font-semibold transition-colors ${
+                    className={`pb-0.5 px-2 border-b-4 font-semibold whitespace-nowrap transition-colors ${
                       active
                         ? "border-brand text-brand"
                         : `border-transparent group-hover/cat:text-brand ${isHome ? "text-white" : "text-gray-900"}`
