@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PostWriteForm from "@/components/board/PostWriteForm";
 import { useFreeboardDetail } from "@/hooks/board";
 import { freeboardApi } from "@/api";
 
-export default function BoardWritePage() {
+function BoardWriteClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit") ? Number(searchParams.get("edit")) : null;
@@ -63,5 +63,17 @@ export default function BoardWritePage() {
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
     />
+  );
+}
+
+export default function BoardWritePage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+      </main>
+    }>
+      <BoardWriteClient />
+    </Suspense>
   );
 }
