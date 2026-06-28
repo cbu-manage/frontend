@@ -66,7 +66,7 @@ export default function ApplyPassedPage() {
         </div>
 
         <Link
-          href="/login"
+          href="/signup"
           className="w-full h-12 rounded-xl bg-brand text-white font-semibold hover:opacity-90 transition-opacity flex items-center justify-center"
         >
           본인 인증하러 가기
