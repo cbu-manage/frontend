@@ -3,10 +3,11 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, Check, CalendarIcon, Monitor, Paperclip } from "lucide-react";
+import { ChevronDown, Check, CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
+import FileUploadBox from "@/components/shared/FileUploadBox";
 import { groupApi, reportApi, type MyGroupItem } from "@/api";
 import { useUserStore } from "@/store/userStore";
 
@@ -55,8 +56,7 @@ function ReportUploadContent() {
   }, []);
 
   const [location, setLocation] = useState("");
-  const [files, setFiles] = useState<{ name: string; size: string }[]>([]);
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [activity, setActivity] = useState("");
   const [reflection, setReflection] = useState("");
   const [nextPlan, setNextPlan] = useState("");
@@ -119,23 +119,6 @@ function ReportUploadContent() {
     setSelectedMemberIds([]);
   };
 
-  // 사진 1장만 — 새로 고르면 교체. 제출 시 S3 업로드 후 URL을 reportImage로 전송.
-  const pickPhoto = (f?: File | null) => {
-    if (!f) return;
-    // accept="image/*"는 파일선택기 힌트일 뿐 → 드래그&드롭 등 모든 경로에서 타입 검증
-    if (!f.type.startsWith("image/")) {
-      alert("이미지 파일만 첨부할 수 있습니다.");
-      return;
-    }
-    setPhotoFile(f);
-    setFiles([{ name: f.name, size: (f.size / (1024 * 1024)).toFixed(1) + " MB" }]);
-  };
-
-  const clearPhoto = () => {
-    setPhotoFile(null);
-    setFiles([]);
-  };
-
   const handleSubmit = async () => {
     if (!title.trim()) {
       alert("보고서 제목을 입력하세요.");
@@ -150,6 +133,7 @@ function ReportUploadContent() {
       return;
     }
     // reportImage는 서버 필수값 — 새 사진 또는 기존 이미지(수정 시) 중 하나는 반드시 있어야 함
+    const photoFile = photoFiles[0] ?? null;
     if (!photoFile && !reportImage) {
       alert("활동 사진을 첨부하세요.");
       return;
@@ -336,54 +320,12 @@ function ReportUploadContent() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">파일 업로드</label>
 
-            {isEdit && reportImage && !photoFile && (
+            {isEdit && reportImage && photoFiles.length === 0 && (
               <p className="text-xs text-gray-400">기존 사진이 첨부되어 있습니다. 새로 올리면 교체됩니다.</p>
             )}
 
-            {files.length === 0 ? (
-              /* 빈 상태 — 드래그&드롭 존 */
-              <label
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { e.preventDefault(); pickPhoto(e.dataTransfer.files?.[0]); }}
-                className="flex items-center justify-between gap-3 border border-dashed border-gray-300 rounded-lg px-3 h-11 cursor-pointer hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full border border-gray-200 text-gray-400">
-                    <Paperclip size={13} />
-                  </span>
-                  <span className="text-sm text-gray-400 truncate">
-                    버튼 선택 또는 첨부파일을 선택하여 이곳에 드래그&드롭해 주세요.
-                  </span>
-                </div>
-                <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-gray-300 text-xs font-medium text-gray-600">
-                  <Monitor size={13} /> 내 컴퓨터 찾기
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => { pickPhoto(e.target.files?.[0]); e.target.value = ""; }}
-                />
-              </label>
-            ) : (
-              /* 선택됨 — 파일명 + 크기 + 제거 */
-              <div className="flex items-center justify-between text-sm text-gray-700 bg-gray-50 rounded-lg px-3 h-11 border border-gray-200">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="shrink-0 px-2 py-0.5 rounded-md border border-gray-300 text-xs font-medium text-gray-700">사진</span>
-                  <span className="truncate">{files[0].name}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className="text-xs text-gray-400">{files[0].size}</span>
-                  <button
-                    type="button"
-                    onClick={clearPhoto}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    × 제거
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* 사진 1장만 — 이미지 전용, 새로 고르면 교체 */}
+            <FileUploadBox files={photoFiles} onChange={setPhotoFiles} imageOnly accept="image/*" />
 
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-700">파싱 미리보기</span>

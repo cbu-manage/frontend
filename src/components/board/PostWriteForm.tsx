@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Check, Paperclip, Monitor } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import FileUploadBox from "@/components/shared/FileUploadBox";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
 type PostWriteSubmitData = {
@@ -181,13 +182,13 @@ export default function PostWriteForm({
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              maxLength={10000}
+              maxLength={maxLen}
               rows={16}
               placeholder={contentPlaceholder}
               className="w-full resize-none text-base text-gray-900 outline-none placeholder:text-gray-400"
             />
             <div className="mt-2 text-right text-sm text-gray-400">
-              {content.length.toLocaleString()} / 10,000
+              {content.length.toLocaleString()} / {maxLen.toLocaleString()}
             </div>
           </div>
 
@@ -196,26 +197,18 @@ export default function PostWriteForm({
             <p className="mb-3 text-sm font-medium text-gray-700">
               파일 첨부{showAnonymous ? " (선택)" : ""}
             </p>
-            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-gray-50 px-4 py-4">
-              <span className="flex items-center gap-2 text-sm text-gray-500">
-                <Paperclip size={16} className="shrink-0" />
-                버튼 선택 또는 첨부파일을 선택하여 이곳에 드래그&드롭해 주세요.
-              </span>
-              <span className="flex shrink-0 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600">
-                <Monitor size={14} /> 내 컴퓨터 찾기
-              </span>
-              <input type="file" multiple className="hidden" />
-            </label>
+            {/* TODO(API): 게시 시 첨부파일 업로드 연동 (현재 files 상태만 보유) */}
+            <FileUploadBox files={files} onChange={setFiles} multiple />
           </div>
 
-          {/* 하단 액션 */}
-          <div className="mt-6 flex items-center justify-end gap-3">
-            {showAnonymous && (
+          {/* 익명 작성 (자유게시판) — 파일첨부와 버튼 사이 별도 행 */}
+          {showAnonymous && (
+            <div className="mt-4 flex justify-end">
               <button
                 type="button"
                 onClick={() => setAnonymous((v) => !v)}
-                    aria-pressed={anonymous}
-                className={`mr-1 flex items-center gap-1.5 text-sm transition-colors ${
+                aria-pressed={anonymous}
+                className={`flex items-center gap-1.5 text-sm transition-colors ${
                   anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
                 }`}
               >
@@ -232,7 +225,11 @@ export default function PostWriteForm({
                 </span>
                 익명으로 작성
               </button>
-            )}
+            </div>
+          )}
+
+          {/* 하단 액션 */}
+          <div className="mt-4 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={() => router.push(backPath)}

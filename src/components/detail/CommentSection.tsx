@@ -140,6 +140,12 @@ export const CommentItem = ({
   const isMine = isLoggedIn && userId != null && currentUserId === userId;
   const showReply = !deleted && isLoggedIn && depth < 4;
 
+  // 핸들러가 있을 때만 메뉴 항목 노출 (no-op 버튼 방지)
+  const canEdit = isMine && !!onEditComment;
+  const canDelete = isMine && !!onDeleteComment;
+  const canReport = !isMine && !!onReportComment;
+  const showMenu = !deleted && isLoggedIn && (canEdit || canDelete || canReport);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -165,6 +171,9 @@ export const CommentItem = ({
               <button
                 type="button"
                 onClick={() => setMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="더보기"
                 className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
               >
                 <MoreHorizontal size={20} />
