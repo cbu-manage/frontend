@@ -6,6 +6,13 @@ import { ChevronDown, Check, Paperclip, Monitor } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
+type PostWriteSubmitData = {
+  title: string;
+  content: string;
+  category: string | null;
+  isAnonymous: boolean;
+};
+
 type PostWriteFormProps = {
   /** breadcrumb 게시판명 */
   boardName: string;
@@ -22,6 +29,9 @@ type PostWriteFormProps = {
   /** 취소/게시 후 이동 경로 (목록) */
   backPath: string;
   contentPlaceholder?: string;
+  /** 게시 버튼 클릭 시 호출 — 미전달 시 backPath로 이동만 */
+  onSubmit?: (data: PostWriteSubmitData) => Promise<void>;
+  isSubmitting?: boolean;
 };
 
 /**
@@ -37,6 +47,8 @@ export default function PostWriteForm({
   staffOnly = false,
   backPath,
   contentPlaceholder = "내용을 입력해 주세요.",
+  onSubmit,
+  isSubmitting = false,
 }: PostWriteFormProps) {
   const router = useRouter();
   const isStaff = useIsStaff();
@@ -57,10 +69,13 @@ export default function PostWriteForm({
     return () => document.removeEventListener("mousedown", handle);
   }, [dropdownOpen]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) return;
-    // TODO: API 연동 (POST). 현재는 목록으로 이동만.
-    router.push(backPath);
+    if (onSubmit) {
+      await onSubmit({ title, content, category, isAnonymous: anonymous });
+    } else {
+      router.push(backPath);
+    }
   };
 
   if (staffOnly && !isStaff) {
@@ -217,9 +232,10 @@ export default function PostWriteForm({
             <button
               type="button"
               onClick={handleSubmit}
-              className="rounded-full bg-gray-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+              disabled={isSubmitting}
+              className="rounded-full bg-gray-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              게시하기
+              {isSubmitting ? "게시 중..." : "게시하기"}
             </button>
           </div>
         </div>

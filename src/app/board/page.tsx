@@ -2,52 +2,34 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pin, Pencil } from "lucide-react";
+import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
+import { useFreeboardList } from "@/hooks/board/useFreeboardList";
+import type { FreeBoardListItem } from "@/api/freeboard.api";
 
 const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
-// TODO: API 연동 후 교체
-type PostItem = {
-  id: number;
-  category: string;
-  title: string;
-  author: string;
-  date: string;
-  views: number;
-  pinned?: boolean;
-};
-const MOCK_POSTS: PostItem[] = [
-  { id: 1, category: "공지", title: "🚩 자유게시판 이용 가이드 — 익명·실명·신고 기능 안내", author: "운영진 15기 김민주", date: "2026.04.18", views: 248, pinned: true },
-  { id: 2, category: "일반", title: "코딩테스트 준비 같이 봐 게신가요?", author: "익명47", date: "2026.04.15", views: 172 },
-  { id: 3, category: "잡담", title: "이번 주말 점심 카페 추천 좀 부탁드려요", author: "14기 정하은", date: "2026.04.12", views: 89 },
-  { id: 4, category: "질문", title: "백엔드 면접 후기 — 너무 떨려서 망친 듯ㅠ", author: "익명12", date: "2026.04.10", views: 156 },
-  { id: 5, category: "잡담", title: "3박년 코딩 캡스톤 어떻게 준비하시나요", author: "익명83", date: "2026.04.08", views: 103 },
-  { id: 6, category: "홍보", title: "동아리방 와이파이 자꾸 끊겨요", author: "15기 박도윤", date: "2026.04.05", views: 84 },
-  { id: 7, category: "잡담", title: "Claude Max 같이 쓰실 분 3명 더 모집", author: "익명28", date: "2026.04.02", views: 212 },
-  { id: 8, category: "질문", title: "OT 단체사진 어디서 받을 수 있나요", author: "익명54", date: "2026.03.31", views: 98 },
-  { id: 9, category: "질문", title: "리액트 상태관리 다들 뭐 쓰세요?", author: "익명61", date: "2026.03.28", views: 134 },
-  { id: 10, category: "일상", title: "기말 끝나고 다들 뭐하세요", author: "15기 박도윤", date: "2026.03.25", views: 76 },
-  { id: 11, category: "홍보", title: "사이드 프로젝트 팀원 구해요 (디자이너)", author: "익명19", date: "2026.03.22", views: 95 },
-];
+function formatDate(iso?: string) {
+  return iso ? iso.slice(0, 10).replace(/-/g, ".") : "";
+}
 
 export default function BoardPage() {
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  // 페이지당 최대 11개 게시물 (API 연동 시 size=11로 요청). 현재는 목데이터.
-  const totalPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  // 상단 고정(pinned) 먼저, 그 외는 기존 순서
-  const filtered = MOCK_POSTS.filter((p) => {
-    const matchTab = activeTab === "전체" || p.category === activeTab;
-    const matchSearch = p.title.includes(search) || p.author.includes(search);
-    return matchTab && matchSearch;
-  }).sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false));
+  const { data, isLoading } = useFreeboardList({ page: currentPage });
+
+  const posts: FreeBoardListItem[] = data?.items ?? [];
+  const totalPages = Array.from({ length: data?.totalPages ?? 1 }, (_, i) => i + 1);
+
+  const filtered = posts.filter((p) =>
+    (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search),
+  );
 
   return (
     <RequireMember>
@@ -84,39 +66,54 @@ export default function BoardPage() {
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
             <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
-              <span className="w-28 text-center shrink-0">카테고리</span>
-              <span className="flex-1 text-center">제목</span>
               <span className="w-28 text-center shrink-0">작성자</span>
+              <span className="flex-1 text-center">제목</span>
               <span className="w-28 text-center shrink-0">작성일</span>
               <span className="w-20 text-center shrink-0">조회</span>
             </div>
-            {filtered.map((post) => (
-              <Link
-                key={post.id}
-                href={`/board/${post.id}`}
-                className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors ${
-                  post.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
-                }`}
-              >
-                <span className="w-28 text-center shrink-0 text-sm text-gray-900">[{post.category}]</span>
-                <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
-                  {post.pinned && (
-                    <Pin size={13} className="shrink-0 text-brand fill-brand" />
-                  )}
-                  <span className="truncate">{post.title}</span>
-                </span>
-                <span className="w-28 text-center shrink-0 text-sm text-gray-900 truncate">{post.author}</span>
-                <span className="w-28 text-center shrink-0 text-sm text-gray-900">{post.date}</span>
-                <span className="w-20 text-center shrink-0 text-sm text-gray-900">{post.views}</span>
-              </Link>
-            ))}
-            {filtered.length === 0 && (
-              <div className="py-16 text-center text-sm text-gray-900">검색 결과가 없습니다.</div>
+
+            {isLoading ? (
+              <div className="py-16 text-center text-sm text-gray-400">불러오는 중...</div>
+            ) : filtered.length === 0 ? (
+              <div className="py-16 text-center text-sm text-gray-900">
+                {search ? "검색 결과가 없습니다." : "게시글이 없습니다."}
+              </div>
+            ) : (
+              filtered.map((post) => (
+                <Link
+                  key={post.postId}
+                  href={`/board/${post.postId}`}
+                  className="flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50"
+                >
+                  <span className="w-28 text-center shrink-0 text-sm text-gray-900 truncate">
+                    {post.isAnonymous ? "익명" : (post.authorName ?? "")}
+                  </span>
+                  <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                    <span className="truncate">{post.title}</span>
+                    {(post.commentCount ?? 0) > 0 && (
+                      <span className="shrink-0 text-brand text-xs">[{post.commentCount}]</span>
+                    )}
+                  </span>
+                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                    {formatDate(post.createdAt)}
+                  </span>
+                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">
+                    {post.viewCount ?? 0}
+                  </span>
+                </Link>
+              ))
             )}
           </div>
 
           <div className="mt-8">
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(page) => {
+                setCurrentPage(page);
+                setSearch("");
+              }}
+            />
           </div>
         </div>
       </main>
