@@ -1,15 +1,20 @@
 "use client";
+
+import { Suspense } from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useLogin } from "@/hooks/auth";
 import InputBox from "@/components/common/InputBox";
 import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+function LoginClient() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, errorMessage } = useLogin();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") ?? undefined;
+  const { handleLogin, errorMessage } = useLogin(redirect);
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -75,5 +80,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginClient />
+    </Suspense>
   );
 }

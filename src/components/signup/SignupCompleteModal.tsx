@@ -78,7 +78,7 @@ export default function SignupCompleteModal({ open, onClose }: SignupCompleteMod
               비밀번호 변경
             </button>
           </Link>
-          <Link href="/login" className="flex-1 min-w-0" onClick={onClose}>
+          <Link href="/login?redirect=/apply/fee" className="flex-1 min-w-0" onClick={onClose}>
             <Button
               type="button"
               variant="brand"

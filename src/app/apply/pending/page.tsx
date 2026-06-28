@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { authApi } from "@/api";
 
 export default function ApplyPendingPage() {
   const router = useRouter();
@@ -10,8 +11,19 @@ export default function ApplyPendingPage() {
     router.push("/");
   };
 
-  const handleCheckStatus = () => {
-    router.refresh();
+  const handleCheckStatus = async () => {
+    try {
+      const res = await authApi.me();
+      const role = res.data.data?.role;
+      const isApproved = role === "ROLE_USER" || !!role?.toUpperCase().includes("ADMIN");
+      if (isApproved) {
+        router.push("/apply/complete");
+      } else {
+        window.alert("아직 승인이 완료되지 않았습니다.");
+      }
+    } catch {
+      window.alert("상태 확인 중 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -64,7 +76,7 @@ export default function ApplyPendingPage() {
           </button>
           <button
             type="button"
-            onClick={handleCheckStatus}
+            onClick={() => { void handleCheckStatus(); }}
             className="flex-1 h-12 rounded-xl bg-brand text-white font-semibold hover:opacity-90 transition-opacity"
           >
             승인 상태 확인
