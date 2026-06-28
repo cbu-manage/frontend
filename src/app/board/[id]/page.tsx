@@ -9,44 +9,23 @@ import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
 import { useIsAuthor } from "@/hooks/auth";
 import { useFreeboardDetail } from "@/hooks/board";
-import type { CommentItem as ApiCommentItem } from "@/api";
-
-function formatDate(iso?: string) {
-  return iso ? iso.slice(0, 10).replace(/-/g, ".") : "";
-}
-
-function mapComment(c: ApiCommentItem): {
-  id: number;
-  author: string;
-  userId?: number;
-  content: string;
-  date: string;
-  deleted?: boolean;
-  replies: ReturnType<typeof mapComment>[];
-} {
-  return {
-    id: c.commentId,
-    author: c.userName ?? c.authorName ?? "익명",
-    userId: c.userId,
-    content: c.content,
-    date: formatDate(c.createdAt),
-    deleted: c.deleted,
-    replies: (c.replies ?? []).map(mapComment),
-  };
-}
+import { useUserStore } from "@/store/userStore";
+import { formatDate } from "@/lib/date";
 
 export default function BoardDetailPage() {
   const router = useRouter();
   const params = useParams();
   const postId = Number(params.id);
   const [comment, setComment] = useState("");
-  const [anonymous, setAnonymous] = useState(true);
+
+  const userId = useUserStore((s) => s.userId);
+  const currentUserId = userId ? Number(userId) : null;
 
   const { postQuery, commentsQuery, createComment, replyComment, deleteComment, deletePost, flagPost } =
     useFreeboardDetail(postId);
 
   const post = postQuery.data;
-  const comments = (commentsQuery.data ?? []).map(mapComment);
+  const comments = commentsQuery.data ?? [];
   const commentCount = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
 
   const { canModify } = useIsAuthor(post?.authorId, post?.isAuthor);
@@ -118,7 +97,7 @@ export default function BoardDetailPage() {
             </p>
             <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
-                <Clock size={14} /> {formatDate(post.createdAt)}
+                <Clock size={14} /> {post.createdAt ? formatDate(post.createdAt as string) : ""}
               </span>
               <span className="flex items-center gap-1">
                 <Eye size={14} /> {post.viewCount ?? 0}
@@ -129,17 +108,8 @@ export default function BoardDetailPage() {
             </div>
 
             {/* 본문 */}
-            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900">
+            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900 border-b border-gray-200">
               {post.content}
-            </div>
-
-            <div className="flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-700">
-              <span className="flex items-center gap-1">
-                <Eye size={16} /> {post.viewCount ?? 0}
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageCircle size={16} /> {commentCount}
-              </span>
             </div>
 
             {/* 댓글 목록 */}
@@ -151,7 +121,7 @@ export default function BoardDetailPage() {
                   <CommentItem
                     key={c.id}
                     {...c}
-                    currentUserId={null}
+                    currentUserId={currentUserId}
                     onReplySubmit={(parentId, content) =>
                       replyComment.mutate({ commentId: parentId, content })
                     }
@@ -174,37 +144,14 @@ export default function BoardDetailPage() {
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-xs text-gray-400">{comment.length} / 1,000</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setAnonymous((v) => !v)}
-                    aria-pressed={anonymous}
-                    className={`flex items-center gap-1.5 text-sm transition-colors ${
-                      anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
-                    }`}
-                  >
-                    <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                        anonymous ? "border-gray-800 bg-gray-800" : "border-gray-300"
-                      }`}
-                    >
-                      {anonymous && (
-                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
-                          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </span>
-                    익명으로 작성
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCommentSubmit}
-                    disabled={!comment.trim() || createComment.isPending}
-                    className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                  >
-                    {createComment.isPending ? "등록 중..." : "등록"}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleCommentSubmit}
+                  disabled={!comment.trim() || createComment.isPending}
+                  className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                >
+                  {createComment.isPending ? "등록 중..." : "등록"}
+                </button>
               </div>
             </div>
           </div>

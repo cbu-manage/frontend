@@ -1,7 +1,30 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { freeboardApi, commentApi, postApi, extractCommentList, type FreeBoardPost } from "@/api";
+import { freeboardApi, commentApi, postApi, extractCommentList, type FreeBoardPost, type CommentItem } from "@/api";
+import { formatDate } from "@/lib/date";
+
+export type MappedComment = {
+  id: number;
+  author: string;
+  userId?: number;
+  content: string;
+  date: string;
+  deleted?: boolean;
+  replies: MappedComment[];
+};
+
+function mapComment(c: CommentItem): MappedComment {
+  return {
+    id: c.commentId,
+    author: c.userName ?? c.authorName ?? "익명",
+    userId: c.userId,
+    content: c.content,
+    date: c.createdAt ? formatDate(c.createdAt) : "",
+    deleted: c.deleted,
+    replies: (c.replies ?? []).map(mapComment),
+  };
+}
 
 function extractPost(raw: unknown): FreeBoardPost | null {
   if (!raw || typeof raw !== "object") return null;
@@ -25,7 +48,7 @@ export function useFreeboardDetail(postId: number) {
     queryKey: ["freeboard-comments", postId],
     queryFn: async () => {
       const res = await commentApi.getPostComments(postId);
-      return extractCommentList(res.data);
+      return extractCommentList(res.data).map(mapComment);
     },
     enabled: !!postId,
   });

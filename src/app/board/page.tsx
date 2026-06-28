@@ -5,20 +5,12 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
-import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
-import { useFreeboardList } from "@/hooks/board/useFreeboardList";
-import type { FreeBoardListItem } from "@/api/freeboard.api";
-
-const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as const;
-type CategoryTab = (typeof CATEGORY_TABS)[number];
-
-function formatDate(iso?: string) {
-  return iso ? iso.slice(0, 10).replace(/-/g, ".") : "";
-}
+import { useFreeboardList } from "@/hooks/board";
+import type { FreeBoardListItem } from "@/api";
+import { formatDate } from "@/lib/date";
 
 export default function BoardPage() {
-  const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -37,30 +29,23 @@ export default function BoardPage() {
         <div className="container-x-lg">
           <div className="pt-6 lg:pt-16 pb-6">
             <h1 className="text-h1 text-gray-900 mb-2">자유게시판</h1>
-            <p className="text-base text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
+            <p className="text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
           </div>
 
-          {/* 탭 + 검색 + 글 작성 */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <Tabs
-              items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
-              value={activeTab}
-              onValueChange={(v) => setActiveTab(v as CategoryTab)}
+          {/* 검색 + 글 작성 */}
+          <div className="flex w-full items-center justify-end gap-3 mb-4">
+            <SearchBar
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="제목 · 내용으로 검색해주세요."
+              className="w-full sm:w-80"
             />
-            <div className="flex w-full items-center gap-3 sm:w-auto">
-              <SearchBar
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="제목 · 내용으로 검색해주세요."
-                className="w-full sm:w-80"
-              />
-              <Link
-                href="/board/write"
-                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
-              >
-                <Pencil size={16} /> 글 작성하기
-              </Link>
-            </div>
+            <Link
+              href="/board/write"
+              className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+            >
+              <Pencil size={16} /> 글 작성하기
+            </Link>
           </div>
 
           {/* 테이블 */}
@@ -95,7 +80,7 @@ export default function BoardPage() {
                     )}
                   </span>
                   <span className="w-28 text-center shrink-0 text-sm text-gray-900">
-                    {formatDate(post.createdAt)}
+                    {post.createdAt ? formatDate(post.createdAt as string) : ""}
                   </span>
                   <span className="w-20 text-center shrink-0 text-sm text-gray-900">
                     {post.viewCount ?? 0}
