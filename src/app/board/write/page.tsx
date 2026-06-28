@@ -50,6 +50,14 @@ function BoardWriteClient() {
     );
   }
 
+  if (editId && !postQuery.isLoading && !editPost) {
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">게시글을 찾을 수 없습니다.</div>
+      </main>
+    );
+  }
+
   return (
     <PostWriteForm
       boardName="자유게시판"

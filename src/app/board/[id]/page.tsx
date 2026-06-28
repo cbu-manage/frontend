@@ -11,6 +11,11 @@ import { useIsAuthor } from "@/hooks/auth";
 import { useFreeboardDetail } from "@/hooks/board";
 import { useUserStore } from "@/store/userStore";
 import { formatDate } from "@/lib/date";
+import type { MappedComment } from "@/hooks/board";
+
+function countComments(items: MappedComment[]): number {
+  return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
+}
 
 export default function BoardDetailPage() {
   const router = useRouter();
@@ -27,7 +32,7 @@ export default function BoardDetailPage() {
 
   const post = postQuery.data;
   const comments = commentsQuery.data ?? [];
-  const commentCount = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
+  const commentCount = countComments(comments);
 
   const { canModify } = useIsAuthor(post?.authorId, post?.isAuthor);
 
@@ -121,7 +126,9 @@ export default function BoardDetailPage() {
             </div>
 
             {/* 댓글 목록 */}
-            {comments.length === 0 ? (
+            {commentsQuery.isLoading ? (
+              <div className="py-10 text-center text-sm text-gray-400">댓글을 불러오는 중...</div>
+            ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (
               <div>

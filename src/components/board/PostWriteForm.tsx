@@ -63,6 +63,14 @@ export default function PostWriteForm({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (initialValues === undefined) return;
+    setTitle(initialValues.title);
+    setContent(initialValues.content);
+    if (initialValues.isAnonymous !== undefined) setAnonymous(initialValues.isAnonymous);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues?.title, initialValues?.content, initialValues?.isAnonymous]);
+
+  useEffect(() => {
     if (!dropdownOpen) return;
     const handle = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))

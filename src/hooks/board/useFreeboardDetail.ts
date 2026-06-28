@@ -26,12 +26,6 @@ function mapComment(c: CommentItem): MappedComment {
   };
 }
 
-function extractPost(raw: unknown): FreeBoardPost | null {
-  if (!raw || typeof raw !== "object") return null;
-  const obj = raw as Record<string, unknown>;
-  return (("data" in obj ? obj.data : obj) ?? null) as FreeBoardPost | null;
-}
-
 export function useFreeboardDetail(postId: number) {
   const queryClient = useQueryClient();
 
@@ -39,7 +33,7 @@ export function useFreeboardDetail(postId: number) {
     queryKey: ["freeboard", postId],
     queryFn: async () => {
       const res = await freeboardApi.getById(postId);
-      return extractPost(res.data);
+      return res.data.data ?? null;
     },
     enabled: !!postId,
   });

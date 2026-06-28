@@ -25,7 +25,7 @@ export default function BoardPage() {
   const totalPages = Array.from({ length: data?.totalPages ?? 1 }, (_, i) => i + 1);
 
   const filtered = posts.filter((p) => {
-    const matchTab = activeTab === "전체" || (p.category as string | undefined) === activeTab;
+    const matchTab = activeTab === "전체" || p.category === activeTab;
     const matchSearch = (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search);
     return matchTab && matchSearch;
   });
@@ -51,7 +51,7 @@ export default function BoardPage() {
             <SearchBar
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="제목 · 내용으로 검색해주세요."
+              placeholder="제목 · 작성자로 검색해주세요."
               className="w-full sm:w-80"
             />
             <Link

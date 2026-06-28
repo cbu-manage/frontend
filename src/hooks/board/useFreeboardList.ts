@@ -17,11 +17,7 @@ export function useFreeboardList({ page, size = 15 }: { page: number; size?: num
     queryKey: ["freeboard-list", page, size],
     queryFn: async () => {
       const res = await freeboardApi.getList({ page: page - 1, size });
-      const payload =
-        res.data && typeof res.data === "object" && "data" in res.data
-          ? (res.data as { data?: unknown }).data
-          : res.data;
-      return normalizeList(payload);
+      return normalizeList(res.data.data);
     },
   });
 }
