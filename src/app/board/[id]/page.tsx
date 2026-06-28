@@ -17,11 +17,12 @@ export default function BoardDetailPage() {
   const params = useParams();
   const postId = Number(params.id);
   const [comment, setComment] = useState("");
+  const [anonymous, setAnonymous] = useState(true);
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
 
-  const { postQuery, commentsQuery, createComment, replyComment, deleteComment, deletePost, flagPost } =
+  const { postQuery, commentsQuery, createComment, replyComment, deleteComment, deletePost, flagPost, flagComment } =
     useFreeboardDetail(postId);
 
   const post = postQuery.data;
@@ -47,6 +48,13 @@ export default function BoardDetailPage() {
     const reason = window.prompt("신고 사유를 입력해주세요.");
     if (!reason?.trim()) return;
     await flagPost.mutateAsync(reason.trim());
+    window.alert("신고가 접수되었습니다.");
+  };
+
+  const handleCommentFlag = async (commentId: number) => {
+    const reason = window.prompt("댓글 신고 사유를 입력해주세요.");
+    if (!reason?.trim()) return;
+    await flagComment.mutateAsync({ commentId, content: reason.trim() });
     window.alert("신고가 접수되었습니다.");
   };
 
@@ -126,6 +134,7 @@ export default function BoardDetailPage() {
                       replyComment.mutate({ commentId: parentId, content })
                     }
                     onDeleteComment={(id) => deleteComment.mutate(id)}
+                    onReportComment={handleCommentFlag}
                   />
                 ))}
               </div>
@@ -144,14 +153,37 @@ export default function BoardDetailPage() {
               />
               <div className="mt-2 flex items-center justify-between">
                 <span className="text-xs text-gray-400">{comment.length} / 1,000</span>
-                <button
-                  type="button"
-                  onClick={handleCommentSubmit}
-                  disabled={!comment.trim() || createComment.isPending}
-                  className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
-                >
-                  {createComment.isPending ? "등록 중..." : "등록"}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAnonymous((v) => !v)}
+                    aria-pressed={anonymous}
+                    className={`flex items-center gap-1.5 text-sm transition-colors ${
+                      anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                        anonymous ? "border-gray-800 bg-gray-800" : "border-gray-300"
+                      }`}
+                    >
+                      {anonymous && (
+                        <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+                          <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </span>
+                    익명으로 작성
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCommentSubmit}
+                    disabled={!comment.trim() || createComment.isPending}
+                    className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {createComment.isPending ? "등록 중..." : "등록"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

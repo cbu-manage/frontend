@@ -5,12 +5,17 @@ import Link from "next/link";
 import { Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
+import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
 import { useFreeboardList } from "@/hooks/board";
 import type { FreeBoardListItem } from "@/api";
 import { formatDate } from "@/lib/date";
 
+const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as const;
+type CategoryTab = (typeof CATEGORY_TABS)[number];
+
 export default function BoardPage() {
+  const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -19,9 +24,11 @@ export default function BoardPage() {
   const posts: FreeBoardListItem[] = data?.items ?? [];
   const totalPages = Array.from({ length: data?.totalPages ?? 1 }, (_, i) => i + 1);
 
-  const filtered = posts.filter((p) =>
-    (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search),
-  );
+  const filtered = posts.filter((p) => {
+    const matchTab = activeTab === "전체" || (p.category as string | undefined) === activeTab;
+    const matchSearch = (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search);
+    return matchTab && matchSearch;
+  });
 
   return (
     <RequireMember>
@@ -32,7 +39,14 @@ export default function BoardPage() {
             <p className="text-gray-700">익명·실명 어떤 이름으로든 자유롭게 이야기해요 (부적절한 글은 신고)</p>
           </div>
 
-          {/* 검색 + 글 작성 */}
+          {/* 탭 + 검색 + 글 작성 */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <Tabs
+              items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as CategoryTab)}
+            />
+          </div>
           <div className="flex w-full items-center justify-end gap-3 mb-4">
             <SearchBar
               value={search}

@@ -81,6 +81,11 @@ export function useFreeboardDetail(postId: number) {
     mutationFn: (content: string) => freeboardApi.flag(postId, content),
   });
 
+  const flagComment = useMutation({
+    mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
+      commentApi.flag(commentId, content),
+  });
+
   return {
     postQuery,
     commentsQuery,
@@ -89,5 +94,6 @@ export function useFreeboardDetail(postId: number) {
     deleteComment,
     deletePost,
     flagPost,
+    flagComment,
   };
 }

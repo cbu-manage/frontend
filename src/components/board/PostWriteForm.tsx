@@ -29,6 +29,8 @@ type PostWriteFormProps = {
   /** 취소/게시 후 이동 경로 (목록) */
   backPath: string;
   contentPlaceholder?: string;
+  /** 수정 모드 초기값 */
+  initialValues?: { title: string; content: string; isAnonymous?: boolean };
   /** 게시 버튼 클릭 시 호출 — 미전달 시 backPath로 이동만 */
   onSubmit?: (data: PostWriteSubmitData) => Promise<void>;
   isSubmitting?: boolean;
@@ -47,16 +49,17 @@ export default function PostWriteForm({
   staffOnly = false,
   backPath,
   contentPlaceholder = "내용을 입력해 주세요.",
+  initialValues,
   onSubmit,
   isSubmitting = false,
 }: PostWriteFormProps) {
   const router = useRouter();
   const isStaff = useIsStaff();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [content, setContent] = useState(initialValues?.content ?? "");
   const [category, setCategory] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [anonymous, setAnonymous] = useState(true);
+  const [anonymous, setAnonymous] = useState(initialValues?.isAnonymous ?? true);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

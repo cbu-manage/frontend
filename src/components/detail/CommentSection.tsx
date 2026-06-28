@@ -7,6 +7,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Flag,
 } from "lucide-react";
 
 interface CommentInputProps {
@@ -103,6 +104,7 @@ interface CommentItemProps {
   onReplySubmit?: (parentId: number, content: string) => void;
   onEditComment?: (id: number) => void;
   onDeleteComment?: (id: number) => void;
+  onReportComment?: (id: number) => void;
   disabled?: boolean;
   deleted?: boolean;
   currentUserId?: number | null;
@@ -123,6 +125,7 @@ export const CommentItem = ({
   onReplySubmit,
   onEditComment,
   onDeleteComment,
+  onReportComment,
   disabled = false,
   deleted = false,
   currentUserId,
@@ -157,7 +160,7 @@ export const CommentItem = ({
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-[15px]">{author}</span>
-          {isMine && (
+          {(isMine || !deleted) && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 type="button"
@@ -168,29 +171,45 @@ export const CommentItem = ({
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onEditComment?.(id);
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    <Pencil size={18} className="shrink-0 text-gray-500" />
-                    수정
-                  </button>
-                  <div className="border-t border-gray-100 my-1" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onDeleteComment?.(id);
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 size={18} className="shrink-0" />
-                    삭제
-                  </button>
+                  {isMine ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onEditComment?.(id);
+                          setMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <Pencil size={18} className="shrink-0 text-gray-500" />
+                        수정
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDeleteComment?.(id);
+                          setMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 size={18} className="shrink-0" />
+                        삭제
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onReportComment?.(id);
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <Flag size={18} className="shrink-0" />
+                      신고
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -245,6 +264,7 @@ export const CommentItem = ({
               onReplySubmit={onReplySubmit}
               onEditComment={onEditComment}
               onDeleteComment={onDeleteComment}
+              onReportComment={onReportComment}
               disabled={disabled}
               currentUserId={currentUserId}
             />

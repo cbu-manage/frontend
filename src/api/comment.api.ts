@@ -102,6 +102,10 @@ export const commentApi = {
 
   /** 댓글 삭제 (softDelete) */
   delete: (commentId: number) => api.delete(`/comment/${commentId}`),
+
+  /** 댓글 신고 */
+  flag: (commentId: number, content: string) =>
+    api.post(`/comment/${commentId}/flag`, { content }),
 };
 
 export { extractCommentList };
