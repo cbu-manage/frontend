@@ -8,7 +8,7 @@ import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
 import { useIsAuthor } from "@/hooks/auth";
-import { useFreeboardDetail } from "@/hooks/board/useFreeboardDetail";
+import { useFreeboardDetail } from "@/hooks/board";
 import type { CommentItem as ApiCommentItem } from "@/api";
 
 function formatDate(iso?: string) {
@@ -65,7 +65,9 @@ export default function BoardDetailPage() {
   };
 
   const handleFlag = async () => {
-    await flagPost.mutateAsync();
+    const reason = window.prompt("신고 사유를 입력해주세요.");
+    if (!reason?.trim()) return;
+    await flagPost.mutateAsync(reason.trim());
     window.alert("신고가 접수되었습니다.");
   };
 

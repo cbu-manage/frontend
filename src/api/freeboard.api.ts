@@ -51,6 +51,6 @@ export const freeboardApi = {
     api.patch(`/freeboard/${postId}`, data),
 
   /** 게시글 신고 */
-  flag: (postId: number) =>
-    api.post(`/post/${postId}/flag`),
+  flag: (postId: number, content: string) =>
+    api.post(`/post/${postId}/flag`, { content }),
 };

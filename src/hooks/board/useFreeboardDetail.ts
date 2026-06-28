@@ -55,7 +55,7 @@ export function useFreeboardDetail(postId: number) {
   });
 
   const flagPost = useMutation({
-    mutationFn: () => freeboardApi.flag(postId),
+    mutationFn: (content: string) => freeboardApi.flag(postId, content),
   });
 
   return {
