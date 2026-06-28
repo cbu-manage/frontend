@@ -160,7 +160,7 @@ export const CommentItem = ({
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-[15px]">{author}</span>
-          {(isMine || !deleted) && (
+          {!deleted && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 type="button"
