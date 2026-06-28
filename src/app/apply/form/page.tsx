@@ -109,6 +109,7 @@ export default function ApplyFormPage() {
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
   const [rawStudentIdStatus, setStudentIdStatus] = useState<StudentIdStatus>("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setField = <K extends keyof FormState>(key: K) => (value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -174,6 +175,7 @@ export default function ApplyFormPage() {
       return;
     }
     if (studentIdStatus !== "available") return;
+    setIsSubmitting(true);
     try {
       await applyApi.submit({
         email: `${form.email}@tukorea.ac.kr`,
@@ -194,6 +196,7 @@ export default function ApplyFormPage() {
       router.push("/");
     } catch {
       window.alert("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setIsSubmitting(false);
     }
   };
 
@@ -371,9 +374,10 @@ export default function ApplyFormPage() {
             <Button
               type="submit"
               variant="default"
+              disabled={isSubmitting}
               className="h-auto rounded-lg px-8 py-4 text-base font-medium"
             >
-              지원하기
+              {isSubmitting ? "제출 중..." : "지원하기"}
             </Button>
           </div>
         </form>

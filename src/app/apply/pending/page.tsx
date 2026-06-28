@@ -15,7 +15,8 @@ export default function ApplyPendingPage() {
     try {
       const res = await authApi.me();
       const role = res.data.data?.role;
-      if (role) {
+      const isApproved = role === "ROLE_USER" || !!role?.toUpperCase().includes("ADMIN");
+      if (isApproved) {
         router.push("/apply/complete");
       } else {
         window.alert("아직 승인이 완료되지 않았습니다.");
