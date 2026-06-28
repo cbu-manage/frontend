@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Upload, Search, CalendarIcon } from "lucide-react";
+import { Upload, CalendarIcon, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
@@ -13,35 +13,9 @@ import { reportApi, type ReportPreviewItem } from "@/api";
 
 const PAGE_SIZE = 9;
 
-function formatDate(iso: string): string {
-  try {
-    return format(new Date(iso), "MM.dd");
-  } catch {
-    return iso;
-  }
-}
-
-/** createdAt(ISO)이 start~end 사이 여부 (일 단위) */
-function inDateRange(createdAt: string, start?: Date, end?: Date): boolean {
-  if (!start && !end) return true;
-  const d = new Date(createdAt);
-  if (start) {
-    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    if (d < s) return false;
-  }
-  if (end) {
-    const e = new Date(
-      end.getFullYear(),
-      end.getMonth(),
-      end.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
-    if (d > e) return false;
-  }
-  return true;
+/** 서버 필터용 날짜 포맷 (yyyy-MM-dd) */
+function toApiDate(d?: Date): string | undefined {
+  return d ? format(d, "yyyy-MM-dd") : undefined;
 }
 
 export default function ReportManageSection() {
@@ -63,31 +37,36 @@ export default function ReportManageSection() {
   }, []);
 
   const [search, setSearch] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [groupByTeam, setGroupByTeam] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
+  const resetPage = () => setCurrentPage(1);
 
-  // 관리자는 role 기준으로 전체 보고서가 내려옴 (서버 페이징)
+  // 검색 실행 (Enter 또는 아이콘 클릭) — 입력값 확정 + 1페이지로
+  const runSearch = () => {
+    setSubmittedKeyword(search.trim());
+    setCurrentPage(1);
+  };
+
+  const apiStart = toApiDate(startDate);
+  const apiEnd = toApiDate(endDate);
+  const keyword = submittedKeyword || undefined;
+
+  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색 모두 서버 필터
   const { data: res, isLoading, isError } = useQuery({
-    queryKey: ["reports", "manage", pageIndex],
-    queryFn: () => reportApi.getList({ page: pageIndex, size: PAGE_SIZE }),
+    queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd, keyword],
+    queryFn: () =>
+      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, startDate: apiStart, endDate: apiEnd, keyword }),
   });
 
-  const reportPage = res?.data?.data;
+  const reportPage = res?.data?.data?.reports;
   const reports: ReportPreviewItem[] = reportPage?.content ?? [];
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
 
-  // 검색·기간은 목록 API에 파라미터가 없어 현재 페이지 내 클라 필터
-  const filtered = reports.filter((r) => {
-    const matchSearch =
-      r.title.includes(search) || r.authorName.includes(search);
-    const matchDate = inDateRange(r.createdAt, startDate, endDate);
-    return matchSearch && matchDate;
-  });
-
-  // "팀으로 그룹핑" 토글 시 groupName별로 묶기
-  const grouped = filtered.reduce<Record<string, ReportPreviewItem[]>>(
+  // "팀으로 그룹핑" 토글 시 groupName별로 묶기 (현재 페이지 기준)
+  const grouped = reports.reduce<Record<string, ReportPreviewItem[]>>(
     (acc, r) => {
       (acc[r.groupName] ??= []).push(r);
       return acc;
@@ -102,7 +81,8 @@ export default function ReportManageSection() {
       tag={r.groupName}
       title={r.title}
       author={r.authorName}
-      date={formatDate(r.createdAt)}
+      generation={r.generation}
+      date={r.date}
     />
   );
 
@@ -121,10 +101,8 @@ export default function ReportManageSection() {
         </button>
       </div>
 
-      {/* 필터 영역 */}
+      {/* 필터 영역: 기간(활동일) + 검색 + 팀으로 그룹핑 */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
-
-        {/* 기간 + 팀으로 그룹핑 */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
             <span className="font-medium text-gray-700 shrink-0 w-8">기간</span>
@@ -144,7 +122,7 @@ export default function ReportManageSection() {
               </button>
               {calendarOpenStart && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); }} />
+                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); resetPage(); }} />
                 </div>
               )}
             </div>
@@ -165,10 +143,19 @@ export default function ReportManageSection() {
               </button>
               {calendarOpenEnd && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); }} />
+                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); resetPage(); }} />
                 </div>
               )}
             </div>
+            {(startDate || endDate) && (
+              <button
+                type="button"
+                onClick={() => { setStartDate(undefined); setEndDate(undefined); resetPage(); }}
+                className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+              >
+                초기화
+              </button>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-sm text-gray-600">팀으로 그룹핑</span>
@@ -191,18 +178,26 @@ export default function ReportManageSection() {
           </div>
         </div>
 
-        {/* 검색 */}
+        {/* 검색 (서버 keyword — 제목·작성자) · Enter 또는 아이콘 클릭으로 검색 */}
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5">
-          <Search size={15} className="text-gray-400 shrink-0" />
+          <button
+            type="button"
+            onClick={runSearch}
+            aria-label="검색"
+            className="shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors"
+          >
+            <Search size={15} />
+          </button>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
             placeholder="제목, 작성자로 검색"
+            aria-label="제목·작성자 검색"
             className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
           />
         </div>
-
       </div>
 
       {/* 상태 표시 */}
@@ -215,7 +210,7 @@ export default function ReportManageSection() {
 
       {!isLoading && !isError && (
         <>
-          {filtered.length === 0 ? (
+          {reports.length === 0 ? (
             <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
           ) : groupByTeam ? (
             /* 팀(그룹)별 묶음 보기 */
@@ -223,7 +218,7 @@ export default function ReportManageSection() {
               {Object.entries(grouped).map(([groupName, items]) => (
                 <div key={groupName}>
                   <h2 className="text-sm font-semibold text-gray-700 mb-3">{groupName}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {items.map(renderCard)}
                   </div>
                 </div>
@@ -231,8 +226,8 @@ export default function ReportManageSection() {
             </div>
           ) : (
             /* 평면 그리드 */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {filtered.map(renderCard)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+              {reports.map(renderCard)}
             </div>
           )}
 

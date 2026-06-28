@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Pencil, Trash2, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
-import { reportApi, type ReportDetail } from "@/api";
+import { reportApi, groupApi, type ReportDetail } from "@/api";
 import { useIsAuthor, useCanManageReports, useMe } from "@/hooks/auth";
 
 function formatDate(iso?: string): string {
@@ -160,6 +160,15 @@ function ReportDetailView({
   const { postInfoDTO: post, reportInfoDTO: report } = detail;
   const canManage = useCanManageReports();
 
+  // 참여자 명단 기수: reportMembers엔 generation이 없어 그룹 상세에서 userId→기수 매핑해 보강
+  const { data: groupRes } = useQuery({
+    queryKey: ["groupDetail", report.groupInfoDTO.groupId],
+    queryFn: () => groupApi.getById(report.groupInfoDTO.groupId),
+  });
+  const genByUserId = new Map<number, number>(
+    (groupRes?.data?.data?.members ?? []).map((m) => [m.userId, m.userGeneration]),
+  );
+
   const meta = [
     { label: "활동 일자", value: formatDate(report.date) },
     { label: "참여 인원", value: `${report.reportMembers.length}명` },
@@ -236,14 +245,17 @@ function ReportDetailView({
             <p className="text-sm text-gray-400">참여자 정보가 없습니다.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {report.reportMembers.map((m) => (
-                <span
-                  key={m.userId}
-                  className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
-                >
-                  {m.name}
-                </span>
-              ))}
+              {report.reportMembers.map((m) => {
+                const gen = genByUserId.get(m.userId);
+                return (
+                  <span
+                    key={m.userId}
+                    className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700"
+                  >
+                    {gen != null ? `${gen}기 ${m.name}` : m.name}
+                  </span>
+                );
+              })}
             </div>
           )}
         </section>

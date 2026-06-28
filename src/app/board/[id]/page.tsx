@@ -122,7 +122,12 @@ export default function BoardDetailPage() {
             ) : (
               <div>
                 {MOCK_POST.comments.map((c) => (
-                  <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
+                  <CommentItem
+                    key={c.id}
+                    {...c}
+                    currentUserId={currentUserId}
+                    onReportComment={() => window.alert("신고가 접수되었습니다.")}
+                  />
                 ))}
               </div>
             )}
