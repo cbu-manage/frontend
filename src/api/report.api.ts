@@ -10,6 +10,8 @@ export type ReportListParams = {
   /** 활동일 기준 서버 필터 (yyyy-MM-dd) */
   startDate?: string;
   endDate?: string;
+  /** 검색어 (제목·작성자명) */
+  keyword?: string;
 };
 
 /** GET /report, /report/group/{groupId} 응답의 보고서 미리보기 한 건 */
@@ -37,6 +39,15 @@ export type ReportPreviewPage = {
     number: number;
     totalElements: number;
     totalPages: number;
+  };
+};
+
+/** 목록 조회 응답 — reports(페이징) + search(검색 메타) 로 감싸짐 */
+export type ReportListResponse = {
+  reports: ReportPreviewPage;
+  search: {
+    keyword: string | null;
+    mode: string;
   };
 };
 
@@ -81,7 +92,7 @@ type ApiResponse<T> = { code: string; message: string; data: T };
 export const reportApi = {
   /** 보고서 게시글 미리보기 페이징 조회 */
   getList: (params?: ReportListParams) =>
-    api.get<ApiResponse<ReportPreviewPage>>("/report", { params }),
+    api.get<ApiResponse<ReportListResponse>>("/report", { params }),
 
   /** 보고서 게시글 생성 */
   create: (data: unknown) => api.post("/report", data),
@@ -108,7 +119,7 @@ export const reportApi = {
 
   /** 그룹별 보고서 게시글 미리보기 페이징 조회 */
   getGroupList: (groupId: number, params?: ReportListParams) =>
-    api.get<ApiResponse<ReportPreviewPage>>(`/report/group/${groupId}`, {
+    api.get<ApiResponse<ReportListResponse>>(`/report/group/${groupId}`, {
       params,
     }),
 

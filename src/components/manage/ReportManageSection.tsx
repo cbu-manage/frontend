@@ -37,34 +37,36 @@ export default function ReportManageSection() {
   }, []);
 
   const [search, setSearch] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [groupByTeam, setGroupByTeam] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
   const resetPage = () => setCurrentPage(1);
 
+  // 검색 실행 (Enter 또는 아이콘 클릭) — 입력값 확정 + 1페이지로
+  const runSearch = () => {
+    setSubmittedKeyword(search.trim());
+    setCurrentPage(1);
+  };
+
   const apiStart = toApiDate(startDate);
   const apiEnd = toApiDate(endDate);
+  const keyword = submittedKeyword || undefined;
 
-  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간 필터는 서버(활동일 startDate·endDate)
+  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색 모두 서버 필터
   const { data: res, isLoading, isError } = useQuery({
-    queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd],
+    queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd, keyword],
     queryFn: () =>
-      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, startDate: apiStart, endDate: apiEnd }),
+      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, startDate: apiStart, endDate: apiEnd, keyword }),
   });
 
-  const reportPage = res?.data?.data;
+  const reportPage = res?.data?.data?.reports;
   const reports: ReportPreviewItem[] = reportPage?.content ?? [];
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
 
-  // TODO(API): 검색은 서버 keyword 파라미터가 없어 현재 페이지 내에서만 클라 필터됨(다른 페이지 누락).
-  //            백엔드가 GET /report에 keyword 추가하면 → 서버 파라미터로 이전(getList에 keyword 전달)하고 이 클라 필터 제거.
-  const filtered = reports.filter(
-    (r) => r.title.includes(search) || r.authorName.includes(search),
-  );
-
   // "팀으로 그룹핑" 토글 시 groupName별로 묶기 (현재 페이지 기준)
-  const grouped = filtered.reduce<Record<string, ReportPreviewItem[]>>(
+  const grouped = reports.reduce<Record<string, ReportPreviewItem[]>>(
     (acc, r) => {
       (acc[r.groupName] ??= []).push(r);
       return acc;
@@ -176,13 +178,21 @@ export default function ReportManageSection() {
           </div>
         </div>
 
-        {/* 검색 (TODO: 서버 keyword 추가 시 서버 파라미터로 이전) */}
+        {/* 검색 (서버 keyword — 제목·작성자) · Enter 또는 아이콘 클릭으로 검색 */}
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5">
-          <Search size={15} className="text-gray-400 shrink-0" />
+          <button
+            type="button"
+            onClick={runSearch}
+            aria-label="검색"
+            className="shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors"
+          >
+            <Search size={15} />
+          </button>
           <input
             type="text"
             value={search}
-            onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
             placeholder="제목, 작성자로 검색"
             aria-label="제목·작성자 검색"
             className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
@@ -200,7 +210,7 @@ export default function ReportManageSection() {
 
       {!isLoading && !isError && (
         <>
-          {filtered.length === 0 ? (
+          {reports.length === 0 ? (
             <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
           ) : groupByTeam ? (
             /* 팀(그룹)별 묶음 보기 */
@@ -217,7 +227,7 @@ export default function ReportManageSection() {
           ) : (
             /* 평면 그리드 */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-              {filtered.map(renderCard)}
+              {reports.map(renderCard)}
             </div>
           )}
 

@@ -34,9 +34,16 @@ export default function ReportPage() {
   const router = useRouter();
   const [activeGroup, setActiveGroup] = useState("전체");
   const [search, setSearch] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
   const resetPage = () => setCurrentPage(1);
+
+  // 검색 실행 (Enter 또는 아이콘 클릭) — 입력값 확정 + 1페이지로
+  const runSearch = () => {
+    setSubmittedKeyword(search.trim());
+    setCurrentPage(1);
+  };
 
   const {
     data: groupRes,
@@ -56,32 +63,27 @@ export default function ReportPage() {
       ? null
       : (allGroups.find((g) => g.groupName === activeGroup)?.groupId ?? null);
 
-  // 그룹 필터는 서버에서: "전체"→getList, 특정 그룹→getGroupList (둘 다 서버 페이징)
+  const keyword = submittedKeyword || undefined;
+
+  // 그룹 필터·검색 모두 서버에서: "전체"→getList, 특정 그룹→getGroupList (서버 페이징/검색)
   const {
     data: reportRes,
     isLoading: reportsLoading,
     isError: reportsError,
   } = useQuery({
-    queryKey: ["reports", activeGroup, pageIndex],
+    queryKey: ["reports", activeGroup, pageIndex, keyword],
     queryFn: () =>
       selectedGroupId == null
-        ? reportApi.getList({ page: pageIndex, size: PAGE_SIZE })
-        : reportApi.getGroupList(selectedGroupId, { page: pageIndex, size: PAGE_SIZE }),
+        ? reportApi.getList({ page: pageIndex, size: PAGE_SIZE, keyword })
+        : reportApi.getGroupList(selectedGroupId, { page: pageIndex, size: PAGE_SIZE, keyword }),
   });
 
-  const isLoading = groupsLoading || reportsLoading;
   const isError = groupsError || reportsError;
 
-  const reportPage = reportRes?.data?.data;
+  const reportPage = reportRes?.data?.data?.reports;
   const reports: ReportPreviewItem[] = reportPage?.content ?? [];
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
-
-  // TODO(API): 검색은 서버 keyword 파라미터가 없어 현재 페이지 내에서만 클라 필터됨(다른 페이지 누락).
-  //            백엔드가 GET /report에 keyword(제목·작성자) 추가하면 → 서버 파라미터로 이전하고 이 클라 필터 제거.
-  const filtered = reports.filter(
-    (item) => item.title.includes(search) || item.authorName.includes(search),
-  );
 
   return (
     <RequireMember>
@@ -92,7 +94,7 @@ export default function ReportPage() {
             <p className="text-base text-gray-600">본인이 속한 스터디·멤버가 작성한 보고서만 조회됩니다.</p>
           </div>
 
-          {isLoading && (
+          {groupsLoading && (
             <div className="text-center py-16 text-gray-500">불러오는 중...</div>
           )}
           {isError && (
@@ -100,7 +102,7 @@ export default function ReportPage() {
           )}
 
           {/* 그룹 없음 — 빈 상태 */}
-          {!isLoading && !isError && allGroups.length === 0 && (
+          {!groupsLoading && !isError && allGroups.length === 0 && (
             <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 px-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#E8F5E3]">
                 <Sparkles className="h-8 w-8 text-[#5a9b4a]" strokeWidth={2} />
@@ -117,7 +119,7 @@ export default function ReportPage() {
           )}
 
           {/* 그룹 있음 — 보고서 뷰 */}
-          {!isLoading && !isError && allGroups.length > 0 && (
+          {!groupsLoading && !isError && allGroups.length > 0 && (
             <>
               {/* 업로드 버튼 */}
               <div className="flex justify-end mb-6">
@@ -148,13 +150,21 @@ export default function ReportPage() {
                     </button>
                   ))}
                 </div>
-                {/* 검색 (TODO: 서버 keyword 추가 시 서버 파라미터로 이전) */}
+                {/* 검색 (서버 keyword — 제목·작성자) · Enter 또는 아이콘 클릭으로 검색 */}
                 <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5">
-                  <Search size={14} className="text-gray-400 shrink-0" />
+                  <button
+                    type="button"
+                    onClick={runSearch}
+                    aria-label="검색"
+                    className="shrink-0 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors"
+                  >
+                    <Search size={14} />
+                  </button>
                   <input
                     type="text"
                     value={search}
-                    onChange={(e) => { setSearch(e.target.value); resetPage(); }}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
                     placeholder="제목, 작성자로 검색"
                     aria-label="제목·작성자 검색"
                     className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
@@ -162,25 +172,31 @@ export default function ReportPage() {
                 </div>
               </div>
 
-              {/* 카드 그리드 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-                {filtered.map((item) => (
-                  <ReportCard
-                    key={item.postId}
-                    id={item.postId}
-                    tag={item.groupName}
-                    title={item.title}
-                    author={item.authorName}
-                    generation={item.generation}
-                    date={item.date}
-                  />
-                ))}
-                {filtered.length === 0 && (
-                  <div className="col-span-full py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
-                )}
-              </div>
+              {/* 카드 그리드 — 검색/페이지 전환 시 필터바는 유지하고 이 영역만 로딩 */}
+              {reportsLoading ? (
+                <div className="py-16 text-center text-gray-500">불러오는 중...</div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                    {reports.map((item) => (
+                      <ReportCard
+                        key={item.postId}
+                        id={item.postId}
+                        tag={item.groupName}
+                        title={item.title}
+                        author={item.authorName}
+                        generation={item.generation}
+                        date={item.date}
+                      />
+                    ))}
+                    {reports.length === 0 && (
+                      <div className="col-span-full py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
+                    )}
+                  </div>
 
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                </>
+              )}
             </>
           )}
         </div>
