@@ -69,7 +69,8 @@ export {
 } from "./report.api";
 
 // Comment
-export { commentApi } from "./comment.api";
+export { commentApi, extractCommentList } from "./comment.api";
+export type { CommentItem, CommentBody } from "./comment.api";
 
 // Group
 export {
@@ -104,3 +105,13 @@ export { imageApi } from "./image.api";
 
 // Apply
 export { applyApi, type ApplicationRequest } from "./apply.api";
+
+// Free Board
+export {
+  freeboardApi,
+  type FreeBoardCreateBody,
+  type FreeBoardUpdateBody,
+  type FreeBoardListItem,
+  type FreeBoardListResponse,
+  type FreeBoardPost,
+} from "./freeboard.api";

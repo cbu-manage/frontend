@@ -7,7 +7,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  Siren,
+  Flag,
 } from "lucide-react";
 
 interface CommentInputProps {
@@ -166,7 +166,7 @@ export const CommentItem = ({
       >
         <div className="flex justify-between items-start mb-2">
           <span className="font-bold text-gray-900 text-[15px]">{author}</span>
-          {showMenu && (
+          {!deleted && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 type="button"
@@ -179,38 +179,43 @@ export const CommentItem = ({
                 <MoreHorizontal size={20} />
               </button>
               {menuOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 top-full mt-1 w-40 py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50"
-                >
-                  {canEdit && (
+                <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
+                  {isMine ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onEditComment?.(id);
+                          setMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <Pencil size={18} className="shrink-0 text-gray-500" />
+                        수정
+                      </button>
+                      <div className="border-t border-gray-100 my-1" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDeleteComment?.(id);
+                          setMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 size={18} className="shrink-0" />
+                        삭제
+                      </button>
+                    </>
+                  ) : (
                     <button
                       type="button"
-                      onClick={() => { onEditComment?.(id); setMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      onClick={() => {
+                        onReportComment?.(id);
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
                     >
-                      <Pencil size={18} className="shrink-0 text-gray-500" />
-                      수정
-                    </button>
-                  )}
-                  {canEdit && canDelete && <div className="border-t border-gray-100 my-1" />}
-                  {canDelete && (
-                    <button
-                      type="button"
-                      onClick={() => { onDeleteComment?.(id); setMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-danger hover:bg-gray-50"
-                    >
-                      <Trash2 size={18} className="shrink-0" />
-                      삭제
-                    </button>
-                  )}
-                  {canReport && (
-                    <button
-                      type="button"
-                      onClick={() => { onReportComment?.(id); setMenuOpen(false); }}
-                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      <Siren size={18} className="shrink-0 text-gray-500" />
+                      <Flag size={18} className="shrink-0" />
                       신고
                     </button>
                   )}
