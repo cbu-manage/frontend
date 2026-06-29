@@ -7,6 +7,13 @@ import RequireMember from "@/components/auth/RequireMember";
 import FileUploadBox from "@/components/shared/FileUploadBox";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
 
+type PostWriteSubmitData = {
+  title: string;
+  content: string;
+  category: string | null;
+  isAnonymous: boolean;
+};
+
 type PostWriteFormProps = {
   /** breadcrumb 게시판명 */
   boardName: string;
@@ -27,6 +34,11 @@ type PostWriteFormProps = {
   contentMaxLength?: number;
   /** 카테고리별 글자수 제한 오버라이드 (예: { 공지: 20000 }) — 없으면 contentMaxLength 사용 */
   categoryMaxLength?: Record<string, number>;
+  /** 수정 모드 초기값 */
+  initialValues?: { title: string; content: string; isAnonymous?: boolean };
+  /** 게시 버튼 클릭 시 호출 — 미전달 시 backPath로 이동만 */
+  onSubmit?: (data: PostWriteSubmitData) => Promise<void>;
+  isSubmitting?: boolean;
 };
 
 /**
@@ -44,16 +56,28 @@ export default function PostWriteForm({
   contentPlaceholder = "내용을 입력해 주세요.",
   contentMaxLength = 10000,
   categoryMaxLength,
+  initialValues,
+  onSubmit,
+  isSubmitting = false,
 }: PostWriteFormProps) {
   const router = useRouter();
   const isStaff = useIsStaff();
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [content, setContent] = useState(initialValues?.content ?? "");
   const [category, setCategory] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [anonymous, setAnonymous] = useState(true);
+  const [anonymous, setAnonymous] = useState(initialValues?.isAnonymous ?? true);
   const [files, setFiles] = useState<File[]>([]);
+  const maxLen = (category ? categoryMaxLength?.[category] : undefined) ?? contentMaxLength;
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialValues === undefined) return;
+    setTitle(initialValues.title);
+    setContent(initialValues.content);
+    if (initialValues.isAnonymous !== undefined) setAnonymous(initialValues.isAnonymous);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues?.title, initialValues?.content, initialValues?.isAnonymous]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -65,20 +89,13 @@ export default function PostWriteForm({
     return () => document.removeEventListener("mousedown", handle);
   }, [dropdownOpen]);
 
-  // 선택한 카테고리별 본문 글자수 제한 (예: 공지 20000, 그 외 기본 10000)
-  const maxLen = category
-    ? (categoryMaxLength?.[category] ?? contentMaxLength)
-    : contentMaxLength;
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) return;
-    // 카테고리 변경으로 제한이 줄어든 경우 등 — 제출 시 길이 재검사
-    if (content.length > maxLen) {
-      alert(`본문은 ${maxLen.toLocaleString()}자 이내로 작성해주세요.`);
-      return;
+    if (onSubmit) {
+      await onSubmit({ title, content, category, isAnonymous: anonymous });
+    } else {
+      router.push(backPath);
     }
-    // TODO: API 연동 (POST). 현재는 목록으로 이동만.
-    router.push(backPath);
   };
 
   if (staffOnly && !isStaff) {
@@ -231,9 +248,10 @@ export default function PostWriteForm({
             <button
               type="button"
               onClick={handleSubmit}
-              className="rounded-full bg-gray-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+              disabled={isSubmitting}
+              className="rounded-full bg-gray-800 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              게시하기
+              {isSubmitting ? "게시 중..." : "게시하기"}
             </button>
           </div>
         </div>
