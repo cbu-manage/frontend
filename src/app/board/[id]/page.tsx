@@ -39,7 +39,7 @@ export default function BoardDetailPage() {
   const handleCommentSubmit = async () => {
     const trimmed = comment.trim();
     if (!trimmed || createComment.isPending) return;
-    await createComment.mutateAsync(trimmed);
+    await createComment.mutateAsync({ content: trimmed, isAnonymous: anonymous });
     setComment("");
   };
 

@@ -48,8 +48,8 @@ export function useFreeboardDetail(postId: number) {
   });
 
   const createComment = useMutation({
-    mutationFn: (content: string) =>
-      commentApi.createPostComment(postId, { content }),
+    mutationFn: ({ content, isAnonymous }: { content: string; isAnonymous: boolean }) =>
+      commentApi.createPostComment(postId, { content, isAnonymous }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["freeboard-comments", postId] }),
   });

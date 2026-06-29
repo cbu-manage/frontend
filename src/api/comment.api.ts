@@ -3,7 +3,7 @@
  */
 import { api } from "./client";
 
-export type CommentBody = { content: string };
+export type CommentBody = { content: string; isAnonymous?: boolean };
 
 /** 댓글/답글 한 건 */
 export type CommentItem = {
