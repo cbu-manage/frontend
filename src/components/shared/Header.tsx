@@ -161,10 +161,12 @@ export default function Header() {
               );
             })}
           </ul>
-          {/* 전체폭 셸프 — 카테고리 hover 시 헤더가 통째로 펼쳐지는 배경 */}
+          {/* 전체폭 셸프 — 카테고리 hover/focus 시 헤더가 통째로 펼쳐지는 배경.
+              드롭다운(글자)이 focus-within으로도 열리므로 배경도 동일 조건을 줘야
+              "배경 없이 글자만 남는" 현상이 안 생김 (방어로직) */}
           <div
             aria-hidden="true"
-            className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 absolute inset-x-0 top-full z-30 h-44 border-b transition-opacity ${
+            className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 group-focus-within/cats:visible group-focus-within/cats:opacity-100 absolute inset-x-0 top-full z-30 h-44 border-b transition-opacity ${
               isHome ? "bg-[#151517] border-white/10" : "bg-gray-0 border-gray-200"
             }`}
           />
