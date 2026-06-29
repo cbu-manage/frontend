@@ -90,7 +90,7 @@ export default function ReportManageSection() {
     <div className="max-w-6xl mx-auto">
 
       {/* 헤더: 제목 + 업로드 버튼 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-10">
         <h1 className="text-h1 text-gray-900">전체 보고서 관리</h1>
         <button
           onClick={() => router.push("/report/write")}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Sparkles, Search } from "lucide-react";
+import { Sparkles, Search, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import RequireMember from "@/components/auth/RequireMember";
@@ -89,9 +89,18 @@ export default function ReportPage() {
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16 pb-6">
-            <h1 className="text-h1 text-gray-900 mb-2">내 보고서</h1>
-            <p className="text-base text-gray-600">본인이 속한 스터디·멤버가 작성한 보고서만 조회됩니다.</p>
+          <div className="flex items-start justify-between gap-4 pt-6 lg:pt-16 pb-10">
+            <div>
+              <h1 className="text-h1 text-gray-900 mb-2">내 보고서</h1>
+              <p className="text-base text-gray-600">본인이 속한 스터디·멤버가 작성한 보고서만 조회됩니다.</p>
+            </div>
+            <button
+              onClick={() => router.push("/report/write")}
+              className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide"
+            >
+              <Upload size={18} />
+              새 보고서 업로드
+            </button>
           </div>
 
           {groupsLoading && (
@@ -121,16 +130,6 @@ export default function ReportPage() {
           {/* 그룹 있음 — 보고서 뷰 */}
           {!groupsLoading && !isError && allGroups.length > 0 && (
             <>
-              {/* 업로드 버튼 */}
-              <div className="flex justify-end mb-6">
-                <button
-                  onClick={() => router.push("/report/write")}
-                  className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors shrink-0"
-                >
-                  + 새 보고서 업로드
-                </button>
-              </div>
-
               {/* 필터: 그룹 탭 + 검색 */}
               <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
                 <div className="flex items-center gap-3 flex-wrap">
