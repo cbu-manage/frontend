@@ -1,61 +1,99 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
 import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
-import { useUserStore } from "@/store/userStore";
 import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
+import { useNewsDetail } from "@/hooks/news/useNewsDetail";
+import { useUserStore } from "@/store/userStore";
+import { formatDate } from "@/lib/date";
+import type { MappedComment } from "@/hooks/board";
 
-// TODO: API 연동 후 교체
-const MOCK_NEWS = {
-  id: 1,
-  userId: 1, // 작성자 id (currentUserId와 비교해 본인 여부 판단)
-  category: "주간",
-  title: "4월 4주차 주간 뉴스레터",
-  author: "15기 김민주",
-  date: "2026.04.28",
-  views: 210,
-  content: `안녕하세요, 씨부엉입니다.
-
-이번 주 동아리 소식을 전해드립니다.
-
-‣ 씨부엉 해커톤 2026 성황리 개최 — 총 8팀 참가
-‣ 5월 워크샵 사전 신청 오픈 (선착순 30명)
-‣ 자료방에 4월 세미나 발표자료 업로드 완료
-
-다음 주에도 알찬 소식으로 찾아올게요!`,
-  // 빈 상태(댓글 없음) 확인용 — API 연동 시 실제 댓글로 교체
-  comments: [] as {
-    id: number;
-    author: string;
-    userId?: number;
-    date: string;
-    content: string;
-    replies?: { id: number; author: string; userId?: number; date: string; content: string }[];
-  }[],
-};
+function countComments(items: MappedComment[]): number {
+  return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
+}
 
 export default function NewsDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const newsId = Number(params.id);
   const [comment, setComment] = useState("");
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
-  const isAuthor = currentUserId != null && currentUserId === MOCK_NEWS.userId;
-  const commentCount = MOCK_NEWS.comments.reduce(
-    (n, c) => n + 1 + (c.replies?.length ?? 0),
-    0,
-  );
+
+  const {
+    postQuery,
+    commentsQuery,
+    createComment,
+    replyComment,
+    deleteComment,
+    deletePost,
+    flagComment,
+  } = useNewsDetail(newsId);
+
+  const post = postQuery.data;
+  const comments = commentsQuery.data ?? [];
+  const commentCount = countComments(comments);
+  const isAuthor = currentUserId != null && currentUserId === post?.authorId;
+
+  const handleCommentSubmit = async () => {
+    const trimmed = comment.trim();
+    if (!trimmed || createComment.isPending) return;
+    await createComment.mutateAsync({ content: trimmed });
+    setComment("");
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("이 글을 삭제할까요?")) return;
+    await deletePost.mutateAsync();
+    router.push("/news");
+  };
+
+  const handleCommentFlag = async (commentId: number) => {
+    const reason = window.prompt("댓글 신고 사유를 입력해주세요.");
+    if (!reason?.trim()) return;
+    await flagComment.mutateAsync({ commentId, content: reason.trim() });
+    window.alert("신고가 접수되었습니다.");
+  };
+
+  if (postQuery.isLoading) {
+    return (
+      <RequireMember>
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+        </main>
+      </RequireMember>
+    );
+  }
+
+  if (postQuery.isError || !post) {
+    return (
+      <RequireMember>
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+            게시글을 찾을 수 없습니다.
+            <button
+              onClick={() => router.push("/news")}
+              className="mt-4 block mx-auto rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+            >
+              목록으로
+            </button>
+          </div>
+        </main>
+      </RequireMember>
+    );
+  }
 
   return (
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
           <div className="pt-6 lg:pt-12">
-            {/* 상단 바 — 뒤로 / 더보기 */}
+            {/* 상단 바 */}
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => router.push("/news")}
@@ -64,29 +102,19 @@ export default function NewsDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={isAuthor ? () => router.push("/news/write") : undefined}
-                onDelete={
-                  isAuthor
-                    ? () => {
-                        if (window.confirm("이 글을 삭제할까요?")) router.push("/news");
-                      }
-                    : undefined
-                }
+                onEdit={isAuthor ? () => router.push(`/news/write?edit=${newsId}`) : undefined}
+                onDelete={isAuthor ? handleDelete : undefined}
               />
             </div>
 
-            {/* 카테고리 / 제목 / 작성자 / 메타 */}
-            <span className="inline-block rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-white">
-              [{MOCK_NEWS.category}]
-            </span>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">{MOCK_NEWS.title}</h1>
-            <p className="mt-3 text-base text-gray-600">{MOCK_NEWS.author}</p>
+            {/* 제목 / 메타 */}
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">{post.title}</h1>
             <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
-                <Clock size={14} /> {MOCK_NEWS.date}
+                <Clock size={14} /> {formatDate(post.createdAt)}
               </span>
               <span className="flex items-center gap-1">
-                <Eye size={14} /> {MOCK_NEWS.views}
+                <Eye size={14} /> {post.viewCount}
               </span>
               <span className="flex items-center gap-1">
                 <MessageCircle size={14} /> {commentCount}
@@ -94,32 +122,33 @@ export default function NewsDetailPage() {
             </div>
 
             {/* 본문 */}
-            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900">
-              {MOCK_NEWS.content}
+            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900 border-b border-gray-200">
+              {post.content}
             </div>
 
-            {/* 하단 조회 / 댓글 카운트 */}
-            <div className="flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-700">
-              <span className="flex items-center gap-1">
-                <Eye size={16} /> {MOCK_NEWS.views}
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageCircle size={16} /> {commentCount}
-              </span>
-            </div>
-
-            {/* 댓글 목록 — 답글/대댓글·본인 댓글 메뉴는 공통 CommentItem 재사용 */}
-            {MOCK_NEWS.comments.length === 0 ? (
+            {/* 댓글 목록 */}
+            {commentsQuery.isLoading ? (
+              <div className="py-10 text-center text-sm text-gray-400">댓글을 불러오는 중...</div>
+            ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (
               <div>
-                {MOCK_NEWS.comments.map((c) => (
-                  <CommentItem key={c.id} {...c} currentUserId={currentUserId} />
+                {comments.map((c) => (
+                  <CommentItem
+                    key={c.id}
+                    {...c}
+                    currentUserId={currentUserId}
+                    onReplySubmit={(parentId, content) =>
+                      replyComment.mutate({ commentId: parentId, content })
+                    }
+                    onDeleteComment={(id) => deleteComment.mutate(id)}
+                    onReportComment={handleCommentFlag}
+                  />
                 ))}
               </div>
             )}
 
-            {/* 댓글 입력 (공지/뉴스레터는 익명 없음) */}
+            {/* 댓글 입력 */}
             <div className="mt-6 rounded-2xl border border-gray-200 p-5">
               <textarea
                 value={comment}
@@ -134,9 +163,11 @@ export default function NewsDetailPage() {
                 <span className="text-xs text-gray-400">{comment.length} / 1,000</span>
                 <button
                   type="button"
-                  className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700"
+                  onClick={handleCommentSubmit}
+                  disabled={!comment.trim() || createComment.isPending}
+                  className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
                 >
-                  등록
+                  {createComment.isPending ? "등록 중..." : "등록"}
                 </button>
               </div>
             </div>
