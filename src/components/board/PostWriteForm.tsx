@@ -30,6 +30,10 @@ type PostWriteFormProps = {
   /** 취소/게시 후 이동 경로 (목록) */
   backPath: string;
   contentPlaceholder?: string;
+  /** 본문 기본 글자수 제한 (기본 10000) */
+  contentMaxLength?: number;
+  /** 카테고리별 글자수 제한 오버라이드 (예: { 공지: 20000 }) — 없으면 contentMaxLength 사용 */
+  categoryMaxLength?: Record<string, number>;
   /** 수정 모드 초기값 */
   initialValues?: { title: string; content: string; isAnonymous?: boolean };
   /** 게시 버튼 클릭 시 호출 — 미전달 시 backPath로 이동만 */
@@ -50,6 +54,8 @@ export default function PostWriteForm({
   staffOnly = false,
   backPath,
   contentPlaceholder = "내용을 입력해 주세요.",
+  contentMaxLength = 10000,
+  categoryMaxLength,
   initialValues,
   onSubmit,
   isSubmitting = false,
@@ -61,6 +67,8 @@ export default function PostWriteForm({
   const [category, setCategory] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [anonymous, setAnonymous] = useState(initialValues?.isAnonymous ?? true);
+  const [files, setFiles] = useState<File[]>([]);
+  const maxLen = (category ? categoryMaxLength?.[category] : undefined) ?? contentMaxLength;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
