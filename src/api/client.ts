@@ -1,10 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from "axios";
+import { publicEnv } from "@/lib/env";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL &&
-  process.env.NEXT_PUBLIC_API_URL !== "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL
-    : "/api/v1";
+const API_BASE_URL = publicEnv.apiUrl ?? "/api/v1";
 
 const REFRESH_PATH = "/login/refresh";
 const LOGIN_REDIRECT_PATH = "/login";
