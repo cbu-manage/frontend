@@ -8,9 +8,18 @@ import { CalendarIcon, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
+import Chip from "@/components/common/Chip";
 import { reportApi, type ReportPreviewItem } from "@/api";
 
 const PAGE_SIZE = 9;
+
+const TEAM_TABS = ["전체", "스터디", "프로젝트"] as const;
+type TeamTab = (typeof TEAM_TABS)[number];
+const TEAM_TYPE_PARAM: Record<TeamTab, "STUDY" | "PROJECT" | undefined> = {
+  전체: undefined,
+  스터디: "STUDY",
+  프로젝트: "PROJECT",
+};
 
 /** 서버 필터용 날짜 포맷 (yyyy-MM-dd) */
 function toApiDate(d?: Date): string | undefined {
@@ -38,6 +47,7 @@ export default function ReportManageSection() {
 
   const [search, setSearch] = useState("");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
+  const [teamTab, setTeamTab] = useState<TeamTab>("전체");
   const [groupByTeam, setGroupByTeam] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageIndex = currentPage - 1;
@@ -52,14 +62,23 @@ export default function ReportManageSection() {
   const apiStart = toApiDate(startDate);
   const apiEnd = toApiDate(endDate);
   const keyword = submittedKeyword || undefined;
+  const groupType = TEAM_TYPE_PARAM[teamTab];
 
-  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색 모두 서버 필터
+  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색·팀종류 모두 서버 필터
   const {
     data: res,
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd, keyword],
+    queryKey: [
+      "reports",
+      "manage",
+      pageIndex,
+      apiStart,
+      apiEnd,
+      keyword,
+      groupType,
+    ],
     queryFn: () =>
       reportApi.getList({
         page: pageIndex,
@@ -67,6 +86,7 @@ export default function ReportManageSection() {
         startDate: apiStart,
         endDate: apiEnd,
         keyword,
+        groupType,
       }),
   });
 
@@ -101,8 +121,27 @@ export default function ReportManageSection() {
       {/* 관리자 페이지는 조회/관리 전용 — 업로드는 아카이브 > 보고서(개인)에서 */}
       <h1 className="text-h1 text-gray-900 mb-10">전체 보고서 관리</h1>
 
-      {/* 필터 영역: 기간(활동일) + 검색 + 팀으로 그룹핑 */}
+      {/* 필터 영역: 팀 종류 + 기간(활동일) + 검색 + 팀으로 그룹핑 */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
+        {/* 팀 종류 칩 (전체/스터디/프로젝트) */}
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-700 text-sm shrink-0 w-8">
+            팀
+          </span>
+          {TEAM_TABS.map((t) => (
+            <Chip
+              key={t}
+              selected={teamTab === t}
+              onClick={() => {
+                setTeamTab(t);
+                resetPage();
+              }}
+            >
+              {t}
+            </Chip>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
             <span className="font-medium text-gray-700 shrink-0 w-8">기간</span>

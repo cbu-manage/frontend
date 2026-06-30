@@ -12,6 +12,8 @@ export type ReportListParams = {
   endDate?: string;
   /** 검색어 (제목·작성자명) */
   keyword?: string;
+  /** 팀 종류 필터 (스터디/프로젝트) — 미지정이면 전체 */
+  groupType?: "STUDY" | "PROJECT";
 };
 
 /** GET /report, /report/group/{groupId} 응답의 보고서 미리보기 한 건 */
