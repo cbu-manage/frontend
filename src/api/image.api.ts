@@ -5,10 +5,11 @@
  */
 import axios from "axios";
 import { attachAuthInterceptor } from "./client";
+import { publicEnv } from "@/lib/env";
 
 const getImageBaseUrl = () => {
-  const base = process.env.NEXT_PUBLIC_API_URL;
-  if (base && base !== "undefined" && base.endsWith("/api/v1")) {
+  const base = publicEnv.apiUrl;
+  if (base && base.endsWith("/api/v1")) {
     return base.replace(/\/api\/v1$/, "");
   }
   return "";
