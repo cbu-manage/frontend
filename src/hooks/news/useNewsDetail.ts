@@ -59,6 +59,13 @@ export function useNewsDetail(newsId: number) {
       queryClient.invalidateQueries({ queryKey: ["news-comments", postId] }),
   });
 
+  const updateComment = useMutation({
+    mutationFn: ({ commentId, content }: { commentId: number; content: string }) =>
+      commentApi.update(commentId, { content }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["news-comments", postId] }),
+  });
+
   const deleteComment = useMutation({
     mutationFn: (commentId: number) => commentApi.delete(commentId),
     onSuccess: () =>
@@ -81,6 +88,7 @@ export function useNewsDetail(newsId: number) {
     commentsQuery,
     createComment,
     replyComment,
+    updateComment,
     deleteComment,
     deletePost,
     flagComment,

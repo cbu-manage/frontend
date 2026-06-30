@@ -16,6 +16,15 @@ function countComments(items: MappedComment[]): number {
   return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
 }
 
+function findCommentById(list: MappedComment[], id: number): MappedComment | null {
+  for (const c of list) {
+    if (c.id === id) return c;
+    const found = findCommentById(c.replies, id);
+    if (found) return found;
+  }
+  return null;
+}
+
 export default function NewsDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -30,6 +39,7 @@ export default function NewsDetailPage() {
     commentsQuery,
     createComment,
     replyComment,
+    updateComment,
     deleteComment,
     deletePost,
     flagComment,
@@ -58,6 +68,13 @@ export default function NewsDetailPage() {
     if (!reason?.trim()) return;
     await flagComment.mutateAsync({ commentId, content: reason.trim() });
     window.alert("신고가 접수되었습니다.");
+  };
+
+  const handleCommentEdit = async (commentId: number) => {
+    const target = findCommentById(comments, commentId);
+    const newContent = window.prompt("수정할 내용을 입력하세요.", target?.content ?? "");
+    if (newContent == null || !newContent.trim()) return;
+    await updateComment.mutateAsync({ commentId, content: newContent.trim() });
   };
 
   if (postQuery.isLoading) {
@@ -141,6 +158,7 @@ export default function NewsDetailPage() {
                     onReplySubmit={(parentId, content) =>
                       replyComment.mutate({ commentId: parentId, content })
                     }
+                    onEditComment={handleCommentEdit}
                     onDeleteComment={(id) => deleteComment.mutate(id)}
                     onReportComment={handleCommentFlag}
                   />
