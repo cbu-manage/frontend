@@ -65,6 +65,10 @@ export default function ReportManageSection() {
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
 
+  // TODO(백엔드): GET /report에 그룹(팀) 필터 파라미터(예: groupId)가 추가되면
+  // 아래 클라이언트 그룹핑을 제거하고 서버 필터+페이지네이션으로 전환할 것.
+  // 현재는 서버 필터 없이 "현재 페이지에 받아온 reports"만 groupName으로 묶어서 보여주므로,
+  // 한 팀의 보고서가 PAGE_SIZE(9)개를 넘으면 페이지 밖에 있는 나머지는 그룹핑 화면에 안 보임.
   // "팀으로 그룹핑" 토글 시 groupName별로 묶기 (현재 페이지 기준)
   const grouped = reports.reduce<Record<string, ReportPreviewItem[]>>(
     (acc, r) => {

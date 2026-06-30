@@ -15,11 +15,11 @@ import type { NewsCategory } from "@/api";
 const CATEGORY_TABS = ["전체", "공지", "이벤트", "IT소식"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
-const TAB_TO_CATEGORY: Record<CategoryTab, NewsCategory | undefined> = {
-  전체: undefined,
-  공지: "NOTICE",
-  이벤트: "EVENT",
-  IT소식: "IT_NEWS",
+const TAB_TO_CATEGORY: Record<CategoryTab, NewsCategory[]> = {
+  전체: ["NOTICE", "EVENT", "IT_NEWS"],
+  공지: ["NOTICE"],
+  이벤트: ["EVENT"],
+  IT소식: ["IT_NEWS"],
 };
 
 const CATEGORY_TO_LABEL: Record<string, string> = {
@@ -47,10 +47,7 @@ export default function NoticePage() {
     size: 11,
   });
 
-  const allItems = data?.content ?? [];
-  const items = activeTab === "전체"
-    ? allItems.filter((n) => n.category !== "NEWSLETTER")
-    : allItems;
+  const items = data?.content ?? [];
   const totalPages = data?.page?.totalPages
     ? Array.from({ length: data.page.totalPages }, (_, i) => i + 1)
     : [1];

@@ -110,6 +110,7 @@ export { applyApi, type ApplicationRequest } from "./apply.api";
 export {
   newsApi,
   type NewsCategory,
+  type NewsletterType,
   type NewsListParams,
   type NewsListItem,
   type NewsListResponse,
