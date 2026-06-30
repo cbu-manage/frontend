@@ -499,7 +499,11 @@ export default function NewMemberManageSection() {
                       <td className="px-3 py-3 text-center text-xs text-gray-900">
                         {idx + 1}
                       </td>
-                      <td className="px-3 py-3 text-center" data-status-cell>
+                      <td
+                        className="px-3 py-3 text-center"
+                        data-status-cell
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="relative inline-block">
                           <button
                             type="button"
