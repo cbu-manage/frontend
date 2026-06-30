@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { groupApi } from "@/api";
+import Mascot from "@/components/common/Mascot";
 
 type GroupItem = {
   groupId: number;
@@ -83,8 +84,12 @@ export default function GroupManageSection() {
   });
 
   const countByStatus = useMemo(() => {
-    const inactive = closedGroups.filter((g) => g.groupStatus === "INACTIVE").length;
-    const active = closedGroups.filter((g) => g.groupStatus === "ACTIVE").length;
+    const inactive = closedGroups.filter(
+      (g) => g.groupStatus === "INACTIVE",
+    ).length;
+    const active = closedGroups.filter(
+      (g) => g.groupStatus === "ACTIVE",
+    ).length;
     return { inactive, active, total: closedGroups.length };
   }, [closedGroups]);
 
@@ -97,9 +102,7 @@ export default function GroupManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-h1 text-gray-900 mb-6">
-        그룹 관리
-      </h1>
+      <h1 className="text-h1 text-gray-900 mb-6">그룹 관리</h1>
 
       <div className="flex items-center gap-4 mb-6">
         {statusFilters.map((s) => (
@@ -129,8 +132,13 @@ export default function GroupManageSection() {
       )}
 
       {!isLoading && !isError && filtered.length === 0 && (
-        <div className="py-12 text-center text-gray-500">
-          해당 상태의 그룹이 없습니다.
+        <div className="flex flex-col items-center py-20 text-center">
+          <div className="flex size-28 items-center justify-center rounded-full bg-gray-100">
+            <Mascot emotion="working" size="md" decorative />
+          </div>
+          <p className="mt-5 text-lg font-bold text-gray-800">
+            해당 상태의 그룹이 없습니다.
+          </p>
         </div>
       )}
 

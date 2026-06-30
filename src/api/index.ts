@@ -10,10 +10,7 @@ export {
 } from "./auth.api";
 
 // Mail
-export {
-  mailApi,
-  type MailUpdateRequest,
-} from "./mail.api";
+export { mailApi, type MailUpdateRequest } from "./mail.api";
 
 // User
 export { userApi, type UserInfo, type ValidateUserRequest } from "./user.api";
@@ -91,13 +88,28 @@ export {
 } from "./post.api";
 
 // Member
-export { memberApi, type MemberInfo } from "./member.api";
+export { memberApi, type MemberInfo, type MemberUpdateDTO } from "./member.api";
 
-// Applicant (신입 부원)
+// Applicant (신입 부원 신청서 — 모집 기반)
 export {
   applicantApi,
-  type ApplicantItem,
-  type ApplicantStatus,
+  recruitmentApi,
+  type VoteDecision,
+  type FinalDecision,
+  type ApplicationTab,
+  type ApplicationField,
+  type Recruitment,
+  type ApplicationListItem,
+  type ApplicationListResponse,
+  type ApplicationListParams,
+  type ApplicationDetail,
+  type ApplicantInfo,
+  type AnswerItem,
+  type PortfolioItem,
+  type VoteItem,
+  type MyVote,
+  type FinalizeDecision,
+  type Page,
 } from "./applicant.api";
 
 // Image

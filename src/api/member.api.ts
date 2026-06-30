@@ -29,14 +29,34 @@ export type MembersResponse = {
   };
 };
 
+/** PATCH /member 바디 (MemberUpdateDTO) — 운영진 role 부여·회원 정보 수정 */
+export type MemberUpdateDTO = {
+  userId: number;
+  role?: string;
+  name?: string;
+  phoneNumber?: string;
+  major?: string;
+  grade?: string;
+  studentNumber?: number;
+  generation?: number;
+  note?: string;
+  kakaoNoti?: string;
+  kakaoChat?: string;
+};
+
 export const memberApi = {
   getById: (id: number) => api.get<MemberInfo>(`/member/${id}`),
 
+  // 주의: 서버 GET /members 는 page 파라미터만 받음 (size·검색 미지원)
   getAll: (page = 0, size = 10) =>
     api.get<MembersResponse>("/members", { params: { page, size } }),
 
-  updateDue: (id: number, due: boolean) =>
-    api.patch(`/members/${id}/due`, { due }),
+  /** 회원 정보 수정 — 운영진 role 부여 포함 (PATCH /member, 전체 DTO) */
+  update: (dto: MemberUpdateDTO) => api.patch("/member", dto),
 
-  activate: (id: number) => api.patch(`/members/${id}/activate`),
+  /** 회비 납부 승인 (단방향 — 취소 엔드포인트 없음) */
+  approvePayment: (id: number) => api.patch(`/member/${id}/approve-payment`),
+
+  /** 회원 삭제 (학번 기준) */
+  remove: (studentNumber: number) => api.delete(`/member/${studentNumber}`),
 };

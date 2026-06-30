@@ -40,6 +40,7 @@ export type Capability =
   | "reportDocs.manage" // 보고서 승인 / HWP·ZIP export
   | "system.settings" // 온보딩 링크 조회/수정
   | "staff.assign" // 운영진 역할 지정/해제 (운영진 지정 페이지) — ADMIN·회장·부회장
+  | "staff.assignLeader" // 회장·부회장 지정/해제 — ADMIN(owner) 전용
   | "news.manage" // 소식 작성/수정/삭제/상단고정
   | "meetings.manage" // 모임 생성/수정/마감/삭제
   | "meetings.attendanceAdmin" // 관리자용 참석명단 조회/엑셀 (⚠️ ADMIN 전용)
@@ -71,6 +72,7 @@ export const ROLE_CAPS: Record<Role, Capability[]> = {
   ROLE_ADMIN: [
     ...PRESIDENT_CAPS.filter((c) => c !== "applications.vote"),
     "meetings.attendanceAdmin",
+    "staff.assignLeader", // 회장·부회장 지정은 ADMIN(owner)만
   ],
   ROLE_PRESIDENT: PRESIDENT_CAPS,
   ROLE_VICE_PRESIDENT: PRESIDENT_CAPS, // 회장과 동일 (참석명단/엑셀만 ADMIN 전용)

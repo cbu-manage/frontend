@@ -2,13 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { memberApi, type MemberInfo } from "@/api/member.api";
 import PGN from "@/components/shared/Pagination";
 
 const PAGE_SIZE = 10;
 
 export default function MemberManageSection() {
+  const queryClient = useQueryClient();
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [generationFilter, setGenerationFilter] = useState<number | null>(null);
   const [searchName, setSearchName] = useState("");
@@ -40,6 +41,18 @@ export default function MemberManageSection() {
       }
       return all;
     },
+  });
+
+  // 회비 일괄 승인 — 선택 회원 각각 approve-payment (단방향). 완료 후 목록 갱신.
+  const approveFeeMutation = useMutation({
+    mutationFn: (ids: number[]) =>
+      Promise.all(ids.map((id) => memberApi.approvePayment(id))),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+      setSelectedItems([]);
+    },
+    onError: () =>
+      alert("회비 처리 중 오류가 발생했습니다. 다시 시도해주세요."),
   });
 
   const generationList = useMemo(() => {
@@ -239,8 +252,12 @@ export default function MemberManageSection() {
                   <td className="p-3 text-center">{item.studentNumber}</td>
                   <td className="p-3 text-center">{item.major}</td>
                   <td className="p-3">{item.email || "-"}</td>
-                  <td className="p-3 text-center font-medium text-emerald-600">
-                    납부
+                  <td className="p-3 text-center">
+                    {item.due ? (
+                      <span className="font-medium text-emerald-600">납부</span>
+                    ) : (
+                      <span className="font-medium text-gray-400">미납</span>
+                    )}
                   </td>
                   <td className="p-3 text-center">활동</td>
                 </tr>
@@ -256,14 +273,21 @@ export default function MemberManageSection() {
             {selectedItems.length}명 선택
           </span>
           <button
+            disabled={approveFeeMutation.isPending}
             onClick={() => {
-              alert(
-                `선택된 ${selectedItems.length}명의 회비 상태를 일괄 변경합니다.\n(API 연동 예정)`,
-              );
+              if (
+                !window.confirm(
+                  `선택된 ${selectedItems.length}명을 회비 납부 처리합니다.\n계속하시겠습니까?`,
+                )
+              )
+                return;
+              approveFeeMutation.mutate(selectedItems);
             }}
-            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
           >
-            회비 일괄 납부 처리
+            {approveFeeMutation.isPending
+              ? "처리 중..."
+              : "회비 일괄 납부 처리"}
           </button>
         </div>
       )}

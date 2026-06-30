@@ -2,290 +2,188 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { Search } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { applicantApi, type ApplicantItem } from "@/api/applicant.api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  applicantApi,
+  recruitmentApi,
+  type ApplicationListItem,
+  type FinalDecision,
+  type VoteDecision,
+} from "@/api";
 
-type LocalStatus = "PASS" | "HOLD" | "FAIL";
-
-const STATUS_OPTIONS: { value: "PASS" | "FAIL"; label: string }[] = [
-  { value: "PASS", label: "합격" },
-  { value: "FAIL", label: "불합격" },
-];
-
-const STATUS_LABEL: Record<LocalStatus, string> = {
-  PASS: "합격",
+const DECISION_LABEL: Record<FinalDecision, string> = {
+  ACCEPT: "합격",
+  REJECT: "불합격",
   HOLD: "보류",
-  FAIL: "불합격",
 };
 
-// 전원 합격 표가 아니면 운영진 재논의 필요 (기권 포함)
-function toLocalStatus(item: ApplicantItem): LocalStatus {
-  if (item.passCount < item.totalVoters) return "HOLD";
-  return "PASS";
-}
-
-const DUMMY_APPLICANTS: ApplicantItem[] = [
-  {
-    id: 1,
-    name: "박지훈",
-    studentNumber: 2024152012,
-    major: "컴퓨터공학과",
-    passCount: 5,
-    failCount: 0,
-    totalVoters: 5,
-    status: "PASS",
-    appliedAt: "2025-03-01T10:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-    note: "24기에 지원",
-  },
-  {
-    id: 2,
-    name: "김지원",
-    studentNumber: 2024240011,
-    major: "인공지능학과",
-    passCount: 4,
-    failCount: 1,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-01T11:00:00",
-    myReviewed: false,
-    otAttended: false,
-    welcomeAttended: false,
-    note: "23, 24기에 지원",
-  },
-  {
-    id: 3,
-    name: "한소명",
-    studentNumber: 2024152015,
-    major: "컴퓨터공학과",
-    passCount: 5,
-    failCount: 0,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-01T12:00:00",
-    myReviewed: false,
-    otAttended: true,
-    welcomeAttended: false,
-  },
-  {
-    id: 4,
-    name: "윤가은",
-    studentNumber: 2024240022,
-    major: "인공지능학과",
-    passCount: 4,
-    failCount: 1,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-02T09:00:00",
-    myReviewed: false,
-    otAttended: false,
-    welcomeAttended: false,
-  },
-  {
-    id: 5,
-    name: "강민지",
-    studentNumber: 2024152011,
-    major: "컴퓨터공학과",
-    passCount: 3,
-    failCount: 2,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-02T10:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
-  {
-    id: 6,
-    name: "정도윤",
-    studentNumber: 2024180023,
-    major: "게임공학과",
-    passCount: 3,
-    failCount: 2,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-02T11:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
-  {
-    id: 7,
-    name: "이서연",
-    studentNumber: 2024132013,
-    major: "메카트로닉스공학과",
-    passCount: 2,
-    failCount: 3,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-02T12:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
-  {
-    id: 8,
-    name: "송재현",
-    studentNumber: 2024152016,
-    major: "컴퓨터공학과",
-    passCount: 2,
-    failCount: 3,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-03T09:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
-  {
-    id: 9,
-    name: "최예나",
-    studentNumber: 2024152014,
-    major: "컴퓨터공학과",
-    passCount: 1,
-    failCount: 4,
-    totalVoters: 5,
-    status: "PENDING",
-    appliedAt: "2025-03-03T10:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
-  {
-    id: 10,
-    name: "임준혁",
-    studentNumber: 2024152017,
-    major: "컴퓨터공학과",
-    passCount: 0,
-    failCount: 5,
-    totalVoters: 5,
-    status: "FAIL",
-    appliedAt: "2025-03-03T11:00:00",
-    myReviewed: true,
-    otAttended: true,
-    welcomeAttended: true,
-  },
+const DECISION_OPTIONS: { value: "ACCEPT" | "REJECT"; label: string }[] = [
+  { value: "ACCEPT", label: "합격" },
+  { value: "REJECT", label: "불합격" },
 ];
 
-export default function NewMemberManageSection() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [localStatuses, setLocalStatuses] = useState<
-    Record<number, LocalStatus>
-  >({});
-  const [openStatusId, setOpenStatusId] = useState<number | null>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [voteChoice, setVoteChoice] = useState<"PASS" | "FAIL" | null>(null);
-  const [voteReason, setVoteReason] = useState("");
+// 서버가 내려준 최종/추천 결정을 화면 기본값으로. 미확정(HOLD)이면 추천값을 따른다.
+function baseDecision(item: ApplicationListItem): FinalDecision {
+  return item.finalDecision !== "HOLD"
+    ? item.finalDecision
+    : item.suggestedDecision;
+}
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["admin", "applicants"],
-    queryFn: () => applicantApi.getAll(),
-    enabled: false,
+export default function NewMemberManageSection() {
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [overrides, setOverrides] = useState<
+    Record<string, "ACCEPT" | "REJECT">
+  >({});
+  const [openDecisionId, setOpenDecisionId] = useState<string | null>(null);
+  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
+  const [voteChoice, setVoteChoice] = useState<VoteDecision | null>(null);
+  const [voteReason, setVoteReason] = useState("");
+  // 마감 진행 단계 — 버튼에 단계별 문구 표시용
+  const [finalizeStage, setFinalizeStage] = useState<
+    null | "finalize" | "close"
+  >(null);
+
+  // 1) 현재 모집
+  const { data: recruitment } = useQuery({
+    queryKey: ["admin", "recruitment", "current"],
+    queryFn: async () => (await recruitmentApi.getCurrent()).data.data,
+  });
+  const recruitmentUuid = recruitment?.recruitmentUuid ?? null;
+
+  // 2) 모집의 신청서 목록 (키워드는 서버 필터)
+  const {
+    data: listData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["admin", "applications", recruitmentUuid, searchQuery],
+    enabled: recruitmentUuid != null,
+    queryFn: async () =>
+      (
+        await applicantApi.getList(recruitmentUuid as string, {
+          keyword: searchQuery.trim() || undefined,
+          page: 0,
+          size: 200,
+        })
+      ).data.data,
   });
 
-  const applicants: ApplicantItem[] = useMemo(
-    () => data?.data.data ?? DUMMY_APPLICANTS,
-    [data],
+  const applicants: ApplicationListItem[] = useMemo(
+    () => listData?.applications.content ?? [],
+    [listData],
   );
+  const voterCount = listData?.voterCount ?? recruitment?.voterCount ?? 0;
 
-  const getStatus = (id: number, item: ApplicantItem): LocalStatus =>
-    localStatuses[id] ?? toLocalStatus(item);
+  // 3) 상세 (드릴다운)
+  const { data: detail, isLoading: detailLoading } = useQuery({
+    queryKey: ["admin", "application", selectedUuid],
+    enabled: selectedUuid != null,
+    queryFn: async () =>
+      (await applicantApi.getDetail(selectedUuid as string)).data.data,
+  });
+
+  const effectiveDecision = (item: ApplicationListItem): FinalDecision =>
+    overrides[item.applicationUuid] ?? baseDecision(item);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!(e.target as Element).closest?.("[data-status-cell]")) {
-        setOpenStatusId(null);
+      if (!(e.target as Element).closest?.("[data-decision-cell]")) {
+        setOpenDecisionId(null);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const notifyMutation = useMutation({
-    mutationFn: () => applicantApi.notifyPass(),
+  const voteMutation = useMutation({
+    mutationFn: (vars: {
+      uuid: string;
+      decision: VoteDecision;
+      reason: string;
+    }) => applicantApi.vote(vars.uuid, vars.decision, vars.reason),
     onSuccess: () => {
-      alert("합격자에게 메일이 발송되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["admin", "applications"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "application"] });
+    },
+    onError: () =>
+      alert("투표 저장 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+
+  const finalizeMutation = useMutation({
+    mutationFn: async () => {
+      if (!recruitmentUuid) throw new Error("모집 정보가 없습니다.");
+      const decisions = applicants.map((a) => ({
+        applicationUuid: a.applicationUuid,
+        decision: effectiveDecision(a),
+      }));
+      // 1단계: 최종 결정 일괄 저장
+      setFinalizeStage("finalize");
+      await applicantApi.finalize(recruitmentUuid, decisions);
+      // 2단계: 모집 종료(합격자 메일 발송)
+      setFinalizeStage("close");
+      await applicantApi.close(recruitmentUuid);
+    },
+    onSuccess: () => {
+      setFinalizeStage(null);
+      alert("모집을 마감하고 합격자에게 메일이 발송되었습니다.");
+      queryClient.invalidateQueries({ queryKey: ["admin", "applications"] });
     },
     onError: () => {
-      alert("메일 발송 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setFinalizeStage(null);
+      alert("처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     },
   });
 
-  const saveStatusMutation = useMutation({
-    mutationFn: () =>
-      Promise.all(
-        applicants.map((a) =>
-          applicantApi.updateStatus(
-            a.id,
-            getStatus(a.id, a) as "PASS" | "FAIL",
-          ),
-        ),
-      ),
-    onSuccess: () => {
-      notifyMutation.mutate();
-    },
-    onError: () => {
-      alert("상태 저장 중 오류가 발생했습니다. 다시 시도해주세요.");
-    },
-  });
-
-  const handleStatusSelect = (id: number, value: "PASS" | "FAIL") => {
-    setLocalStatuses((prev) => ({ ...prev, [id]: value }));
-    setOpenStatusId(null);
+  const handleDecisionSelect = (uuid: string, value: "ACCEPT" | "REJECT") => {
+    setOverrides((prev) => ({ ...prev, [uuid]: value }));
+    setOpenDecisionId(null);
   };
 
-  // 보류 수 — 하나라도 있으면 마감 불가
+  // 보류(HOLD) 가 하나라도 있으면 마감 불가
   const holdCount = useMemo(
-    () =>
-      applicants.filter(
-        (a) => (localStatuses[a.id] ?? toLocalStatus(a)) === "HOLD",
-      ).length,
-    [applicants, localStatuses],
+    () => applicants.filter((a) => effectiveDecision(a) === "HOLD").length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [applicants, overrides],
   );
 
-  const filteredApplicants = useMemo(() => {
-    if (!searchQuery.trim()) return applicants;
-    const q = searchQuery.trim().toLowerCase();
-    return applicants.filter(
-      (a) =>
-        a.name.toLowerCase().includes(q) || String(a.studentNumber).includes(q),
-    );
-  }, [applicants, searchQuery]);
-
   const handleFinalize = () => {
-    const { passCount, failCount } = applicants.reduce(
-      (acc, a) => {
-        const s = getStatus(a.id, a);
-        if (s === "PASS") acc.passCount++;
-        else if (s === "FAIL") acc.failCount++;
-        return acc;
-      },
-      { passCount: 0, failCount: 0 },
-    );
+    const accept = applicants.filter(
+      (a) => effectiveDecision(a) === "ACCEPT",
+    ).length;
+    const reject = applicants.filter(
+      (a) => effectiveDecision(a) === "REJECT",
+    ).length;
 
     if (
       !window.confirm(
         `모집을 마감하고 최종 합격자를 결정합니다.\n\n` +
-          `  • 합격  ${passCount}명\n` +
-          `  • 불합격  ${failCount}명\n\n` +
+          `  • 합격  ${accept}명\n` +
+          `  • 불합격  ${reject}명\n\n` +
           `이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?`,
       )
     )
       return;
-
-    saveStatusMutation.mutate();
+    finalizeMutation.mutate();
   };
 
-  // 행 클릭 시 신청서 상세 + 투표 화면 (드릴다운)
-  const selected = applicants.find((a) => a.id === selectedId) ?? null;
-  if (selected) {
-    const closeDetail = () => {
-      setSelectedId(null);
-      setVoteChoice(null);
-      setVoteReason("");
-    };
+  const closeDetail = () => {
+    setSelectedUuid(null);
+    setVoteChoice(null);
+    setVoteReason("");
+  };
+
+  const handleVoteSave = () => {
+    if (!selectedUuid || !voteChoice) return;
+    voteMutation.mutate(
+      { uuid: selectedUuid, decision: voteChoice, reason: voteReason },
+      { onSuccess: closeDetail },
+    );
+  };
+
+  // ── 상세 화면 ──────────────────────────────────────────────
+  if (selectedUuid != null) {
     return (
       <div className="max-w-6xl mx-auto">
         <button
@@ -295,119 +193,185 @@ export default function NewMemberManageSection() {
         >
           ← 신청서 목록
         </button>
-        <h1 className="mt-2 text-h1 text-gray-900">
-          {selected.name} ({selected.studentNumber})
-        </h1>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
-          {/* 좌: 신청서 내용 */}
-          <div className="rounded-2xl border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900">신청서 내용</h2>
-            <dl className="mt-4 space-y-3 text-sm">
-              {[
-                ["이름", selected.name],
-                ["닉네임", "-"],
-                ["생년월일", "-"],
-                ["학년", "-"],
-                ["학번", String(selected.studentNumber)],
-                ["학과", selected.major],
-                ["지원 분야", "-"],
-                ["졸업 경향", "-"],
-                ["프로그래밍 시작 계기", "-"],
-                ["씨부엉 지원 목적", "-"],
-                ["개발 링크", "-"],
-                ["유입 경로", "-"],
-                ["OT 참석", selected.otAttended ? "참석" : "미참석"],
-                ["환영회 참석", selected.welcomeAttended ? "참석" : "미참석"],
-              ].map(([k, v]) => (
-                <div key={k} className="flex gap-6">
-                  <dt className="w-28 shrink-0 text-gray-500">{k}</dt>
-                  <dd className="text-gray-900">{v}</dd>
+        {detailLoading || !detail ? (
+          <div className="py-20 text-center text-gray-400">
+            신청서를 불러오는 중...
+          </div>
+        ) : (
+          <>
+            <h1 className="mt-2 text-h1 text-gray-900">
+              {detail.application.name} ({detail.application.studentNumber})
+            </h1>
+
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+              {/* 좌: 신청서 내용 */}
+              <div className="rounded-2xl border border-gray-200 p-6">
+                <h2 className="text-lg font-bold text-gray-900">신청서 내용</h2>
+                <dl className="mt-4 space-y-3 text-sm">
+                  {(
+                    [
+                      ["이름", detail.application.name],
+                      ["닉네임", detail.application.nickname],
+                      ["학년", detail.application.grade],
+                      ["학번", String(detail.application.studentNumber)],
+                      ["학과", detail.application.major],
+                      ["연락처", detail.application.phoneNumber],
+                      ["지원 분야", detail.application.applicationField],
+                      ["유입 경로", detail.application.refSource],
+                      ["기타 링크", detail.application.refLinkEtc],
+                      ["OT 참석", detail.application.canOt ? "참석" : "미참석"],
+                      [
+                        "환영회 참석",
+                        detail.application.canWelcome ? "참석" : "미참석",
+                      ],
+                    ] as [string, string][]
+                  ).map(([k, v]) => (
+                    <div key={k} className="flex gap-6">
+                      <dt className="w-28 shrink-0 text-gray-500">{k}</dt>
+                      <dd className="text-gray-900">{v || "-"}</dd>
+                    </div>
+                  ))}
+                </dl>
+
+                {/* 신청서 문항 답변 */}
+                {detail.answers.length > 0 && (
+                  <div className="mt-6 space-y-4 border-t border-gray-100 pt-5">
+                    {detail.answers.map((a, i) => (
+                      <div key={i}>
+                        <p className="text-sm font-semibold text-gray-700">
+                          {a.question}
+                        </p>
+                        <p className="mt-1 whitespace-pre-wrap text-sm text-gray-900">
+                          {a.answer || "-"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 포트폴리오 링크 */}
+                {detail.portfolios.length > 0 && (
+                  <div className="mt-6 space-y-2 border-t border-gray-100 pt-5">
+                    <p className="text-sm font-semibold text-gray-700">
+                      포트폴리오
+                    </p>
+                    {detail.portfolios.map((p, i) => (
+                      <a
+                        key={i}
+                        href={p.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-sm text-brand underline underline-offset-2"
+                      >
+                        {p.label || p.url}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 우: 투표 */}
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-gray-200 p-5">
+                  <div className="flex items-baseline justify-between">
+                    <h2 className="text-base font-bold text-gray-900">
+                      운영진 투표 현황
+                    </h2>
+                    <span className="text-sm font-semibold text-success">
+                      {detail.votes.length} / {voterCount}
+                    </span>
+                  </div>
+                  {detail.votes.length === 0 ? (
+                    <p className="mt-3 text-xs text-gray-400">
+                      아직 투표한 운영진이 없습니다.
+                    </p>
+                  ) : (
+                    <ul className="mt-3 space-y-2">
+                      {detail.votes.map((v, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start justify-between gap-3 text-sm"
+                        >
+                          <span className="text-gray-700">{v.voterName}</span>
+                          <span className="shrink-0 text-right">
+                            <span
+                              className={`font-semibold ${v.decision === "PASS" ? "text-success" : "text-danger"}`}
+                            >
+                              {v.decision === "PASS" ? "합격" : "불합격"}
+                            </span>
+                            {v.reason && (
+                              <span className="block text-xs text-gray-400">
+                                {v.reason}
+                              </span>
+                            )}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              ))}
-            </dl>
-            <p className="mt-5 text-xs text-gray-400">
-              * 닉네임·생년월일·지원분야·지원동기 등 상세 항목은 신청서 상세 API
-              연동 시 표시됩니다.
-            </p>
-          </div>
 
-          {/* 우: 투표 */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-gray-200 p-5">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-base font-bold text-gray-900">
-                  운영진 투표 현황
-                </h2>
-                <span className="text-sm font-semibold text-success">
-                  {selected.passCount} / {selected.totalVoters}
-                </span>
+                <div className="rounded-2xl border border-gray-200 p-5">
+                  <h2 className="text-base font-bold text-gray-900">내 투표</h2>
+                  <div className="mt-3 inline-flex rounded-full bg-gray-100 p-1">
+                    <button
+                      type="button"
+                      onClick={() => setVoteChoice("PASS")}
+                      className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
+                        voteChoice === "PASS"
+                          ? "bg-success text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      합격
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVoteChoice("FAIL")}
+                      className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
+                        voteChoice === "FAIL"
+                          ? "bg-danger text-white"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      불합격
+                    </button>
+                  </div>
+                  <textarea
+                    value={voteReason}
+                    onChange={(e) => setVoteReason(e.target.value)}
+                    rows={4}
+                    aria-label="투표 사유"
+                    placeholder="사유를 입력하세요 (불합격 시 필수)"
+                    className="mt-3 w-full resize-none rounded-xl border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    disabled={
+                      !voteChoice ||
+                      (voteChoice === "FAIL" && !voteReason.trim()) ||
+                      voteMutation.isPending
+                    }
+                    onClick={handleVoteSave}
+                    className="mt-3 w-full rounded-full bg-gray-900 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                  >
+                    {voteMutation.isPending ? "저장 중..." : "투표 저장"}
+                  </button>
+                </div>
               </div>
-              <p className="mt-3 text-xs text-gray-400">
-                개별 운영진 투표 내역은 상세 API 연동 시 표시됩니다.
-              </p>
             </div>
-
-            <div className="rounded-2xl border border-gray-200 p-5">
-              <h2 className="text-base font-bold text-gray-900">내 투표</h2>
-              <div className="mt-3 inline-flex rounded-full bg-gray-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setVoteChoice("PASS")}
-                  className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
-                    voteChoice === "PASS"
-                      ? "bg-success text-white"
-                      : "text-gray-500"
-                  }`}
-                >
-                  합격
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVoteChoice("FAIL")}
-                  className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
-                    voteChoice === "FAIL"
-                      ? "bg-danger text-white"
-                      : "text-gray-500"
-                  }`}
-                >
-                  불합격
-                </button>
-              </div>
-              <textarea
-                value={voteReason}
-                onChange={(e) => setVoteReason(e.target.value)}
-                rows={4}
-                aria-label="투표 사유"
-                placeholder="사유를 입력하세요 (불합격 시 필수)"
-                className="mt-3 w-full resize-none rounded-xl border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                disabled={
-                  !voteChoice || (voteChoice === "FAIL" && !voteReason.trim())
-                }
-                onClick={() => {
-                  // TODO(API): PUT /api/v1/admin/applications/{uuid}/vote
-                  closeDetail();
-                }}
-                className="mt-3 w-full rounded-full bg-gray-900 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-              >
-                투표 저장
-              </button>
-            </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     );
   }
 
+  // ── 목록 화면 ──────────────────────────────────────────────
   return (
     <div className="max-w-6xl mx-auto">
-      {/* 제목 */}
       <h1 className="text-h1 text-gray-900 mb-5">신청서 조회</h1>
 
-      {/* 안내 배너 */}
       <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
         <span className="shrink-0">⚑</span>
         <p>
@@ -416,7 +380,6 @@ export default function NewMemberManageSection() {
         </p>
       </div>
 
-      {/* 총원 + 검색 */}
       <div className="flex items-center justify-between mb-4">
         <p className="text-sm text-gray-500">
           전체 신청자{" "}
@@ -437,7 +400,6 @@ export default function NewMemberManageSection() {
         </div>
       </div>
 
-      {/* 로딩 / 에러 */}
       {isLoading && (
         <div className="py-12 text-center text-gray-500">불러오는 중...</div>
       )}
@@ -450,7 +412,6 @@ export default function NewMemberManageSection() {
         </div>
       )}
 
-      {/* 테이블 */}
       {!isLoading && !isError && (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="min-w-full text-sm">
@@ -462,13 +423,13 @@ export default function NewMemberManageSection() {
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   최종 결정
                 </th>
-                <th className="px-3 py-3 text-left   text-xs font-medium text-gray-500">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">
                   이름
                 </th>
-                <th className="px-3 py-3 text-left   text-xs font-medium text-gray-500">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">
                   학번
                 </th>
-                <th className="px-3 py-3 text-left   text-xs font-medium text-gray-500">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">
                   학과
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
@@ -483,25 +444,25 @@ export default function NewMemberManageSection() {
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   신환회 참석
                 </th>
-                <th className="px-3 py-3 text-left   text-xs font-medium text-gray-500">
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500">
                   비고
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {filteredApplicants.length === 0 ? (
+              {applicants.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-gray-400">
                     해당 조건의 신청자가 없습니다.
                   </td>
                 </tr>
               ) : (
-                filteredApplicants.map((item, idx) => {
-                  const localStatus = getStatus(item.id, item);
+                applicants.map((item, idx) => {
+                  const decision = effectiveDecision(item);
                   return (
                     <tr
-                      key={item.id}
-                      onClick={() => setSelectedId(item.id)}
+                      key={item.applicationUuid}
+                      onClick={() => setSelectedUuid(item.applicationUuid)}
                       className="cursor-pointer hover:bg-gray-50/60 transition-colors"
                     >
                       <td className="px-3 py-3 text-center text-xs text-gray-900">
@@ -509,7 +470,7 @@ export default function NewMemberManageSection() {
                       </td>
                       <td
                         className="px-3 py-3 text-center"
-                        data-status-cell
+                        data-decision-cell
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="relative inline-block">
@@ -517,23 +478,28 @@ export default function NewMemberManageSection() {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenStatusId((v) =>
-                                v === item.id ? null : item.id,
+                              setOpenDecisionId((v) =>
+                                v === item.applicationUuid
+                                  ? null
+                                  : item.applicationUuid,
                               );
                             }}
                             className="text-xs text-gray-900 whitespace-nowrap"
                           >
-                            [ {STATUS_LABEL[localStatus]} ▾ ]
+                            [ {DECISION_LABEL[decision]} ▾ ]
                           </button>
-                          {openStatusId === item.id && (
+                          {openDecisionId === item.applicationUuid && (
                             <ul className="absolute left-1/2 -translate-x-1/2 z-30 mt-1 w-24 rounded-md border border-gray-200 bg-white shadow-lg">
-                              {STATUS_OPTIONS.map((opt) => (
+                              {DECISION_OPTIONS.map((opt) => (
                                 <li key={opt.value}>
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleStatusSelect(item.id, opt.value);
+                                      handleDecisionSelect(
+                                        item.applicationUuid,
+                                        opt.value,
+                                      );
                                     }}
                                     className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 text-center"
                                   >
@@ -551,7 +517,7 @@ export default function NewMemberManageSection() {
                       </td>
                       <td className="px-3 py-3 text-gray-900">{item.major}</td>
                       <td className="px-3 py-3 text-center text-gray-900 tabular-nums">
-                        {item.passCount} / {item.totalVoters}
+                        {item.passCount} / {voterCount}
                       </td>
                       <td className="px-3 py-3 text-center">
                         <span
@@ -562,16 +528,16 @@ export default function NewMemberManageSection() {
                       </td>
                       <td className="px-3 py-3 text-center">
                         <span
-                          className={`font-semibold ${item.otAttended ? "text-success" : "text-danger"}`}
+                          className={`font-semibold ${item.canOt ? "text-success" : "text-danger"}`}
                         >
-                          {item.otAttended ? "Y" : "N"}
+                          {item.canOt ? "Y" : "N"}
                         </span>
                       </td>
                       <td className="px-3 py-3 text-center">
                         <span
-                          className={`font-semibold ${item.welcomeAttended ? "text-success" : "text-danger"}`}
+                          className={`font-semibold ${item.canWelcome ? "text-success" : "text-danger"}`}
                         >
-                          {item.welcomeAttended ? "Y" : "N"}
+                          {item.canWelcome ? "Y" : "N"}
                         </span>
                       </td>
                       <td className="px-3 py-3 text-gray-900 text-xs">
@@ -586,22 +552,21 @@ export default function NewMemberManageSection() {
         </div>
       )}
 
-      {/* 하단 액션 */}
       <div className="mt-6 flex justify-end">
         <button
           type="button"
           onClick={handleFinalize}
           disabled={
+            applicants.length === 0 ||
             holdCount > 0 ||
-            saveStatusMutation.isPending ||
-            notifyMutation.isPending
+            finalizeMutation.isPending
           }
           className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
         >
-          {saveStatusMutation.isPending
-            ? "상태 저장 중..."
-            : notifyMutation.isPending
-              ? "메일 발송 중..."
+          {finalizeStage === "finalize"
+            ? "최종 결정 저장 중..."
+            : finalizeStage === "close"
+              ? "모집 종료 중..."
               : "모집 마감 및 합격자 결정"}
         </button>
       </div>

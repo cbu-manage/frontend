@@ -47,8 +47,12 @@ export default function Header() {
   const pathname = usePathname();
   const name = useUserStore((s) => s.name);
   const isAdmin = useUserStore((s) => s.isAdmin);
+  const role = useUserStore((s) => s.role);
   const clearUser = useUserStore((s) => s.clearUser);
   const isLoggedIn = !!name;
+  // 운영진 역할이 부여된 사람만 "관리자 페이지" 진입 노출 (RequireStaff 와 동일 기준).
+  // 페이지 안에서는 useCan 으로 역할에 해당하는 섹션만 렌더된다. 실제 차단은 서버.
+  const showAdmin = isAdmin || (!!role && role !== "ROLE_USER");
 
   const isBlockHeader = pathname === "/memberManage";
   const isHome = pathname === "/";
@@ -112,12 +116,18 @@ export default function Header() {
     >
       <div className="flex items-center gap-4 md:gap-8 container-x py-4 md:py-6">
         <Link href="/" className="shrink-0">
-          <img src="/assets/logo.png" alt="씨부엉" className="h-7 md:h-8 w-auto" />
+          <img
+            src="/assets/logo.png"
+            alt="씨부엉"
+            className="h-7 md:h-8 w-auto"
+          />
         </Link>
 
         {/* 데스크탑 카테고리 네비 — 메가메뉴(헤더 전체폭 펼침) */}
         <nav className="hidden md:flex flex-1 justify-center group/cats">
-          <ul className={`flex items-center gap-20 lg:gap-32 text-lg font-semibold ${text}`}>
+          <ul
+            className={`flex items-center gap-20 lg:gap-32 text-lg font-semibold ${text}`}
+          >
             {NAV.map((cat) => {
               const active = isCategoryActive(cat);
               return (
@@ -167,7 +177,9 @@ export default function Header() {
           <div
             aria-hidden="true"
             className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 group-focus-within/cats:visible group-focus-within/cats:opacity-100 absolute inset-x-0 top-full z-30 h-44 border-b transition-opacity ${
-              isHome ? "bg-[#151517] border-white/10" : "bg-gray-0 border-gray-200"
+              isHome
+                ? "bg-[#151517] border-white/10"
+                : "bg-gray-0 border-gray-200"
             }`}
           />
         </nav>
@@ -184,15 +196,27 @@ export default function Header() {
           ) : (
             <>
               <Link
-                href={isAdmin ? "/manage" : "/user"}
+                href="/user"
                 className={`font-medium transition-colors hover:text-brand ${
-                  (isAdmin ? pathname.startsWith("/manage") : pathname.startsWith("/user"))
+                  pathname.startsWith("/user")
                     ? "text-brand font-semibold"
                     : text
                 }`}
               >
-                {isAdmin ? "관리자 페이지" : "마이페이지"}
+                마이페이지
               </Link>
+              {showAdmin && (
+                <Link
+                  href="/manage"
+                  className={`font-medium transition-colors hover:text-brand ${
+                    pathname.startsWith("/manage")
+                      ? "text-brand font-semibold"
+                      : text
+                  }`}
+                >
+                  관리자 페이지
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
                 className={`flex items-center justify-center px-5 py-2 rounded-lg text-base font-semibold transition-colors ${ctaBtn}`}
@@ -210,10 +234,16 @@ export default function Header() {
           aria-label={mobileOpen ? "메뉴 닫기" : "메뉴 열기"}
           aria-expanded={mobileOpen}
           className={`md:hidden ml-auto inline-flex items-center justify-center w-11 h-11 rounded-lg -mr-2 ${
-            isHome ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"
+            isHome
+              ? "text-white hover:bg-white/10"
+              : "text-gray-700 hover:bg-gray-100"
           }`}
         >
-          {mobileOpen ? <X width={24} height={20} /> : <Menu width={24} height={20} />}
+          {mobileOpen ? (
+            <X width={24} height={20} />
+          ) : (
+            <Menu width={24} height={20} />
+          )}
         </button>
       </div>
 
@@ -227,7 +257,9 @@ export default function Header() {
           />
           <div
             className={`md:hidden absolute left-0 right-0 top-full z-40 border-t max-h-[80vh] overflow-y-auto ${
-              isHome ? "bg-[#151517] border-white/10" : "bg-gray-0 border-gray-200"
+              isHome
+                ? "bg-[#151517] border-white/10"
+                : "bg-gray-0 border-gray-200"
             }`}
           >
             <nav className="px-4 py-3">
@@ -274,7 +306,9 @@ export default function Header() {
                 })}
               </ul>
 
-              <div className={`mt-3 pt-3 border-t ${isHome ? "border-white/10" : "border-gray-200"} flex flex-col gap-2`}>
+              <div
+                className={`mt-3 pt-3 border-t ${isHome ? "border-white/10" : "border-gray-200"} flex flex-col gap-2`}
+              >
                 {!isLoggedIn ? (
                   <Link
                     href="/login"
@@ -285,13 +319,27 @@ export default function Header() {
                 ) : (
                   <>
                     <Link
-                      href={isAdmin ? "/manage" : "/user"}
+                      href="/user"
                       className={`flex items-center justify-center px-3 py-3 rounded-lg text-base font-medium ${
-                        isHome ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-50"
+                        isHome
+                          ? "text-white hover:bg-white/10"
+                          : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
-                      {isAdmin ? "관리자 페이지" : "마이페이지"}
+                      마이페이지
                     </Link>
+                    {showAdmin && (
+                      <Link
+                        href="/manage"
+                        className={`flex items-center justify-center px-3 py-3 rounded-lg text-base font-medium ${
+                          isHome
+                            ? "text-white hover:bg-white/10"
+                            : "text-gray-700 hover:bg-gray-50"
+                        }`}
+                      >
+                        관리자 페이지
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className={`flex items-center justify-center px-3 py-3 rounded-lg text-base font-semibold ${ctaBtn}`}

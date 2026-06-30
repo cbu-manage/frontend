@@ -1,53 +1,110 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Modal from "@/components/common/Modal";
 import SearchBar from "@/components/common/SearchBar";
+import { useCan } from "@/hooks/auth";
+import { memberApi, type MemberInfo, type MemberUpdateDTO } from "@/api";
 
 /**
- * 운영진 지정 — 역할별 카드(추가/해제). ADMIN·회장·부회장 전용(useCan("staff.assign")).
- * Figma: [Design] 06. owner 계정이 관리자 지정할 페이지.
+ * 운영진 지정 — 역할별 카드(추가/해제).
  *
- * TODO(API): 역할별 운영진 목록 조회 / 회원 검색 / 역할 부여·해제 연동.
- *            현재는 목데이터 + 로컬 상태.
+ * 운영진 추가/해제 = `PATCH /member` (MemberUpdateDTO.role 변경).
+ * 허용 역할(서버): 개발자관리자·회장·부회장·인원관리. 회장/부회장 카드는 ADMIN만 노출.
+ * 회원 검색 전용 API가 없어 전체 회원을 받아 클라에서 필터한다.
  */
 
-type Member = { id: number; gen: string; name: string };
-type Candidate = { id: number; dept: string; grade: number; name: string };
+const PAGE_SIZE = 50;
 
-// 카드 = 운영진 서브롤 (일반 운영진 = ROLE_MANAGER)
-const ROLE_CARDS = [
-  "총무",
-  "인원 관리",
-  "행사 관리",
-  "홍보",
-  "서기",
-  "일반 운영진",
-] as const;
-type RoleLabel = (typeof ROLE_CARDS)[number];
+type RoleDef = { label: string; role: string };
 
-// TODO: API 연동 후 교체 (목데이터)
-const INITIAL: Record<RoleLabel, Member[]> = {
-  총무: [{ id: 1, gen: "14기", name: "홍길동" }],
-  "인원 관리": [{ id: 2, gen: "14기", name: "홍길동" }],
-  "행사 관리": [{ id: 3, gen: "15기", name: "홍길동" }],
-  홍보: [{ id: 4, gen: "15기", name: "홍길동" }],
-  서기: [{ id: 5, gen: "14기", name: "홍길동" }],
-  "일반 운영진": [{ id: 6, gen: "15기", name: "홍길동" }],
-};
-
-const CANDIDATES: Candidate[] = [
-  { id: 101, dept: "컴퓨터공학과", grade: 3, name: "김민주" },
-  { id: 102, dept: "컴퓨터공학과", grade: 3, name: "이서연" },
-  { id: 103, dept: "컴퓨터공학과", grade: 2, name: "박도윤" },
+// 회장·부회장 = ADMIN(owner)만 지정 (staff.assignLeader)
+const LEADER_DEFS: RoleDef[] = [
+  { label: "회장", role: "ROLE_PRESIDENT" },
+  { label: "부회장", role: "ROLE_VICE_PRESIDENT" },
+];
+// 운영진 서브롤 = ADMIN·회장·부회장·인원관리 지정 (staff.assign)
+const STAFF_DEFS: RoleDef[] = [
+  { label: "총무", role: "ROLE_TREASURER" },
+  { label: "인원 관리", role: "ROLE_MEMBER_MANAGER" },
+  { label: "행사 관리", role: "ROLE_EVENT_MANAGER" },
+  { label: "홍보", role: "ROLE_PROMOTION_MANAGER" },
+  { label: "서기", role: "ROLE_SECRETARY" },
+  { label: "일반 운영진", role: "ROLE_MANAGER" },
 ];
 
+/** 다른 정보가 지워지지 않게 기존 필드를 유지하고 role 만 바꿔 전송 */
+function toUpdateDTO(m: MemberInfo, role: string): MemberUpdateDTO {
+  return {
+    userId: m.id,
+    role,
+    name: m.name,
+    phoneNumber: m.phoneNumber,
+    major: m.major,
+    grade: m.grade,
+    studentNumber: m.studentNumber,
+    generation: m.generation,
+    note: m.note,
+  };
+}
+
 export default function StaffAssignSection() {
-  const [members, setMembers] = useState<Record<RoleLabel, Member[]>>(INITIAL);
-  const [addTarget, setAddTarget] = useState<RoleLabel | null>(null);
+  const queryClient = useQueryClient();
+  // 회장·부회장 칸은 ADMIN(owner)에게만 노출 — 서버가 최종 판정
+  const canAssignLeader = useCan("staff.assignLeader");
+  const roleDefs = useMemo(
+    () => (canAssignLeader ? [...LEADER_DEFS, ...STAFF_DEFS] : STAFF_DEFS),
+    [canAssignLeader],
+  );
+
+  const [addTarget, setAddTarget] = useState<RoleDef | null>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
+
+  // 전체 회원 (검색 전용 API 없음 → 전부 받아 클라 필터)
+  const { data: members = [], isLoading } = useQuery({
+    queryKey: ["admin", "members", "staff"],
+    queryFn: async () => {
+      const all: MemberInfo[] = [];
+      let page = 0;
+      while (true) {
+        const res = await memberApi.getAll(page, PAGE_SIZE);
+        const content = res.data?.data?.content ?? [];
+        all.push(...content);
+        if (content.length < PAGE_SIZE) break;
+        page += 1;
+      }
+      return all;
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (vars: { member: MemberInfo; role: string }) =>
+      memberApi.update(toUpdateDTO(vars.member, vars.role)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+    },
+    onError: () => alert("처리 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+
+  // 역할별 현재 운영진
+  const membersByRole = useMemo(() => {
+    const map: Record<string, MemberInfo[]> = {};
+    for (const def of [...LEADER_DEFS, ...STAFF_DEFS]) {
+      map[def.role] = members.filter((m) => m.role === def.role);
+    }
+    return map;
+  }, [members]);
+
+  // 추가 후보 = 아직 일반 회원(ROLE_USER) + 이름 검색
+  const candidates = useMemo(() => {
+    const q = query.trim();
+    return members
+      .filter((m) => m.role === "ROLE_USER")
+      .filter((m) => (q ? m.name.includes(q) : true));
+  }, [members, query]);
 
   const closeModal = () => {
     setAddTarget(null);
@@ -55,28 +112,28 @@ export default function StaffAssignSection() {
     setSelected([]);
   };
 
-  const handleAdd = () => {
-    if (!addTarget) return;
-    // TODO(API): 선택 멤버에게 addTarget 역할 부여
-    const added: Member[] = CANDIDATES.filter((c) =>
-      selected.includes(c.id),
-    ).map((c) => ({ id: c.id, gen: `${c.grade}학년`, name: c.name }));
-    setMembers((prev) => ({
-      ...prev,
-      [addTarget]: [...prev[addTarget], ...added],
-    }));
+  const handleAdd = async () => {
+    if (!addTarget || selected.length === 0) return;
+    const picked = members.filter((m) => selected.includes(m.id));
+    await Promise.all(
+      picked.map((m) =>
+        updateMutation.mutateAsync({ member: m, role: addTarget.role }),
+      ),
+    );
     closeModal();
   };
 
-  const handleRemove = (role: RoleLabel, id: number) => {
-    // TODO(API): 해당 멤버의 역할 해제
-    setMembers((prev) => ({
-      ...prev,
-      [role]: prev[role].filter((m) => m.id !== id),
-    }));
+  const handleRemove = (m: MemberInfo) => {
+    updateMutation.mutate({ member: m, role: "ROLE_USER" });
   };
 
-  const filtered = CANDIDATES.filter((c) => c.name.includes(query.trim()));
+  if (isLoading) {
+    return (
+      <section className="max-w-6xl mx-auto py-20 text-center text-gray-400">
+        운영진 목록을 불러오는 중...
+      </section>
+    );
+  }
 
   return (
     <section className="max-w-6xl mx-auto">
@@ -88,65 +145,72 @@ export default function StaffAssignSection() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {ROLE_CARDS.map((role) => (
-          <div
-            key={role}
-            className="overflow-hidden rounded-xl border border-gray-200"
-          >
-            <div className="flex items-center justify-between bg-brand px-4 py-2.5">
-              <span className="text-sm font-bold text-white">{role}</span>
-              <button
-                type="button"
-                aria-label={`${role} 운영진 추가`}
-                onClick={() => setAddTarget(role)}
-                className="flex size-6 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
-              >
-                <Plus size={14} />
-              </button>
-            </div>
-            <ul className="divide-y divide-gray-100 px-4 py-1">
-              {members[role].length === 0 ? (
-                <li className="py-6 text-center text-sm text-gray-400">
-                  지정된 운영진이 없어요
-                </li>
-              ) : (
-                members[role].map((m) => (
-                  <li
-                    key={m.id}
-                    className="flex items-center justify-between py-2.5"
-                  >
-                    <span className="text-sm text-gray-900">
-                      {m.gen} {m.name}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`${m.name} 해제`}
-                      onClick={() => handleRemove(role, m.id)}
-                      className="text-gray-400 transition-colors hover:text-danger"
-                    >
-                      <X size={18} />
-                    </button>
+        {roleDefs.map((def) => {
+          const roleMembers = membersByRole[def.role] ?? [];
+          return (
+            <div
+              key={def.role}
+              className="overflow-hidden rounded-xl border border-gray-200"
+            >
+              <div className="flex items-center justify-between bg-brand px-4 py-2.5">
+                <span className="text-sm font-bold text-white">
+                  {def.label}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`${def.label} 운영진 추가`}
+                  onClick={() => setAddTarget(def)}
+                  className="flex size-6 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              <ul className="divide-y divide-gray-100 px-4 py-1">
+                {roleMembers.length === 0 ? (
+                  <li className="py-6 text-center text-sm text-gray-400">
+                    지정된 운영진이 없어요
                   </li>
-                ))
-              )}
-            </ul>
-          </div>
-        ))}
+                ) : (
+                  roleMembers.map((m) => (
+                    <li
+                      key={m.id}
+                      className="flex items-center justify-between py-2.5"
+                    >
+                      <span className="text-sm text-gray-900">
+                        {m.generation}기 {m.name}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`${m.name} 해제`}
+                        onClick={() => handleRemove(m)}
+                        disabled={updateMutation.isPending}
+                        className="text-gray-400 transition-colors hover:text-danger disabled:opacity-40"
+                      >
+                        <X size={18} />
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
+            </div>
+          );
+        })}
       </div>
 
       <Modal
         open={addTarget !== null}
         onClose={closeModal}
-        title={`이름을 검색하여 추가해주세요.`}
+        title="이름을 검색하여 추가해주세요."
         className="w-full max-w-2xl"
         footer={
           <button
             type="button"
-            disabled={selected.length === 0}
+            disabled={selected.length === 0 || updateMutation.isPending}
             onClick={handleAdd}
             className="w-full rounded-full bg-brand py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
-            {addTarget ? `${addTarget}에 추가` : "추가"} ({selected.length})
+            {addTarget ? `${addTarget.label}에 추가` : "추가"} (
+            {selected.length})
           </button>
         }
       >
@@ -160,15 +224,15 @@ export default function StaffAssignSection() {
           <div className="flex items-center gap-4 bg-[#eef7e9] px-4 py-2.5 text-sm font-semibold text-gray-700">
             <span className="w-8" />
             <span className="flex-1">학과</span>
-            <span className="w-16 text-center">학년</span>
+            <span className="w-16 text-center">기수</span>
             <span className="w-20 text-center">이름</span>
           </div>
-          {filtered.length === 0 ? (
+          {candidates.length === 0 ? (
             <p className="py-8 text-center text-sm text-gray-400">
               검색 결과가 없어요
             </p>
           ) : (
-            filtered.map((c) => {
+            candidates.map((c) => {
               const checked = selected.includes(c.id);
               return (
                 <label
@@ -187,8 +251,8 @@ export default function StaffAssignSection() {
                     }
                     className="size-5 w-8 accent-brand"
                   />
-                  <span className="flex-1">{c.dept}</span>
-                  <span className="w-16 text-center">{c.grade}</span>
+                  <span className="flex-1">{c.major}</span>
+                  <span className="w-16 text-center">{c.generation}기</span>
                   <span className="w-20 text-center">{c.name}</span>
                 </label>
               );
