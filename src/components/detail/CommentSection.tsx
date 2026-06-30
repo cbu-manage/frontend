@@ -137,6 +137,8 @@ export const CommentItem = ({
   const [replyValue, setReplyValue] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(content);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = currentUserId != null;
   const isMine = isLoggedIn && userId != null && currentUserId === userId;
@@ -184,30 +186,37 @@ export const CommentItem = ({
                 <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
                   {isMine ? (
                     <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditValue(content);
-                          setIsEditing(true);
-                          setMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                      >
-                        <Pencil size={18} className="shrink-0 text-gray-500" />
-                        수정
-                      </button>
-                      <div className="border-t border-gray-100 my-1" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onDeleteComment?.(id);
-                          setMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 size={18} className="shrink-0" />
-                        삭제
-                      </button>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditValue(content);
+                            setEditError(null);
+                            setIsEditing(true);
+                            setMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          <Pencil size={18} className="shrink-0 text-gray-500" />
+                          수정
+                        </button>
+                      )}
+                      {canEdit && canDelete && (
+                        <div className="border-t border-gray-100 my-1" />
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onDeleteComment?.(id);
+                            setMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 size={18} className="shrink-0" />
+                          삭제
+                        </button>
+                      )}
                     </>
                   ) : (
                     <button
@@ -238,29 +247,42 @@ export const CommentItem = ({
               aria-label="댓글 수정"
               className="w-full resize-none rounded-[12px] border-2 border-gray-300 p-3 text-gray-900 text-[15px] font-medium leading-relaxed outline-none focus:border-gray-400"
             />
+            {editError && (
+              <p className="text-sm font-medium text-danger">{editError}</p>
+            )}
             <div className="self-end flex gap-2">
               <button
                 type="button"
+                disabled={isSaving}
                 onClick={() => {
                   setIsEditing(false);
                   setEditValue(content);
+                  setEditError(null);
                 }}
-                className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60"
               >
                 취소
               </button>
               <button
                 type="button"
-                disabled={disabled || !editValue.trim()}
+                disabled={disabled || isSaving || !editValue.trim()}
                 onClick={async () => {
                   const v = editValue.trim();
-                  if (!v) return;
-                  await onEditComment?.(id, v);
-                  setIsEditing(false);
+                  if (!v || !onEditComment || isSaving) return;
+                  setIsSaving(true);
+                  setEditError(null);
+                  try {
+                    await onEditComment(id, v);
+                    setIsEditing(false);
+                  } catch {
+                    setEditError("댓글 수정에 실패했어요. 다시 시도해 주세요.");
+                  } finally {
+                    setIsSaving(false);
+                  }
                 }}
                 className="px-4 py-1.5 rounded-full bg-[#3E434A] text-white text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
               >
-                저장
+                {isSaving ? "저장 중..." : "저장"}
               </button>
             </div>
           </div>
