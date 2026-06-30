@@ -17,8 +17,12 @@ export default function NewsWritePage() {
       backPath="/news"
       isSubmitting={isPending}
       onSubmit={async ({ title, content }) => {
-        await mutateAsync({ title, content, category: "NEWSLETTER" });
-        router.push("/news");
+        try {
+          await mutateAsync({ title, content, category: "NEWSLETTER" });
+          router.push("/news");
+        } catch {
+          window.alert("저장에 실패했습니다. 다시 시도해주세요.");
+        }
       }}
     />
   );
