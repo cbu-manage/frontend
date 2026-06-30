@@ -17,11 +17,7 @@ export default function SchoolYearRadioGroup({
   onStatusChange,
 }: SchoolYearRadioGroupProps) {
   const toggleStatus = (status: string) => {
-    onStatusChange(
-      statuses.includes(status)
-        ? statuses.filter((s) => s !== status)
-        : [...statuses, status],
-    );
+    onStatusChange(statuses.includes(status) ? [] : [status]);
   };
 
   return (
@@ -29,7 +25,7 @@ export default function SchoolYearRadioGroup({
       <p className="text-body-sm font-medium text-gray-900">
         학년 <span className="text-notice">*</span>
       </p>
-      <div className="flex flex-wrap gap-x-6 gap-y-3">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         {YEARS.map((year) => (
           <label key={year} className="flex items-center gap-2 cursor-pointer">
             <input
@@ -53,8 +49,12 @@ export default function SchoolYearRadioGroup({
           </label>
         ))}
 
+        <div className="w-6" />
         {STATUSES.map((status) => (
-          <label key={status} className="flex items-center gap-2 cursor-pointer">
+          <label
+            key={status}
+            className="flex items-center gap-2 cursor-pointer"
+          >
             <input
               type="checkbox"
               checked={statuses.includes(status)}
