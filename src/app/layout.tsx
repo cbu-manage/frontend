@@ -28,7 +28,7 @@ export const metadata: Metadata = {
       {
         url: "/og.png",
         width: 1200,
-        height: 378,
+        height: 630,
         alt: "씨부엉 — 한국공학대학교 프로그래밍 동아리",
       },
     ],
