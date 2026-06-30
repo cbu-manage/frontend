@@ -2,7 +2,7 @@ import { api } from "./client";
 
 export type MemberInfo = {
   id: number;
-  role: string[];
+  role: string; // 서버 MemberDTO.role (단수 문자열, 예: "ROLE_USER")
   name: string;
   phoneNumber: string;
   major: string;
@@ -38,6 +38,5 @@ export const memberApi = {
   updateDue: (id: number, due: boolean) =>
     api.patch(`/members/${id}/due`, { due }),
 
-  activate: (id: number) =>
-    api.patch(`/members/${id}/activate`),
+  activate: (id: number) => api.patch(`/members/${id}/activate`),
 };

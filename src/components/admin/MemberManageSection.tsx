@@ -230,12 +230,7 @@ export default function MemberManageSection() {
                   <td className="p-3 text-center">{item.generation}기</td>
                   <td className="p-3 font-medium">{item.name}</td>
                   <td className="p-3 text-center">
-                    {(Array.isArray(item.role)
-                      ? item.role
-                      : item.role
-                        ? [item.role as string]
-                        : []
-                    ).some((r) => r && r !== "ROLE_USER") ? (
+                    {item.role && item.role !== "ROLE_USER" ? (
                       <span className="font-medium text-brand">운영진</span>
                     ) : (
                       <span className="text-gray-300">-</span>
