@@ -87,33 +87,33 @@ export default function StaffAssignSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {ROLE_CARDS.map((role) => (
           <div
             key={role}
-            className="overflow-hidden rounded-2xl border border-gray-200"
+            className="overflow-hidden rounded-xl border border-gray-200"
           >
-            <div className="flex items-center justify-between bg-brand px-6 py-4">
-              <span className="text-base font-bold text-white">{role}</span>
+            <div className="flex items-center justify-between bg-brand px-4 py-2.5">
+              <span className="text-sm font-bold text-white">{role}</span>
               <button
                 type="button"
                 aria-label={`${role} 운영진 추가`}
                 onClick={() => setAddTarget(role)}
-                className="flex size-7 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
+                className="flex size-6 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
               >
-                <Plus size={16} />
+                <Plus size={14} />
               </button>
             </div>
-            <ul className="min-h-[220px] divide-y divide-gray-100 px-6 py-3">
+            <ul className="divide-y divide-gray-100 px-4 py-1">
               {members[role].length === 0 ? (
-                <li className="py-12 text-center text-sm text-gray-400">
+                <li className="py-6 text-center text-sm text-gray-400">
                   지정된 운영진이 없어요
                 </li>
               ) : (
                 members[role].map((m) => (
                   <li
                     key={m.id}
-                    className="flex items-center justify-between py-4"
+                    className="flex items-center justify-between py-2.5"
                   >
                     <span className="text-sm text-gray-900">
                       {m.gen} {m.name}
