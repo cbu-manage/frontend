@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Upload, CalendarIcon, Search } from "lucide-react";
+import { CalendarIcon, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
@@ -19,7 +18,6 @@ function toApiDate(d?: Date): string | undefined {
 }
 
 export default function ReportManageSection() {
-  const router = useRouter();
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [calendarOpenStart, setCalendarOpenStart] = useState(false);
@@ -29,8 +27,10 @@ export default function ReportManageSection() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (startRef.current && !startRef.current.contains(e.target as Node)) setCalendarOpenStart(false);
-      if (endRef.current && !endRef.current.contains(e.target as Node)) setCalendarOpenEnd(false);
+      if (startRef.current && !startRef.current.contains(e.target as Node))
+        setCalendarOpenStart(false);
+      if (endRef.current && !endRef.current.contains(e.target as Node))
+        setCalendarOpenEnd(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -54,10 +54,20 @@ export default function ReportManageSection() {
   const keyword = submittedKeyword || undefined;
 
   // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색 모두 서버 필터
-  const { data: res, isLoading, isError } = useQuery({
+  const {
+    data: res,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd, keyword],
     queryFn: () =>
-      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, startDate: apiStart, endDate: apiEnd, keyword }),
+      reportApi.getList({
+        page: pageIndex,
+        size: PAGE_SIZE,
+        startDate: apiStart,
+        endDate: apiEnd,
+        keyword,
+      }),
   });
 
   const reportPage = res?.data?.data?.reports;
@@ -88,18 +98,8 @@ export default function ReportManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-
-      {/* 헤더: 제목 + 업로드 버튼 */}
-      <div className="flex items-center justify-between mb-10">
-        <h1 className="text-h1 text-gray-900">전체 보고서 관리</h1>
-        <button
-          onClick={() => router.push("/report/write")}
-          className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide"
-        >
-          <Upload size={18} />
-          새 보고서 업로드
-        </button>
-      </div>
+      {/* 관리자 페이지는 조회/관리 전용 — 업로드는 아카이브 > 보고서(개인)에서 */}
+      <h1 className="text-h1 text-gray-900 mb-10">전체 보고서 관리</h1>
 
       {/* 필터 영역: 기간(활동일) + 검색 + 팀으로 그룹핑 */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 mb-6 space-y-3">
@@ -109,20 +109,33 @@ export default function ReportManageSection() {
             <div ref={startRef} className="relative">
               <button
                 type="button"
-                onClick={() => { setCalendarOpenStart((v) => !v); setCalendarOpenEnd(false); }}
+                onClick={() => {
+                  setCalendarOpenStart((v) => !v);
+                  setCalendarOpenEnd(false);
+                }}
                 aria-haspopup="dialog"
                 aria-expanded={calendarOpenStart}
                 aria-label="시작일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={startDate ? "text-gray-700" : "text-gray-400"}>
-                  {startDate ? format(startDate, "yyyy.MM.dd", { locale: ko }) : "시작일"}
+                  {startDate
+                    ? format(startDate, "yyyy.MM.dd", { locale: ko })
+                    : "시작일"}
                 </span>
                 <CalendarIcon size={14} className="text-gray-400" />
               </button>
               {calendarOpenStart && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); resetPage(); }} />
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(d) => {
+                      setStartDate(d);
+                      setCalendarOpenStart(false);
+                      resetPage();
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -130,27 +143,44 @@ export default function ReportManageSection() {
             <div ref={endRef} className="relative">
               <button
                 type="button"
-                onClick={() => { setCalendarOpenEnd((v) => !v); setCalendarOpenStart(false); }}
+                onClick={() => {
+                  setCalendarOpenEnd((v) => !v);
+                  setCalendarOpenStart(false);
+                }}
                 aria-haspopup="dialog"
                 aria-expanded={calendarOpenEnd}
                 aria-label="종료일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={endDate ? "text-gray-700" : "text-gray-400"}>
-                  {endDate ? format(endDate, "yyyy.MM.dd", { locale: ko }) : "종료일"}
+                  {endDate
+                    ? format(endDate, "yyyy.MM.dd", { locale: ko })
+                    : "종료일"}
                 </span>
                 <CalendarIcon size={14} className="text-gray-400" />
               </button>
               {calendarOpenEnd && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); resetPage(); }} />
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(d) => {
+                      setEndDate(d);
+                      setCalendarOpenEnd(false);
+                      resetPage();
+                    }}
+                  />
                 </div>
               )}
             </div>
             {(startDate || endDate) && (
               <button
                 type="button"
-                onClick={() => { setStartDate(undefined); setEndDate(undefined); resetPage(); }}
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                  resetPage();
+                }}
                 className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
               >
                 초기화
@@ -192,7 +222,9 @@ export default function ReportManageSection() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") runSearch();
+            }}
             placeholder="제목, 작성자로 검색"
             aria-label="제목·작성자 검색"
             className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
@@ -205,19 +237,25 @@ export default function ReportManageSection() {
         <div className="text-center py-16 text-gray-500">불러오는 중...</div>
       )}
       {isError && (
-        <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
+        <div className="text-center py-16 text-red-500">
+          보고서를 불러오지 못했습니다.
+        </div>
       )}
 
       {!isLoading && !isError && (
         <>
           {reports.length === 0 ? (
-            <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
+            <div className="py-16 text-center text-sm text-gray-400">
+              보고서가 없습니다.
+            </div>
           ) : groupByTeam ? (
             /* 팀(그룹)별 묶음 보기 */
             <div className="space-y-8 mb-6">
               {Object.entries(grouped).map(([groupName, items]) => (
                 <div key={groupName}>
-                  <h2 className="text-sm font-semibold text-gray-700 mb-3">{groupName}</h2>
+                  <h2 className="text-sm font-semibold text-gray-700 mb-3">
+                    {groupName}
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {items.map(renderCard)}
                   </div>
@@ -231,10 +269,13 @@ export default function ReportManageSection() {
             </div>
           )}
 
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
-
     </div>
   );
 }
