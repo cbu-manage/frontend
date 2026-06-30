@@ -87,13 +87,13 @@ export default function StaffAssignSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
         {ROLE_CARDS.map((role) => (
           <div
             key={role}
             className="overflow-hidden rounded-2xl border border-gray-200"
           >
-            <div className="flex items-center justify-between bg-brand px-5 py-3">
+            <div className="flex items-center justify-between bg-brand px-6 py-4">
               <span className="text-base font-bold text-white">{role}</span>
               <button
                 type="button"
@@ -104,16 +104,16 @@ export default function StaffAssignSection() {
                 <Plus size={16} />
               </button>
             </div>
-            <ul className="min-h-[160px] divide-y divide-gray-100 px-5 py-2">
+            <ul className="min-h-[220px] divide-y divide-gray-100 px-6 py-3">
               {members[role].length === 0 ? (
-                <li className="py-6 text-center text-sm text-gray-400">
+                <li className="py-12 text-center text-sm text-gray-400">
                   지정된 운영진이 없어요
                 </li>
               ) : (
                 members[role].map((m) => (
                   <li
                     key={m.id}
-                    className="flex items-center justify-between py-3"
+                    className="flex items-center justify-between py-4"
                   >
                     <span className="text-sm text-gray-900">
                       {m.gen} {m.name}
