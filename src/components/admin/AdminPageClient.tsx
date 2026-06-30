@@ -7,6 +7,7 @@ import MemberManageSection from "@/components/admin/MemberManageSection";
 import GroupManageSection from "@/components/admin/GroupManageSection";
 import ReportManageSection from "@/components/manage/ReportManageSection";
 import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
+import StaffAssignSection from "@/components/admin/StaffAssignSection";
 import { useCan } from "@/hooks/auth/useCan";
 import type { Capability } from "@/lib/permissions";
 
@@ -20,6 +21,7 @@ const ADMIN_MENU_ITEMS = [
     value: "new-members",
     capability: "applications.review",
   },
+  { label: "운영진 지정", value: "staff", capability: "staff.assign" },
 ] as const satisfies readonly {
   label: string;
   value: string;
@@ -38,6 +40,7 @@ export default function AdminPageClient() {
     groups: useCan("groups.manage"),
     reports: useCan("reportDocs.manage"),
     "new-members": useCan("applications.review"),
+    staff: useCan("staff.assign"),
   };
   const visibleItems = ADMIN_MENU_ITEMS.filter((item) => canMap[item.value]);
 
@@ -46,7 +49,8 @@ export default function AdminPageClient() {
       tabParam === "members" ||
       tabParam === "groups" ||
       tabParam === "reports" ||
-      tabParam === "new-members"
+      tabParam === "new-members" ||
+      tabParam === "staff"
     ) {
       return tabParam as AdminMenuValue;
     }
@@ -77,6 +81,7 @@ export default function AdminPageClient() {
           {effectiveMenu === "groups" && <GroupManageSection />}
           {effectiveMenu === "reports" && <ReportManageSection />}
           {effectiveMenu === "new-members" && <NewMemberManageSection />}
+          {effectiveMenu === "staff" && <StaffAssignSection />}
         </div>
       </div>
     </main>

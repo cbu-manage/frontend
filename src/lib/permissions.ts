@@ -39,6 +39,7 @@ export type Capability =
   | "flag.manage" // 게시글·댓글 신고 목록/상세/처리
   | "reportDocs.manage" // 보고서 승인 / HWP·ZIP export
   | "system.settings" // 온보딩 링크 조회/수정
+  | "staff.assign" // 운영진 역할 지정/해제 (운영진 지정 페이지) — ADMIN·회장·부회장
   | "news.manage" // 소식 작성/수정/삭제/상단고정
   | "meetings.manage" // 모임 생성/수정/마감/삭제
   | "meetings.attendanceAdmin" // 관리자용 참석명단 조회/엑셀 (⚠️ ADMIN 전용)
@@ -59,6 +60,7 @@ const PRESIDENT_CAPS: Capability[] = [
   "flag.manage",
   "reportDocs.manage",
   "system.settings",
+  "staff.assign",
   "news.manage",
   "meetings.manage",
   "posts.moderate",
