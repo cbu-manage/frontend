@@ -102,7 +102,7 @@ interface CommentItemProps {
   depth?: number;
   replies?: ReplyData[];
   onReplySubmit?: (parentId: number, content: string) => void;
-  onEditComment?: (id: number) => void;
+  onEditComment?: (id: number, content: string) => void | Promise<void>;
   onDeleteComment?: (id: number) => void;
   onReportComment?: (id: number) => void;
   disabled?: boolean;
@@ -135,6 +135,8 @@ export const CommentItem = ({
   const [replyOpen, setReplyOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [replyValue, setReplyValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(content);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = currentUserId != null;
   const isMine = isLoggedIn && userId != null && currentUserId === userId;
@@ -185,7 +187,8 @@ export const CommentItem = ({
                       <button
                         type="button"
                         onClick={() => {
-                          onEditComment?.(id);
+                          setEditValue(content);
+                          setIsEditing(true);
                           setMenuOpen(false);
                         }}
                         className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -225,9 +228,47 @@ export const CommentItem = ({
           )}
         </div>
 
-        <p className="text-gray-900 text-[15px] font-medium mb-4 leading-relaxed">
-          {content}
-        </p>
+        {isEditing ? (
+          <div className="mb-4 flex flex-col gap-2">
+            <textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              autoFocus
+              rows={3}
+              aria-label="댓글 수정"
+              className="w-full resize-none rounded-[12px] border-2 border-gray-300 p-3 text-gray-900 text-[15px] font-medium leading-relaxed outline-none focus:border-gray-400"
+            />
+            <div className="self-end flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditValue(content);
+                }}
+                className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                disabled={disabled || !editValue.trim()}
+                onClick={async () => {
+                  const v = editValue.trim();
+                  if (!v) return;
+                  await onEditComment?.(id, v);
+                  setIsEditing(false);
+                }}
+                className="px-4 py-1.5 rounded-full bg-[#3E434A] text-white text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-900 text-[15px] font-medium mb-4 leading-relaxed">
+            {content}
+          </p>
+        )}
 
         <div className="flex items-center gap-4 text-gray-600 text-[15px] font-medium">
           <div className="flex items-center gap-1.5">
