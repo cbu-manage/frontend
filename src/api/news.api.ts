@@ -106,7 +106,6 @@ export const newsApi = {
     return api.post<ApiEnvelope<NewsAttachment>>(
       `/news/${id}/attachments`,
       formData,
-      { headers: { "Content-Type": "multipart/form-data" } },
     );
   },
 

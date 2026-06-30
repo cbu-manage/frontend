@@ -53,28 +53,44 @@ export default function NewsDetailPage() {
   const handleCommentSubmit = async () => {
     const trimmed = comment.trim();
     if (!trimmed || createComment.isPending) return;
-    await createComment.mutateAsync({ content: trimmed });
-    setComment("");
+    try {
+      await createComment.mutateAsync({ content: trimmed });
+      setComment("");
+    } catch {
+      window.alert("댓글 등록에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleDelete = async () => {
     if (!window.confirm("이 글을 삭제할까요?")) return;
-    await deletePost.mutateAsync();
-    router.push("/news");
+    try {
+      await deletePost.mutateAsync();
+      router.push("/news");
+    } catch {
+      window.alert("삭제에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleCommentFlag = async (commentId: number) => {
     const reason = window.prompt("댓글 신고 사유를 입력해주세요.");
     if (!reason?.trim()) return;
-    await flagComment.mutateAsync({ commentId, content: reason.trim() });
-    window.alert("신고가 접수되었습니다.");
+    try {
+      await flagComment.mutateAsync({ commentId, content: reason.trim() });
+      window.alert("신고가 접수되었습니다.");
+    } catch {
+      window.alert("신고 접수에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   const handleCommentEdit = async (commentId: number) => {
     const target = findCommentById(comments, commentId);
     const newContent = window.prompt("수정할 내용을 입력하세요.", target?.content ?? "");
     if (newContent == null || !newContent.trim()) return;
-    await updateComment.mutateAsync({ commentId, content: newContent.trim() });
+    try {
+      await updateComment.mutateAsync({ commentId, content: newContent.trim() });
+    } catch {
+      window.alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (postQuery.isLoading) {
@@ -146,6 +162,8 @@ export default function NewsDetailPage() {
             {/* 댓글 목록 */}
             {commentsQuery.isLoading ? (
               <div className="py-10 text-center text-sm text-gray-400">댓글을 불러오는 중...</div>
+            ) : commentsQuery.isError ? (
+              <div className="py-10 text-center text-sm text-gray-500">댓글을 불러오지 못했습니다.</div>
             ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (

@@ -74,8 +74,11 @@ export function useNewsDetail(newsId: number) {
 
   const deletePost = useMutation({
     mutationFn: () => newsApi.delete(newsId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["news-list"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["news-list"] });
+      queryClient.invalidateQueries({ queryKey: ["news", newsId] });
+      queryClient.invalidateQueries({ queryKey: ["news-comments", postId] });
+    },
   });
 
   const flagComment = useMutation({

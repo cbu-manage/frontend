@@ -25,9 +25,16 @@ export default function NoticeWritePage() {
       backPath="/notice"
       isSubmitting={isPending}
       onSubmit={async ({ title, content, category }) => {
-        const mapped = category ? CATEGORY_MAP[category] : "NOTICE";
-        await mutateAsync({ title, content, category: mapped });
-        router.push("/notice");
+        if (!category) {
+          window.alert("분류를 선택해주세요.");
+          return;
+        }
+        try {
+          await mutateAsync({ title, content, category: CATEGORY_MAP[category] });
+          router.push("/notice");
+        } catch {
+          window.alert("저장에 실패했습니다. 다시 시도해주세요.");
+        }
       }}
     />
   );

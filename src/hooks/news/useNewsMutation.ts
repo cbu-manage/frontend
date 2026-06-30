@@ -29,7 +29,9 @@ export function useNewsPin() {
   return useMutation({
     mutationFn: ({ id, pinned }: { id: number; pinned: boolean }) =>
       newsApi.pin(id, pinned),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["news-list"] }),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ["news-list"] });
+      queryClient.invalidateQueries({ queryKey: ["news", id] });
+    },
   });
 }

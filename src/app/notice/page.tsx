@@ -40,7 +40,7 @@ export default function NoticePage() {
     setCurrentPage(1);
   };
 
-  const { data, isLoading } = useNewsList({
+  const { data, isLoading, isError } = useNewsList({
     category: TAB_TO_CATEGORY[activeTab],
     keyword: submittedKeyword || undefined,
     page: currentPage,
@@ -104,10 +104,13 @@ export default function NoticePage() {
             {isLoading && (
               <div className="py-16 text-center text-sm text-gray-500">불러오는 중…</div>
             )}
-            {!isLoading && items.length === 0 && (
+            {!isLoading && isError && (
+              <div className="py-16 text-center text-sm text-gray-500">목록을 불러오지 못했습니다.</div>
+            )}
+            {!isLoading && !isError && items.length === 0 && (
               <div className="py-16 text-center text-sm text-gray-900">검색 결과가 없습니다.</div>
             )}
-            {!isLoading &&
+            {!isLoading && !isError &&
               items.map((notice) => (
                 <Link
                   key={notice.newsId}
