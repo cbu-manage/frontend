@@ -46,6 +46,14 @@ function NoticeWriteClient() {
     );
   }
 
+  if (editId && postQuery.isError) {
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">게시글을 불러오지 못했습니다.</div>
+      </main>
+    );
+  }
+
   if (editId && !postQuery.isLoading && !editPost) {
     return (
       <main className="min-h-screen bg-white">
