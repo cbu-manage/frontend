@@ -11,22 +11,7 @@ import { useMe } from "@/hooks/auth";
 import RequireMember from "@/components/auth/RequireMember";
 import { codingTestApi } from "@/api";
 import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
-import {
-  useProblemComments,
-  type NormalizedComment,
-} from "@/hooks/coding-test/useProblemComments";
-
-function findCommentById(
-  list: NormalizedComment[],
-  id: number,
-): NormalizedComment | null {
-  for (const c of list) {
-    if (c.id === id) return c;
-    const found = findCommentById(c.replies, id);
-    if (found) return found;
-  }
-  return null;
-}
+import { useProblemComments } from "@/hooks/coding-test/useProblemComments";
 
 function formatDate(iso?: string): string {
   if (!iso) return "";
@@ -280,15 +265,8 @@ export default function CodingTestDetailPage() {
                         date={c.date}
                         replies={c.replies}
                         onReplySubmit={replyComment}
-                        onEditComment={async (commentId) => {
-                          const comment = findCommentById(comments, commentId);
-                          const current = comment?.content ?? "";
-                          const newContent = window.prompt(
-                            "수정할 내용을 입력하세요.",
-                            current,
-                          );
-                          if (newContent != null && newContent.trim())
-                            await updateComment(commentId, newContent.trim());
+                        onEditComment={async (commentId, newContent) => {
+                          await updateComment(commentId, newContent);
                         }}
                         onDeleteComment={async (commentId) => {
                           if (window.confirm("이 댓글을 삭제할까요?"))
