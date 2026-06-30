@@ -25,7 +25,6 @@ type FormState = {
   studentId: string;
   department: string;
   schoolYear: string;
-  schoolStatuses: string[];
   applyFields: string[];
   teamExperience: string;
   programmingMotivation: string;
@@ -59,7 +58,6 @@ const INITIAL_FORM: FormState = {
   studentId: "",
   department: "",
   schoolYear: "1학년",
-  schoolStatuses: [],
   applyFields: [],
   teamExperience: "",
   programmingMotivation: "",
@@ -319,8 +317,6 @@ export default function ApplyFormPage() {
               <SchoolYearRadioGroup
                 value={form.schoolYear}
                 onChange={setField("schoolYear")}
-                statuses={form.schoolStatuses}
-                onStatusChange={setField("schoolStatuses")}
               />
 
               <ApplyFieldCheckboxGroup
