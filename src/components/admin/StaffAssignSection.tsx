@@ -79,7 +79,7 @@ export default function StaffAssignSection() {
   const filtered = CANDIDATES.filter((c) => c.name.includes(query.trim()));
 
   return (
-    <section>
+    <section className="max-w-6xl mx-auto">
       <div className="mb-6">
         <h1 className="text-h1 text-gray-900">운영진 지정</h1>
         <p className="mt-2 text-base text-gray-600">
