@@ -106,6 +106,22 @@ export { imageApi } from "./image.api";
 // Apply
 export { applyApi, type ApplicationRequest } from "./apply.api";
 
+// News (공지·뉴스레터)
+export {
+  newsApi,
+  type NewsCategory,
+  type NewsListParams,
+  type NewsListItem,
+  type NewsListResponse,
+  type NewsDetail,
+  type NewsAttachment,
+  type NewsCreateBody,
+  type NewsUpdateBody,
+  type AttachmentDownload,
+  type PageInfo,
+  type NewsSearchInfo,
+} from "./news.api";
+
 // Free Board
 export {
   freeboardApi,
