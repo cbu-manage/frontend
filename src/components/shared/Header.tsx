@@ -170,6 +170,21 @@ export default function Header() {
                 </li>
               );
             })}
+            {/* 관리자 페이지 — 아카이브 옆, 운영진만. 카테고리 버튼과 동일 스타일(드롭다운만 없음) */}
+            {showAdmin && (
+              <li className="group/cat relative">
+                <Link
+                  href="/manage"
+                  className={`inline-block pb-0.5 px-2 border-b-4 font-semibold whitespace-nowrap transition-colors ${
+                    pathname.startsWith("/manage")
+                      ? "border-brand text-brand"
+                      : `border-transparent group-hover/cat:text-brand ${isHome ? "text-white" : "text-gray-900"}`
+                  }`}
+                >
+                  관리자 페이지
+                </Link>
+              </li>
+            )}
           </ul>
           {/* 전체폭 셸프 — 카테고리 hover/focus 시 헤더가 통째로 펼쳐지는 배경.
               드롭다운(글자)이 focus-within으로도 열리므로 배경도 동일 조건을 줘야
@@ -205,18 +220,6 @@ export default function Header() {
               >
                 마이페이지
               </Link>
-              {showAdmin && (
-                <Link
-                  href="/manage"
-                  className={`font-medium transition-colors hover:text-brand ${
-                    pathname.startsWith("/manage")
-                      ? "text-brand font-semibold"
-                      : text
-                  }`}
-                >
-                  관리자 페이지
-                </Link>
-              )}
               <button
                 onClick={handleLogout}
                 className={`flex items-center justify-center px-5 py-2 rounded-lg text-base font-semibold transition-colors ${ctaBtn}`}
@@ -304,6 +307,19 @@ export default function Header() {
                     </li>
                   );
                 })}
+                {/* 관리자 페이지 — 아카이브 옆, 운영진만 */}
+                {showAdmin && (
+                  <li>
+                    <Link
+                      href="/manage"
+                      className={`block px-3 py-3 rounded-lg text-base font-semibold ${
+                        pathname.startsWith("/manage") ? "text-brand" : text
+                      }`}
+                    >
+                      관리자 페이지
+                    </Link>
+                  </li>
+                )}
               </ul>
 
               <div
@@ -328,18 +344,6 @@ export default function Header() {
                     >
                       마이페이지
                     </Link>
-                    {showAdmin && (
-                      <Link
-                        href="/manage"
-                        className={`flex items-center justify-center px-3 py-3 rounded-lg text-base font-medium ${
-                          isHome
-                            ? "text-white hover:bg-white/10"
-                            : "text-gray-700 hover:bg-gray-50"
-                        }`}
-                      >
-                        관리자 페이지
-                      </Link>
-                    )}
                     <button
                       onClick={handleLogout}
                       className={`flex items-center justify-center px-3 py-3 rounded-lg text-base font-semibold ${ctaBtn}`}
