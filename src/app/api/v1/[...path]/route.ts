@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { serverEnv } from "@/lib/env";
 
-const BACKEND = (process.env.BACKEND_URL ?? "").replace(/\/$/, "");
+const BACKEND = serverEnv.backendUrl;
 
 async function proxy(req: NextRequest) {
   if (!BACKEND) {
