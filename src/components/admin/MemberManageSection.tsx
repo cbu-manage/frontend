@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { memberApi, type MemberInfo } from "@/api/member.api";
 import PGN from "@/components/shared/Pagination";
@@ -117,9 +118,7 @@ export default function MemberManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-h1 text-gray-900 mb-6">
-        회원 관리
-      </h1>
+      <h1 className="text-h1 text-gray-900 mb-6">회원 관리</h1>
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <p className="text-lg">
@@ -154,7 +153,8 @@ export default function MemberManageSection() {
               </ul>
             )}
           </div>
-          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+          <div className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2">
+            <Search size={14} className="shrink-0 text-gray-400" />
             <input
               className="outline-none text-sm"
               type="text"
@@ -181,10 +181,19 @@ export default function MemberManageSection() {
                   aria-label="select all"
                 />
               </th>
-              <th className="p-3 text-center font-medium text-gray-700">기수</th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                기수
+              </th>
               <th className="p-3 text-left font-medium text-gray-700">이름</th>
-              <th className="p-3 text-center font-medium text-gray-700">학번</th>
-              <th className="p-3 text-center font-medium text-gray-700">학과</th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                운영진 여부
+              </th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                학번
+              </th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                학과
+              </th>
               <th className="p-3 text-left font-medium text-gray-700">
                 메일 주소
               </th>
@@ -199,7 +208,7 @@ export default function MemberManageSection() {
           <tbody className="divide-y divide-gray-100">
             {members.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-6 text-center text-gray-400">
+                <td colSpan={9} className="p-6 text-center text-gray-400">
                   {generationFilter !== null || searchName.trim()
                     ? "검색 결과가 없습니다."
                     : "등록된 회원이 없습니다."}
@@ -220,6 +229,13 @@ export default function MemberManageSection() {
                   </td>
                   <td className="p-3 text-center">{item.generation}기</td>
                   <td className="p-3 font-medium">{item.name}</td>
+                  <td className="p-3 text-center">
+                    {item.role?.some((r) => r && r !== "ROLE_USER") ? (
+                      <span className="font-medium text-brand">운영진</span>
+                    ) : (
+                      <span className="text-gray-300">-</span>
+                    )}
+                  </td>
                   <td className="p-3 text-center">{item.studentNumber}</td>
                   <td className="p-3 text-center">{item.major}</td>
                   <td className="p-3">{item.email || "-"}</td>

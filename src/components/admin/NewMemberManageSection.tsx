@@ -306,11 +306,19 @@ export default function NewMemberManageSection() {
             <dl className="mt-4 space-y-3 text-sm">
               {[
                 ["이름", selected.name],
+                ["닉네임", "-"],
+                ["생년월일", "-"],
+                ["학년", "-"],
                 ["학번", String(selected.studentNumber)],
                 ["학과", selected.major],
+                ["지원 분야", "-"],
+                ["졸업 경향", "-"],
+                ["프로그래밍 시작 계기", "-"],
+                ["씨부엉 지원 목적", "-"],
+                ["개발 링크", "-"],
+                ["유입 경로", "-"],
                 ["OT 참석", selected.otAttended ? "참석" : "미참석"],
                 ["환영회 참석", selected.welcomeAttended ? "참석" : "미참석"],
-                ["비고", selected.note ?? "-"],
               ].map(([k, v]) => (
                 <div key={k} className="flex gap-6">
                   <dt className="w-28 shrink-0 text-gray-500">{k}</dt>
@@ -545,14 +553,26 @@ export default function NewMemberManageSection() {
                       <td className="px-3 py-3 text-center text-gray-900 tabular-nums">
                         {item.passCount} / {item.totalVoters}
                       </td>
-                      <td className="px-3 py-3 text-center text-gray-900">
-                        {item.myReviewed ? "Y" : "N"}
+                      <td className="px-3 py-3 text-center">
+                        <span
+                          className={`font-semibold ${item.myReviewed ? "text-success" : "text-danger"}`}
+                        >
+                          {item.myReviewed ? "Y" : "N"}
+                        </span>
                       </td>
-                      <td className="px-3 py-3 text-center text-gray-900">
-                        {item.otAttended ? "Y" : "N"}
+                      <td className="px-3 py-3 text-center">
+                        <span
+                          className={`font-semibold ${item.otAttended ? "text-success" : "text-danger"}`}
+                        >
+                          {item.otAttended ? "Y" : "N"}
+                        </span>
                       </td>
-                      <td className="px-3 py-3 text-center text-gray-900">
-                        {item.welcomeAttended ? "Y" : "N"}
+                      <td className="px-3 py-3 text-center">
+                        <span
+                          className={`font-semibold ${item.welcomeAttended ? "text-success" : "text-danger"}`}
+                        >
+                          {item.welcomeAttended ? "Y" : "N"}
+                        </span>
                       </td>
                       <td className="px-3 py-3 text-gray-900 text-xs">
                         {item.note ?? ""}
