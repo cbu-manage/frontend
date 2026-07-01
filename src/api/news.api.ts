@@ -97,8 +97,7 @@ export const newsApi = {
       paramsSerializer: { indexes: null },
     }),
 
-  getById: (id: number) =>
-    api.get<ApiEnvelope<NewsDetail>>(`/news/${id}`),
+  getById: (id: number) => api.get<ApiEnvelope<NewsDetail>>(`/news/${id}`),
 
   create: (data: NewsCreateBody) =>
     api.post<ApiEnvelope<NewsDetail>>("/news", data),
@@ -106,8 +105,7 @@ export const newsApi = {
   update: (id: number, data: NewsUpdateBody) =>
     api.patch<ApiEnvelope<NewsDetail>>(`/news/${id}`, data),
 
-  delete: (id: number) =>
-    api.delete<ApiEnvelope<void>>(`/news/${id}`),
+  delete: (id: number) => api.delete<ApiEnvelope<void>>(`/news/${id}`),
 
   pin: (id: number, pinned: boolean) =>
     api.patch<ApiEnvelope<NewsDetail>>(`/news/${id}/pin`, { pinned }),

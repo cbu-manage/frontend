@@ -89,13 +89,28 @@ export {
 } from "./post.api";
 
 // Member
-export { memberApi, type MemberInfo } from "./member.api";
+export { memberApi, type MemberInfo, type MemberUpdateDTO } from "./member.api";
 
-// Applicant (신입 부원)
+// Applicant (신입 부원 신청서 — 모집 기반)
 export {
   applicantApi,
-  type ApplicantItem,
-  type ApplicantStatus,
+  recruitmentApi,
+  type VoteDecision,
+  type FinalDecision,
+  type ApplicationTab,
+  type ApplicationField,
+  type Recruitment,
+  type ApplicationListItem,
+  type ApplicationListResponse,
+  type ApplicationListParams,
+  type ApplicationDetail,
+  type ApplicantInfo,
+  type AnswerItem,
+  type PortfolioItem,
+  type VoteItem,
+  type MyVote,
+  type FinalizeDecision,
+  type Page,
 } from "./applicant.api";
 
 // Gathering (모임 일정)
@@ -104,7 +119,7 @@ export {
   GATHERING_TYPE_LABEL,
   type GatheringType,
   type MyAttendanceStatus,
-  type VoteDecision,
+  // VoteDecision("PASS"|"FAIL")은 applicant.api 재export와 동일 → 중복 제거(모임도 그걸 사용)
   type AttendanceSummary,
   type Gathering,
   type GatheringMember,

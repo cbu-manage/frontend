@@ -1,13 +1,22 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { memberApi, type MemberInfo } from "@/api/member.api";
 import PGN from "@/components/shared/Pagination";
+// TODO(BE 대기): 회비 관리 — 아래 엔드포인트 나오면 아래 주석들 복구.
+//   PATCH /members/dues/reset  (운영진 제외 전원 due=false / inactive) — 일괄 초기화
+//   PATCH /member/{id}/due     (body {due})                           — 개별 납부 토글
+//   ※ 기존 approve-payment 는 "신입 회원 승인(ACTIVE + 환영메일 발송)"이라 회비 토글 아님.
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { useCan } from "@/hooks/auth";
 
 const PAGE_SIZE = 10;
 
 export default function MemberManageSection() {
+  // const queryClient = useQueryClient(); // 회비 관리 BE 대기
+  // const canApproveFee = useCan("members.approveFee"); // 회비 관리 BE 대기
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [generationFilter, setGenerationFilter] = useState<number | null>(null);
   const [searchName, setSearchName] = useState("");
@@ -40,6 +49,27 @@ export default function MemberManageSection() {
       return all;
     },
   });
+
+  /* TODO(BE 대기): 회비 일괄 처리 — dues/reset·due 토글 엔드포인트 나오면 복구.
+     기존 approve-payment 는 신입 승인(환영메일 발송)이라 회비 토글로 쓰면 안 됨.
+  const approveFeeMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const results = await Promise.allSettled(
+        ids.map((id) => memberApi.approvePayment(id)),
+      );
+      return results.filter((r) => r.status === "rejected").length;
+    },
+    onSuccess: (failed) => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+      setSelectedItems([]);
+      if (failed > 0) {
+        alert(`${failed}명은 처리에 실패했어요. 목록을 확인해 주세요.`);
+      }
+    },
+    onError: () =>
+      alert("회비 처리 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+  */
 
   const generationList = useMemo(() => {
     return [...new Set(allMembers.map((m) => m.generation))].sort(
@@ -117,9 +147,7 @@ export default function MemberManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-h1 text-gray-900 mb-6">
-        회원 관리
-      </h1>
+      <h1 className="text-h1 text-gray-900 mb-6">회원 관리</h1>
 
       <div className="flex items-center justify-between gap-4 mb-6">
         <p className="text-lg">
@@ -154,7 +182,8 @@ export default function MemberManageSection() {
               </ul>
             )}
           </div>
-          <div className="flex items-center gap-2 rounded-md border px-3 py-2">
+          <div className="flex items-center gap-2 rounded-md border border-gray-200 px-3 py-2">
+            <Search size={14} className="shrink-0 text-gray-400" />
             <input
               className="outline-none text-sm"
               type="text"
@@ -181,10 +210,19 @@ export default function MemberManageSection() {
                   aria-label="select all"
                 />
               </th>
-              <th className="p-3 text-center font-medium text-gray-700">기수</th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                기수
+              </th>
               <th className="p-3 text-left font-medium text-gray-700">이름</th>
-              <th className="p-3 text-center font-medium text-gray-700">학번</th>
-              <th className="p-3 text-center font-medium text-gray-700">학과</th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                운영진 여부
+              </th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                학번
+              </th>
+              <th className="p-3 text-center font-medium text-gray-700">
+                학과
+              </th>
               <th className="p-3 text-left font-medium text-gray-700">
                 메일 주소
               </th>
@@ -199,7 +237,7 @@ export default function MemberManageSection() {
           <tbody className="divide-y divide-gray-100">
             {members.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-6 text-center text-gray-400">
+                <td colSpan={9} className="p-6 text-center text-gray-400">
                   {generationFilter !== null || searchName.trim()
                     ? "검색 결과가 없습니다."
                     : "등록된 회원이 없습니다."}
@@ -220,11 +258,22 @@ export default function MemberManageSection() {
                   </td>
                   <td className="p-3 text-center">{item.generation}기</td>
                   <td className="p-3 font-medium">{item.name}</td>
+                  <td className="p-3 text-center">
+                    {item.role && item.role !== "ROLE_USER" ? (
+                      <span className="font-medium text-brand">운영진</span>
+                    ) : (
+                      <span className="text-gray-300">-</span>
+                    )}
+                  </td>
                   <td className="p-3 text-center">{item.studentNumber}</td>
                   <td className="p-3 text-center">{item.major}</td>
                   <td className="p-3">{item.email || "-"}</td>
-                  <td className="p-3 text-center font-medium text-emerald-600">
-                    납부
+                  <td className="p-3 text-center">
+                    {item.due ? (
+                      <span className="font-medium text-emerald-600">납부</span>
+                    ) : (
+                      <span className="font-medium text-gray-400">미납</span>
+                    )}
                   </td>
                   <td className="p-3 text-center">활동</td>
                 </tr>
@@ -234,23 +283,33 @@ export default function MemberManageSection() {
         </table>
       </div>
 
-      {selectedItems.length > 0 && (
+      {/* TODO(BE 대기): 회비 일괄 처리 UI — dues/reset(운영진 제외 초기화)·due 토글 엔드포인트 나오면 복구.
+          설계: 검색창 옆 "회비 상태 초기화"(운영진 제외 전원 미납) + 표 회비 셀 클릭 토글(미납↔납부).
+      {canApproveFee && selectedItems.length > 0 && (
         <div className="mt-4 flex items-center gap-3">
           <span className="text-sm text-gray-600">
             {selectedItems.length}명 선택
           </span>
           <button
+            disabled={approveFeeMutation.isPending}
             onClick={() => {
-              alert(
-                `선택된 ${selectedItems.length}명의 회비 상태를 일괄 변경합니다.\n(API 연동 예정)`,
-              );
+              if (
+                !window.confirm(
+                  `선택된 ${selectedItems.length}명을 회비 납부 처리합니다.\n계속하시겠습니까?`,
+                )
+              )
+                return;
+              approveFeeMutation.mutate(selectedItems);
             }}
-            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity"
+            className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:opacity-90 transition-opacity disabled:opacity-40"
           >
-            회비 일괄 납부 처리
+            {approveFeeMutation.isPending
+              ? "처리 중..."
+              : "회비 일괄 납부 처리"}
           </button>
         </div>
       )}
+      */}
 
       <PGN
         currentPage={currentPage}
