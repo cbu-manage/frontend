@@ -291,7 +291,7 @@ export default function MeetingDetailPage() {
                     type="button"
                     disabled={!choice || voteMutation.isPending}
                     onClick={handleVote}
-                    className="mt-4 w-full rounded-full bg-success py-4 text-headline-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-4 w-full rounded-full bg-gradient-to-b from-mascot-from to-mascot-to py-4 text-headline-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {voteMutation.isPending ? "제출 중..." : "제출하기"}
                   </button>
