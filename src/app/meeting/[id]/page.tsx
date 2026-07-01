@@ -114,7 +114,10 @@ export default function MeetingDetailPage() {
 
   const handleDelete = () => {
     if (!window.confirm("이 모임을 삭제할까요?")) return;
-    deleteMutation.mutate(id, { onSuccess: () => router.push("/meeting") });
+    deleteMutation.mutate(id, {
+      onSuccess: () => router.push("/meeting"),
+      onError: () => alert("삭제 중 오류가 발생했습니다. 다시 시도해주세요."),
+    });
   };
 
   const handleClose = () => {
@@ -122,12 +125,17 @@ export default function MeetingDetailPage() {
       !window.confirm("투표를 마감할까요? 마감 후에는 응답을 받을 수 없어요.")
     )
       return;
-    closeMutation.mutate();
+    closeMutation.mutate(undefined, {
+      onError: () => alert("마감 중 오류가 발생했습니다. 다시 시도해주세요."),
+    });
   };
 
   const handleVote = () => {
     if (!choice) return;
-    voteMutation.mutate(choice);
+    voteMutation.mutate(choice, {
+      onError: () =>
+        alert("투표 저장 중 오류가 발생했습니다. 다시 시도해주세요."),
+    });
   };
 
   // 참석 명단 엑셀 다운로드 (ADMIN 전용)
@@ -267,7 +275,7 @@ export default function MeetingDetailPage() {
                           onClick={() => setChoiceOverride(opt.key)}
                           className={`flex flex-col items-center gap-3 rounded-2xl border-2 py-8 transition-colors ${
                             selected
-                              ? "border-success bg-[#def7eb]"
+                              ? "border-success bg-success/10"
                               : "border-gray-200 bg-white hover:border-gray-300"
                           }`}
                         >
@@ -283,7 +291,7 @@ export default function MeetingDetailPage() {
                     type="button"
                     disabled={!choice || voteMutation.isPending}
                     onClick={handleVote}
-                    className="mt-4 w-full rounded-full bg-gradient-to-b from-[#48c281] to-[#58d4c5] py-4 text-headline-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="mt-4 w-full rounded-full bg-success py-4 text-headline-sm text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     {voteMutation.isPending ? "제출 중..." : "제출하기"}
                   </button>

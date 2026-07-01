@@ -45,10 +45,9 @@ export default function MeetingPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
-  const paged = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
+  // 목록이 줄어(삭제·재검증 등) currentPage가 범위를 넘으면 마지막 페이지로 보정
+  const page = Math.min(currentPage, totalPages);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <RequireMember>
@@ -122,7 +121,7 @@ export default function MeetingPage() {
 
               <div className="mt-10">
                 <Pagination
-                  currentPage={currentPage}
+                  currentPage={page}
                   totalPages={pageNumbers}
                   onPageChange={setCurrentPage}
                 />

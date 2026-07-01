@@ -87,8 +87,8 @@ export type AdminAttendanceList = {
   attendingMembers: AdminGatheringMember[];
   notAttendingMembers: AdminGatheringMember[];
   undecidedMembers: AdminGatheringMember[];
-  /** allMembersTarget=true 모임에서만 존재 */
-  unansweredMembers: AdminGatheringMember[];
+  /** allMembersTarget=true 모임에서만 존재 (아니면 서버가 생략) */
+  unansweredMembers?: AdminGatheringMember[];
 };
 
 export type CreateGatheringBody = {

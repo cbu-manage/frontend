@@ -69,7 +69,12 @@ export function useDeleteGathering() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => gatheringApi.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: LIST_KEY }),
+    onSuccess: (_data, id) => {
+      qc.invalidateQueries({ queryKey: LIST_KEY });
+      // 삭제된 항목의 상세/참석 캐시 제거 (뒤로가기 재진입 시 stale 노출 방지)
+      qc.removeQueries({ queryKey: detailKey(id) });
+      qc.removeQueries({ queryKey: attendanceKey(id) });
+    },
   });
 }
 
