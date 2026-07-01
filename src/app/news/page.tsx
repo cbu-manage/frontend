@@ -10,9 +10,23 @@ import SearchBar from "@/components/common/SearchBar";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
 import { useNewsList } from "@/hooks/news/useNewsList";
 import { formatDate } from "@/lib/date";
+import type { NewsletterType } from "@/api";
 
-const CATEGORY_TABS = ["전체", "주간", "특집"] as const;
+const CATEGORY_TABS = ["전체", "주간", "특집", "공지"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
+
+const TAB_TO_TYPE: Record<CategoryTab, NewsletterType | undefined> = {
+  전체: undefined,
+  주간: "WEEKLY",
+  특집: "SPECIAL",
+  공지: "NOTICE",
+};
+
+const TYPE_TO_LABEL: Record<NewsletterType, string> = {
+  WEEKLY: "주간",
+  SPECIAL: "특집",
+  NOTICE: "공지",
+};
 
 export default function NewsPage() {
   const isStaff = useIsStaff();
@@ -33,7 +47,15 @@ export default function NewsPage() {
     size: 11,
   });
 
-  const items = data?.content ?? [];
+  // TODO(백엔드): GET /api/v1/news에 newsletterType 쿼리 필터 추가되면 이 클라이언트 필터링 제거하고
+  // useNewsList에 newsletterType 파라미터로 넘겨서 서버 페이지네이션을 그대로 쓰도록 변경할 것.
+  // 현재는 서버가 category=NEWSLETTER 기준으로 11개씩 잘라 보낸 뒤 그 안에서만 주간/특집/공지를 거르므로,
+  // 2페이지 이상에서 결과 누락·totalPages 불일치가 발생할 수 있음.
+  const allItems = data?.content ?? [];
+  const activeType = TAB_TO_TYPE[activeTab];
+  const items = activeType
+    ? allItems.filter((n) => n.newsletterType === activeType)
+    : allItems;
   const totalPages = data?.page?.totalPages
     ? Array.from({ length: data.page.totalPages }, (_, i) => i + 1)
     : [1];
@@ -101,7 +123,7 @@ export default function NewsPage() {
                   className="flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50"
                 >
                   <span className="w-28 text-center shrink-0 text-sm text-gray-900">
-                    [뉴스레터]
+                    [{news.newsletterType ? TYPE_TO_LABEL[news.newsletterType] : "뉴스레터"}]
                   </span>
                   <span className="flex-1 min-w-0 text-sm text-gray-900">
                     <span className="block truncate">{news.title}</span>

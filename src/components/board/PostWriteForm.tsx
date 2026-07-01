@@ -35,7 +35,7 @@ type PostWriteFormProps = {
   /** 카테고리별 글자수 제한 오버라이드 (예: { 공지: 20000 }) — 없으면 contentMaxLength 사용 */
   categoryMaxLength?: Record<string, number>;
   /** 수정 모드 초기값 */
-  initialValues?: { title: string; content: string; isAnonymous?: boolean };
+  initialValues?: { title: string; content: string; category?: string; isAnonymous?: boolean };
   /** 게시 버튼 클릭 시 호출 — 미전달 시 backPath로 이동만 */
   onSubmit?: (data: PostWriteSubmitData) => Promise<void>;
   isSubmitting?: boolean;
@@ -64,7 +64,7 @@ export default function PostWriteForm({
   const isStaff = useIsStaff();
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [content, setContent] = useState(initialValues?.content ?? "");
-  const [category, setCategory] = useState<string | null>(null);
+  const [category, setCategory] = useState<string | null>(initialValues?.category ?? null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [anonymous, setAnonymous] = useState(initialValues?.isAnonymous ?? true);
   const [files, setFiles] = useState<File[]>([]);
@@ -75,9 +75,10 @@ export default function PostWriteForm({
     if (initialValues === undefined) return;
     setTitle(initialValues.title);
     setContent(initialValues.content);
+    if (initialValues.category !== undefined) setCategory(initialValues.category);
     if (initialValues.isAnonymous !== undefined) setAnonymous(initialValues.isAnonymous);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialValues?.title, initialValues?.content, initialValues?.isAnonymous]);
+  }, [initialValues?.title, initialValues?.content, initialValues?.category, initialValues?.isAnonymous]);
 
   useEffect(() => {
     if (!dropdownOpen) return;
