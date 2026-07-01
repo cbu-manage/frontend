@@ -9,7 +9,6 @@ import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
 import Mascot, { type MascotEmotion } from "@/components/common/Mascot";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useUserStore } from "@/store/userStore";
 import {
   useGathering,
   useAttendance,
@@ -66,8 +65,8 @@ export default function MeetingDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const canManage = useCanManageGathering(); // 수정/삭제/마감
-  const isAdmin = useUserStore((s) => s.isAdmin); // 참석명단 엑셀은 ADMIN 전용
+  const canManage = useCanManageGathering(); // 수정/삭제/마감 + 참석명단 엑셀
+  // ⚠️ 엑셀·관리자명단은 BE가 현재 ADMIN만 허용 → 운영진 확대는 BE 요청 필요
 
   const { data: meeting, isLoading, isError } = useGathering(id || null);
   const { data: attendance } = useAttendance(id || null);
@@ -222,7 +221,7 @@ export default function MeetingDetailPage() {
                 <Clock size={16} /> 응답 마감 {fmt(meeting.voteDeadline)}
               </span>
               <div className="flex items-center gap-2">
-                {isAdmin && (
+                {canManage && (
                   <button
                     type="button"
                     onClick={handleExport}
