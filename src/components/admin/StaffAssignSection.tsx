@@ -52,7 +52,9 @@ function toUpdateDTO(m: MemberInfo, role: string): MemberUpdateDTO {
 
 export default function StaffAssignSection() {
   const queryClient = useQueryClient();
-  // 회장·부회장 칸은 ADMIN(owner)에게만 노출 — 서버가 최종 판정
+  // 지정/해제 권한(서버가 최종 판정). 메뉴 게이팅 외 컴포넌트 내부에서도 방어.
+  const canAssign = useCan("staff.assign");
+  // 회장·부회장 칸은 ADMIN(owner)에게만 노출
   const canAssignLeader = useCan("staff.assignLeader");
   const roleDefs = useMemo(
     () => (canAssignLeader ? [...LEADER_DEFS, ...STAFF_DEFS] : STAFF_DEFS),
@@ -64,16 +66,22 @@ export default function StaffAssignSection() {
   const [selected, setSelected] = useState<number[]>([]);
 
   // 전체 회원 (검색 전용 API 없음 → 전부 받아 클라 필터)
-  const { data: members = [], isLoading } = useQuery({
+  const {
+    data: members = [],
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["admin", "members", "staff"],
     queryFn: async () => {
+      // 서버가 size 파라미터를 무시할 수 있어 length 기반 종료는 잘림 위험 → last 플래그로 종료
       const all: MemberInfo[] = [];
       let page = 0;
       while (true) {
         const res = await memberApi.getAll(page, PAGE_SIZE);
-        const content = res.data?.data?.content ?? [];
+        const data = res.data?.data;
+        const content = data?.content ?? [];
         all.push(...content);
-        if (content.length < PAGE_SIZE) break;
+        if (!data || data.last || content.length === 0) break;
         page += 1;
       }
       return all;
@@ -127,10 +135,26 @@ export default function StaffAssignSection() {
     updateMutation.mutate({ member: m, role: "ROLE_USER" });
   };
 
+  if (!canAssign) {
+    return (
+      <section className="max-w-6xl mx-auto py-20 text-center text-gray-400">
+        운영진 지정 권한이 없습니다.
+      </section>
+    );
+  }
+
   if (isLoading) {
     return (
       <section className="max-w-6xl mx-auto py-20 text-center text-gray-400">
         운영진 목록을 불러오는 중...
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section className="max-w-6xl mx-auto py-20 text-center text-red-500">
+        회원 목록을 불러오지 못했습니다.
       </section>
     );
   }

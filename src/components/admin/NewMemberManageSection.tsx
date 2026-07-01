@@ -10,6 +10,7 @@ import {
   type FinalDecision,
   type VoteDecision,
 } from "@/api";
+import { useCan } from "@/hooks/auth";
 
 const DECISION_LABEL: Record<FinalDecision, string> = {
   ACCEPT: "합격",
@@ -31,6 +32,7 @@ function baseDecision(item: ApplicationListItem): FinalDecision {
 
 export default function NewMemberManageSection() {
   const queryClient = useQueryClient();
+  const canFinalize = useCan("applications.finalize");
   const [searchQuery, setSearchQuery] = useState("");
   const [overrides, setOverrides] = useState<
     Record<string, "ACCEPT" | "REJECT">
@@ -77,12 +79,24 @@ export default function NewMemberManageSection() {
   const voterCount = listData?.voterCount ?? recruitment?.voterCount ?? 0;
 
   // 3) 상세 (드릴다운)
-  const { data: detail, isLoading: detailLoading } = useQuery({
+  const {
+    data: detail,
+    isLoading: detailLoading,
+    isError: detailError,
+  } = useQuery({
     queryKey: ["admin", "application", selectedUuid],
     enabled: selectedUuid != null,
     queryFn: async () =>
       (await applicantApi.getDetail(selectedUuid as string)).data.data,
   });
+
+  // 상세 진입 시 기존 내 투표를 입력 상태에 반영 (재투표 편집용)
+  useEffect(() => {
+    if (detail) {
+      setVoteChoice(detail.myVote?.decision ?? null);
+      setVoteReason(detail.myVote?.reason ?? "");
+    }
+  }, [detail]);
 
   const effectiveDecision = (item: ApplicationListItem): FinalDecision =>
     overrides[item.applicationUuid] ?? baseDecision(item);
@@ -194,7 +208,18 @@ export default function NewMemberManageSection() {
           ← 신청서 목록
         </button>
 
-        {detailLoading || !detail ? (
+        {detailError ? (
+          <div className="py-20 text-center text-red-500">
+            <p>신청서를 불러오지 못했습니다.</p>
+            <button
+              type="button"
+              onClick={closeDetail}
+              className="mt-3 text-sm text-gray-500 underline"
+            >
+              목록으로 돌아가기
+            </button>
+          </div>
+        ) : detailLoading || !detail ? (
           <div className="py-20 text-center text-gray-400">
             신청서를 불러오는 중...
           </div>
@@ -552,24 +577,33 @@ export default function NewMemberManageSection() {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end">
-        <button
-          type="button"
-          onClick={handleFinalize}
-          disabled={
-            applicants.length === 0 ||
-            holdCount > 0 ||
-            finalizeMutation.isPending
-          }
-          className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
-        >
-          {finalizeStage === "finalize"
-            ? "최종 결정 저장 중..."
-            : finalizeStage === "close"
-              ? "모집 종료 중..."
-              : "모집 마감 및 합격자 결정"}
-        </button>
-      </div>
+      {/* 모집 마감/합격자 확정은 applications.finalize 권한(회장·부회장·ADMIN)만 */}
+      {canFinalize && (
+        <div className="mt-6 flex items-center justify-end gap-3">
+          {searchQuery.trim() !== "" && (
+            <span className="text-xs text-gray-400">
+              검색을 해제해야 전체를 마감할 수 있어요
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleFinalize}
+            disabled={
+              applicants.length === 0 ||
+              holdCount > 0 ||
+              searchQuery.trim() !== "" ||
+              finalizeMutation.isPending
+            }
+            className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+          >
+            {finalizeStage === "finalize"
+              ? "최종 결정 저장 중..."
+              : finalizeStage === "close"
+                ? "모집 종료 중..."
+                : "모집 마감 및 합격자 결정"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

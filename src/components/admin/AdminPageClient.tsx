@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/components/shared/Sidebar";
 import MemberManageSection from "@/components/admin/MemberManageSection";
 import GroupManageSection from "@/components/admin/GroupManageSection";
@@ -31,6 +31,7 @@ const ADMIN_MENU_ITEMS = [
 type AdminMenuValue = (typeof ADMIN_MENU_ITEMS)[number]["value"];
 
 export default function AdminPageClient() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
 
@@ -63,6 +64,13 @@ export default function AdminPageClient() {
   )
     ? selectedMenu
     : (visibleItems[0]?.value ?? null);
+
+  // 권한 없는 tab 딥링크는 URL도 보정 (새로고침/공유/북마크 시 허용 메뉴 유지)
+  useEffect(() => {
+    if (effectiveMenu && tabParam !== effectiveMenu) {
+      router.replace(`/manage?tab=${effectiveMenu}`);
+    }
+  }, [effectiveMenu, tabParam, router]);
 
   const handleSelect = (value: string) => {
     setSelectedMenu(value as AdminMenuValue);

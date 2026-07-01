@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { memberApi, type MemberInfo } from "@/api/member.api";
+import { useCan } from "@/hooks/auth";
 import PGN from "@/components/shared/Pagination";
 
 const PAGE_SIZE = 10;
 
 export default function MemberManageSection() {
   const queryClient = useQueryClient();
+  const canApproveFee = useCan("members.approveFee");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [generationFilter, setGenerationFilter] = useState<number | null>(null);
   const [searchName, setSearchName] = useState("");
@@ -43,13 +45,20 @@ export default function MemberManageSection() {
     },
   });
 
-  // 회비 일괄 승인 — 선택 회원 각각 approve-payment (단방향). 완료 후 목록 갱신.
+  // 회비 일괄 승인 — 각각 approve-payment(단방향). 부분 실패도 성공분은 반영되도록 allSettled.
   const approveFeeMutation = useMutation({
-    mutationFn: (ids: number[]) =>
-      Promise.all(ids.map((id) => memberApi.approvePayment(id))),
-    onSuccess: () => {
+    mutationFn: async (ids: number[]) => {
+      const results = await Promise.allSettled(
+        ids.map((id) => memberApi.approvePayment(id)),
+      );
+      return results.filter((r) => r.status === "rejected").length;
+    },
+    onSuccess: (failed) => {
       queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
       setSelectedItems([]);
+      if (failed > 0) {
+        alert(`${failed}명은 처리에 실패했어요. 목록을 확인해 주세요.`);
+      }
     },
     onError: () =>
       alert("회비 처리 중 오류가 발생했습니다. 다시 시도해주세요."),
@@ -267,7 +276,7 @@ export default function MemberManageSection() {
         </table>
       </div>
 
-      {selectedItems.length > 0 && (
+      {canApproveFee && selectedItems.length > 0 && (
         <div className="mt-4 flex items-center gap-3">
           <span className="text-sm text-gray-600">
             {selectedItems.length}명 선택
