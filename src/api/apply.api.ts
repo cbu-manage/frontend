@@ -1,24 +1,27 @@
 import { api } from "./client";
+import type { AxiosRequestConfig } from "axios";
+
+type RetriableConfig = AxiosRequestConfig & { _retry?: boolean };
 
 export type ApplicationRequest = {
   email: string;
   name: string;
   nickname: string;
-  studentId: string;
-  department: string;
-  schoolYear: string;
-  applyFields: string[];
-  teamExperience: string;
-  programmingMotivation: string;
-  applyPurpose: string;
-  devLinks: string;
-  howFound: string;
-  otAttendance: string;
-  welcomePartyAttendance: string;
+  studentNumber: number;
+  emailAuthCode: string;
+  major: string;
+  grade: string;
+  applicationField: string[];
+  portfolioUrl: string;
+  refSource: string;
+  canOt: boolean;
+  canWelcome: boolean;
+  privacyPolicy: boolean;
 };
 
 export const applyApi = {
-  submit: (data: ApplicationRequest) => api.post("/application", data),
+  submit: (data: ApplicationRequest) =>
+    api.post("/applications", data, { _retry: true } as RetriableConfig),
   check: (studentId: string, email: string) =>
     api.get("/application/check", { params: { studentId, email } }),
 };
