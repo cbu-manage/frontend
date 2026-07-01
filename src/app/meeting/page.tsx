@@ -9,8 +9,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import MeetingCard from "@/components/meeting/MeetingCard";
-import { useIsStaff } from "@/hooks/auth/useIsStaff";
-import { useGatherings } from "@/hooks/meeting";
+import { useGatherings, useCanManageGathering } from "@/hooks/meeting";
 import { GATHERING_TYPE_LABEL } from "@/api";
 
 type StatusTab = "전체" | "진행 예정" | "지난 모임";
@@ -26,7 +25,7 @@ function formatDate(iso: string) {
 }
 
 export default function MeetingPage() {
-  const isStaff = useIsStaff();
+  const canManage = useCanManageGathering();
   const [activeTab, setActiveTab] = useState<StatusTab>("전체");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -76,7 +75,7 @@ export default function MeetingPage() {
                 setCurrentPage(1);
               }}
             />
-            {isStaff && (
+            {canManage && (
               <Link
                 href="/meeting/write"
                 className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"

@@ -9,7 +9,6 @@ import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
 import Mascot, { type MascotEmotion } from "@/components/common/Mascot";
 import { StatusBadge } from "@/components/common/StatusBadge";
-import { useIsStaff } from "@/hooks/auth/useIsStaff";
 import { useUserStore } from "@/store/userStore";
 import {
   useGathering,
@@ -17,6 +16,7 @@ import {
   useVoteGathering,
   useDeleteGathering,
   useCloseGathering,
+  useCanManageGathering,
 } from "@/hooks/meeting";
 import {
   gatheringApi,
@@ -66,7 +66,7 @@ export default function MeetingDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-  const isStaff = useIsStaff();
+  const canManage = useCanManageGathering(); // 수정/삭제/마감
   const isAdmin = useUserStore((s) => s.isAdmin); // 참석명단 엑셀은 ADMIN 전용
 
   const { data: meeting, isLoading, isError } = useGathering(id || null);
@@ -159,7 +159,7 @@ export default function MeetingDetailPage() {
               >
                 <ChevronLeft size={16} /> 목록으로
               </button>
-              {isStaff && (
+              {canManage && (
                 <KebabMenu
                   onEdit={() => router.push(`/meeting/write?id=${id}`)}
                   onDelete={handleDelete}
@@ -231,7 +231,7 @@ export default function MeetingDetailPage() {
                     명단 엑셀
                   </button>
                 )}
-                {isStaff && !meeting.voteClosed && (
+                {canManage && !meeting.voteClosed && (
                   <button
                     type="button"
                     onClick={handleClose}

@@ -8,3 +8,4 @@ export {
   useVoteGathering,
   useCloseGathering,
 } from "./useGatherings";
+export { useCanManageGathering } from "./useCanManageGathering";

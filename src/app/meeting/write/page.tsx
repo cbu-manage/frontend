@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Mascot from "@/components/common/Mascot";
-import { useIsStaff } from "@/hooks/auth/useIsStaff";
 import {
   useGathering,
   useCreateGathering,
   useUpdateGathering,
+  useCanManageGathering,
 } from "@/hooks/meeting";
 import type { GatheringType } from "@/api";
 
@@ -26,7 +26,7 @@ const toLocalInput = (iso?: string) => (iso ? iso.slice(0, 16) : "");
 
 function MeetingWriteInner() {
   const router = useRouter();
-  const isStaff = useIsStaff();
+  const canManage = useCanManageGathering();
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
   const isEdit = editId != null;
@@ -88,7 +88,7 @@ function MeetingWriteInner() {
   };
 
   // 운영진만 등록/수정 가능
-  if (!isStaff) {
+  if (!canManage) {
     return (
       <RequireMember>
         <main className="container-x-lg flex min-h-[60vh] flex-col items-center justify-center text-center">
