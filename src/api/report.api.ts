@@ -4,9 +4,6 @@
  */
 import { api } from "./client";
 
-// TODO(백엔드): GET /report에 그룹(팀) 필터 파라미터(예: groupId) 추가 요청됨.
-// 추가되면 ReportListParams에 groupId?: number | number[] 필드 추가하고
-// ReportManageSection.tsx의 클라이언트 그룹핑("팀으로 그룹핑")을 서버 필터로 전환할 것.
 export type ReportListParams = {
   page?: number;
   size?: number;
@@ -15,6 +12,8 @@ export type ReportListParams = {
   endDate?: string;
   /** 검색어 (제목·작성자명) */
   keyword?: string;
+  /** 그룹 ID 필터 (복수 OR 조건, 미지정 시 전체) */
+  groupIds?: number[];
 };
 
 /** GET /report, /report/group/{groupId} 응답의 보고서 미리보기 한 건 */

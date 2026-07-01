@@ -2,20 +2,43 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { Upload, CalendarIcon, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
+import { useInfiniteScroll } from "@/hooks/common";
 import { reportApi, type ReportPreviewItem } from "@/api";
 
 const PAGE_SIZE = 9;
+/** 팀별 그룹핑 시 무한스크롤 한 페이지 크기 (초기 로딩 ~30개) */
+const GROUP_PAGE_SIZE = 30;
 
-/** 서버 필터용 날짜 포맷 (yyyy-MM-dd) */
 function toApiDate(d?: Date): string | undefined {
   return d ? format(d, "yyyy-MM-dd") : undefined;
+}
+
+/** 서버 필터 파라미터 (기간·검색어) */
+type ReportFilters = {
+  startDate?: string;
+  endDate?: string;
+  keyword?: string;
+};
+
+function renderReportCard(r: ReportPreviewItem) {
+  return (
+    <ReportCard
+      key={r.postId}
+      id={r.postId}
+      tag={r.groupName}
+      title={r.title}
+      author={r.authorName}
+      generation={r.generation}
+      date={r.date}
+    />
+  );
 }
 
 export default function ReportManageSection() {
@@ -43,52 +66,28 @@ export default function ReportManageSection() {
   const pageIndex = currentPage - 1;
   const resetPage = () => setCurrentPage(1);
 
-  // 검색 실행 (Enter 또는 아이콘 클릭) — 입력값 확정 + 1페이지로
   const runSearch = () => {
     setSubmittedKeyword(search.trim());
     setCurrentPage(1);
   };
 
-  const apiStart = toApiDate(startDate);
-  const apiEnd = toApiDate(endDate);
-  const keyword = submittedKeyword || undefined;
+  const filters: ReportFilters = {
+    startDate: toApiDate(startDate),
+    endDate: toApiDate(endDate),
+    keyword: submittedKeyword || undefined,
+  };
 
-  // 관리자는 role 기준으로 전체 보고서가 내려옴 / 기간·검색 모두 서버 필터
+  // 평면 모드: 페이지네이션
   const { data: res, isLoading, isError } = useQuery({
-    queryKey: ["reports", "manage", pageIndex, apiStart, apiEnd, keyword],
+    queryKey: ["reports", "manage", "flat", pageIndex, filters.startDate, filters.endDate, filters.keyword],
     queryFn: () =>
-      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, startDate: apiStart, endDate: apiEnd, keyword }),
+      reportApi.getList({ page: pageIndex, size: PAGE_SIZE, ...filters }),
   });
 
   const reportPage = res?.data?.data?.reports;
-  const reports: ReportPreviewItem[] = reportPage?.content ?? [];
+  const flatReports: ReportPreviewItem[] = reportPage?.content ?? [];
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
-
-  // TODO(백엔드): GET /report에 그룹(팀) 필터 파라미터(예: groupId)가 추가되면
-  // 아래 클라이언트 그룹핑을 제거하고 서버 필터+페이지네이션으로 전환할 것.
-  // 현재는 서버 필터 없이 "현재 페이지에 받아온 reports"만 groupName으로 묶어서 보여주므로,
-  // 한 팀의 보고서가 PAGE_SIZE(9)개를 넘으면 페이지 밖에 있는 나머지는 그룹핑 화면에 안 보임.
-  // "팀으로 그룹핑" 토글 시 groupName별로 묶기 (현재 페이지 기준)
-  const grouped = reports.reduce<Record<string, ReportPreviewItem[]>>(
-    (acc, r) => {
-      (acc[r.groupName] ??= []).push(r);
-      return acc;
-    },
-    {},
-  );
-
-  const renderCard = (r: ReportPreviewItem) => (
-    <ReportCard
-      key={r.postId}
-      id={r.postId}
-      tag={r.groupName}
-      title={r.title}
-      author={r.authorName}
-      generation={r.generation}
-      date={r.date}
-    />
-  );
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -204,41 +203,107 @@ export default function ReportManageSection() {
         </div>
       </div>
 
-      {/* 상태 표시 */}
-      {isLoading && (
-        <div className="text-center py-16 text-gray-500">불러오는 중...</div>
-      )}
-      {isError && (
-        <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
-      )}
-
-      {!isLoading && !isError && (
+      {/* 그룹핑 ON: 무한스크롤 팀별 묶음 (별도 컴포넌트로 마운트) */}
+      {groupByTeam ? (
+        <GroupedReportList filters={filters} />
+      ) : (
         <>
-          {reports.length === 0 ? (
-            <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
-          ) : groupByTeam ? (
-            /* 팀(그룹)별 묶음 보기 */
-            <div className="space-y-8 mb-6">
-              {Object.entries(grouped).map(([groupName, items]) => (
-                <div key={groupName}>
-                  <h2 className="text-sm font-semibold text-gray-700 mb-3">{groupName}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {items.map(renderCard)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            /* 평면 그리드 */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
-              {reports.map(renderCard)}
-            </div>
+          {isLoading && (
+            <div className="text-center py-16 text-gray-500">불러오는 중...</div>
           )}
-
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          {isError && (
+            <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
+          )}
+          {!isLoading && !isError && (
+            <>
+              {flatReports.length === 0 ? (
+                <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                  {flatReports.map(renderReportCard)}
+                </div>
+              )}
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </>
+          )}
         </>
       )}
 
+    </div>
+  );
+}
+
+/**
+ * 팀(그룹)별 묶음 보기 — 무한스크롤.
+ * 초기 GROUP_PAGE_SIZE개를 받고, 스크롤 끝에 닿으면 다음 페이지를 이어 붙여 팀별로 묶어 표시.
+ * groupByTeam=true일 때만 마운트되므로 useInfiniteQuery가 항상 실제 queryFn으로 실행됨.
+ */
+function GroupedReportList({ filters }: { filters: ReportFilters }) {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    queryKey: ["reports", "manage", "grouped", filters.startDate, filters.endDate, filters.keyword],
+    queryFn: ({ pageParam }) =>
+      reportApi.getList({ page: pageParam, size: GROUP_PAGE_SIZE, ...filters }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+      const page = lastPage?.data?.data?.reports?.page;
+      if (!page) return undefined;
+      return page.number < page.totalPages - 1 ? page.number + 1 : undefined;
+    },
+  });
+
+  const sentinelRef = useInfiniteScroll<HTMLDivElement>({
+    hasMore: hasNextPage,
+    isLoading: isFetchingNextPage,
+    onLoadMore: fetchNextPage,
+  });
+
+  // 누적된 전체 결과를 팀(groupName)별로 묶기
+  const allReports: ReportPreviewItem[] =
+    data?.pages.flatMap((p) => p?.data?.data?.reports?.content ?? []) ?? [];
+  const grouped = allReports.reduce<Record<string, ReportPreviewItem[]>>((acc, r) => {
+    (acc[r.groupName] ??= []).push(r);
+    return acc;
+  }, {});
+
+  if (isLoading) {
+    return <div className="text-center py-16 text-gray-500">불러오는 중...</div>;
+  }
+  if (isError) {
+    return <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>;
+  }
+  if (allReports.length === 0) {
+    return <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>;
+  }
+
+  return (
+    <div className="mb-6">
+      {Object.entries(grouped).map(([groupName, items], index, arr) => (
+        <div key={groupName}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700">{groupName}</h2>
+            <span className="text-xs text-gray-400">{items.length}건</span>
+          </div>
+          {/* 최대 9개(3줄) 높이로 고정 — 초과분은 박스 안에서 세로 스크롤 */}
+          <div className="max-h-[42rem] overflow-y-auto pr-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {items.map(renderReportCard)}
+            </div>
+          </div>
+          {index < arr.length - 1 && <hr className="my-8 border-gray-200" />}
+        </div>
+      ))}
+      {/* 무한스크롤 트리거 */}
+      <div ref={sentinelRef} className="h-4 mt-8" />
+      {isFetchingNextPage && (
+        <div className="text-center py-4 text-sm text-gray-400">불러오는 중...</div>
+      )}
     </div>
   );
 }
