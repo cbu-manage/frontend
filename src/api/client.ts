@@ -6,6 +6,16 @@ const API_BASE_URL = publicEnv.apiUrl ?? "/api/v1";
 const REFRESH_PATH = "/login/refresh";
 const LOGIN_REDIRECT_PATH = "/login";
 
+// 비로그인 상태에서 호출하는 공개 엔드포인트. 401이 나도 토큰 갱신/로그인 리다이렉트 대상이 아니다.
+function isPublicAuthPath(url: string): boolean {
+  return (
+    url.includes("/mail/") ||
+    url.endsWith("/login/password/reset") ||
+    url.endsWith("/login/signup") ||
+    url.endsWith("/validate")
+  );
+}
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
@@ -58,7 +68,13 @@ export function attachAuthInterceptor(instance: AxiosInstance) {
       const url = original?.url ?? "";
 
       const isAuthError = status === 401 || status === 403;
-      if (!isAuthError || !original || original._retry || url.endsWith(REFRESH_PATH)) {
+      if (
+        !isAuthError ||
+        !original ||
+        original._retry ||
+        url.endsWith(REFRESH_PATH) ||
+        isPublicAuthPath(url)
+      ) {
         if (isAuthError && url.endsWith(REFRESH_PATH)) {
           handleAuthFailure();
         }

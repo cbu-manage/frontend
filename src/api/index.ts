@@ -7,6 +7,7 @@ export {
   type LoginResponse,
   type SignupRequest,
   type ChangePasswordRequest,
+  type ResetPasswordRequest,
 } from "./auth.api";
 
 // Mail
@@ -112,6 +113,23 @@ export {
   type Page,
 } from "./applicant.api";
 
+// Gathering (모임 일정)
+export {
+  gatheringApi,
+  GATHERING_TYPE_LABEL,
+  type GatheringType,
+  type MyAttendanceStatus,
+  type VoteDecision,
+  type AttendanceSummary,
+  type Gathering,
+  type GatheringMember,
+  type AdminGatheringMember,
+  type AttendanceList,
+  type AdminAttendanceList,
+  type CreateGatheringBody,
+  type UpdateGatheringBody,
+} from "./gathering.api";
+
 // Image
 export { imageApi } from "./image.api";
 
@@ -122,6 +140,7 @@ export { applyApi, type ApplicationRequest } from "./apply.api";
 export {
   newsApi,
   type NewsCategory,
+  type NewsletterType,
   type NewsListParams,
   type NewsListItem,
   type NewsListResponse,

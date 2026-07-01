@@ -5,12 +5,21 @@ import { useMailUpdate } from "@/hooks/mail";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
 
-export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => void }) {
+export default function AddMail({
+  onEmailUpdated,
+}: {
+  onEmailUpdated?: () => void;
+}) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [cooldown, setCooldown] = useState(0); // 초 단위
-  const { isVerificationSent, isVerifying, isSending, sendEmailToServer, verifyCodeWithServer } =
-    useVerifyEmail();
+  const {
+    isVerificationSent,
+    isVerifying,
+    isSending,
+    sendEmailToServer,
+    verifyCodeWithServer,
+  } = useVerifyEmail();
   const mailUpdateMutation = useMailUpdate(onEmailUpdated);
   const isUpdating = mailUpdateMutation.isPending;
   const isProcessingVerify = isVerifying || isUpdating;
@@ -56,10 +65,13 @@ export default function AddMail({ onEmailUpdated }: { onEmailUpdated?: () => voi
           onClick={async () => {
             if (!email || cooldown > 0 || isSending) return;
             const fullEmail = `${email}@tukorea.ac.kr`;
-            const ok = await sendEmailToServer(fullEmail);
-            if (ok) {
+            const { success, responseMessage } =
+              await sendEmailToServer(fullEmail);
+            if (success) {
               alert("인증 메일을 보냈습니다.");
               setCooldown(60);
+            } else {
+              alert(responseMessage);
             }
           }}
         >
