@@ -291,9 +291,9 @@ export default function MeetingDetailPage() {
                 </>
               )}
 
-              {/* 응답 명단 */}
+              {/* 응답 명단 — 참석/불참 (미정 상태는 제거 결정) */}
               {attendance && (
-                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {[
                     {
                       ko: "참석 가능",
@@ -306,12 +306,6 @@ export default function MeetingDetailPage() {
                       en: "Negative",
                       tone: "text-danger",
                       list: attendance.notAttendingMembers,
-                    },
-                    {
-                      ko: "미정",
-                      en: "Waiting",
-                      tone: "text-waiting",
-                      list: attendance.undecidedMembers,
                     },
                   ].map((g) => (
                     <div
