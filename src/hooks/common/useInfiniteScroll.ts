@@ -33,9 +33,11 @@ export function useInfiniteScroll<T extends HTMLElement = HTMLElement>({
   rootMargin = "200px",
 }: UseInfiniteScrollOptions) {
   const ref = useRef<T>(null);
-  // onLoadMore가 매 렌더 새로 만들어져도 effect가 재등록되지 않도록 ref로 고정
+  // onLoadMore가 매 렌더 새로 만들어져도 observer를 재등록하지 않도록 ref로 고정
   const onLoadMoreRef = useRef(onLoadMore);
-  onLoadMoreRef.current = onLoadMore;
+  useEffect(() => {
+    onLoadMoreRef.current = onLoadMore;
+  }, [onLoadMore]);
 
   useEffect(() => {
     const el = ref.current;

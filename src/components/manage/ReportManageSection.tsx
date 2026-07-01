@@ -52,8 +52,10 @@ export default function ReportManageSection() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (startRef.current && !startRef.current.contains(e.target as Node)) setCalendarOpenStart(false);
-      if (endRef.current && !endRef.current.contains(e.target as Node)) setCalendarOpenEnd(false);
+      if (startRef.current && !startRef.current.contains(e.target as Node))
+        setCalendarOpenStart(false);
+      if (endRef.current && !endRef.current.contains(e.target as Node))
+        setCalendarOpenEnd(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -78,8 +80,20 @@ export default function ReportManageSection() {
   };
 
   // 평면 모드: 페이지네이션
-  const { data: res, isLoading, isError } = useQuery({
-    queryKey: ["reports", "manage", "flat", pageIndex, filters.startDate, filters.endDate, filters.keyword],
+  const {
+    data: res,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: [
+      "reports",
+      "manage",
+      "flat",
+      pageIndex,
+      filters.startDate,
+      filters.endDate,
+      filters.keyword,
+    ],
     queryFn: () =>
       reportApi.getList({ page: pageIndex, size: PAGE_SIZE, ...filters }),
   });
@@ -91,7 +105,6 @@ export default function ReportManageSection() {
 
   return (
     <div className="max-w-6xl mx-auto">
-
       {/* 헤더: 제목 + 업로드 버튼 */}
       <div className="flex items-center justify-between mb-10">
         <h1 className="text-h1 text-gray-900">전체 보고서 관리</h1>
@@ -99,8 +112,7 @@ export default function ReportManageSection() {
           onClick={() => router.push("/report/write")}
           className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide"
         >
-          <Upload size={18} />
-          새 보고서 업로드
+          <Upload size={18} />새 보고서 업로드
         </button>
       </div>
 
@@ -112,20 +124,33 @@ export default function ReportManageSection() {
             <div ref={startRef} className="relative">
               <button
                 type="button"
-                onClick={() => { setCalendarOpenStart((v) => !v); setCalendarOpenEnd(false); }}
+                onClick={() => {
+                  setCalendarOpenStart((v) => !v);
+                  setCalendarOpenEnd(false);
+                }}
                 aria-haspopup="dialog"
                 aria-expanded={calendarOpenStart}
                 aria-label="시작일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={startDate ? "text-gray-700" : "text-gray-400"}>
-                  {startDate ? format(startDate, "yyyy.MM.dd", { locale: ko }) : "시작일"}
+                  {startDate
+                    ? format(startDate, "yyyy.MM.dd", { locale: ko })
+                    : "시작일"}
                 </span>
                 <CalendarIcon size={14} className="text-gray-400" />
               </button>
               {calendarOpenStart && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={startDate} onSelect={(d) => { setStartDate(d); setCalendarOpenStart(false); resetPage(); }} />
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(d) => {
+                      setStartDate(d);
+                      setCalendarOpenStart(false);
+                      resetPage();
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -133,27 +158,44 @@ export default function ReportManageSection() {
             <div ref={endRef} className="relative">
               <button
                 type="button"
-                onClick={() => { setCalendarOpenEnd((v) => !v); setCalendarOpenStart(false); }}
+                onClick={() => {
+                  setCalendarOpenEnd((v) => !v);
+                  setCalendarOpenStart(false);
+                }}
                 aria-haspopup="dialog"
                 aria-expanded={calendarOpenEnd}
                 aria-label="종료일 선택"
                 className="w-40 border border-gray-200 rounded-lg px-3 py-1.5 text-sm flex items-center justify-between bg-white focus:outline-none focus:ring-2 focus:ring-report-ring"
               >
                 <span className={endDate ? "text-gray-700" : "text-gray-400"}>
-                  {endDate ? format(endDate, "yyyy.MM.dd", { locale: ko }) : "종료일"}
+                  {endDate
+                    ? format(endDate, "yyyy.MM.dd", { locale: ko })
+                    : "종료일"}
                 </span>
                 <CalendarIcon size={14} className="text-gray-400" />
               </button>
               {calendarOpenEnd && (
                 <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-md">
-                  <Calendar mode="single" selected={endDate} onSelect={(d) => { setEndDate(d); setCalendarOpenEnd(false); resetPage(); }} />
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(d) => {
+                      setEndDate(d);
+                      setCalendarOpenEnd(false);
+                      resetPage();
+                    }}
+                  />
                 </div>
               )}
             </div>
             {(startDate || endDate) && (
               <button
                 type="button"
-                onClick={() => { setStartDate(undefined); setEndDate(undefined); resetPage(); }}
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                  resetPage();
+                }}
                 className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
               >
                 초기화
@@ -195,7 +237,9 @@ export default function ReportManageSection() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") runSearch();
+            }}
             placeholder="제목, 작성자로 검색"
             aria-label="제목·작성자 검색"
             className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
@@ -209,26 +253,35 @@ export default function ReportManageSection() {
       ) : (
         <>
           {isLoading && (
-            <div className="text-center py-16 text-gray-500">불러오는 중...</div>
+            <div className="text-center py-16 text-gray-500">
+              불러오는 중...
+            </div>
           )}
           {isError && (
-            <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>
+            <div className="text-center py-16 text-red-500">
+              보고서를 불러오지 못했습니다.
+            </div>
           )}
           {!isLoading && !isError && (
             <>
               {flatReports.length === 0 ? (
-                <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>
+                <div className="py-16 text-center text-body-sm text-gray-400">
+                  보고서가 없습니다.
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
                   {flatReports.map(renderReportCard)}
                 </div>
               )}
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </>
           )}
         </>
       )}
-
     </div>
   );
 }
@@ -247,7 +300,14 @@ function GroupedReportList({ filters }: { filters: ReportFilters }) {
     isLoading,
     isError,
   } = useInfiniteQuery({
-    queryKey: ["reports", "manage", "grouped", filters.startDate, filters.endDate, filters.keyword],
+    queryKey: [
+      "reports",
+      "manage",
+      "grouped",
+      filters.startDate,
+      filters.endDate,
+      filters.keyword,
+    ],
     queryFn: ({ pageParam }) =>
       reportApi.getList({ page: pageParam, size: GROUP_PAGE_SIZE, ...filters }),
     initialPageParam: 0,
@@ -267,19 +327,32 @@ function GroupedReportList({ filters }: { filters: ReportFilters }) {
   // 누적된 전체 결과를 팀(groupName)별로 묶기
   const allReports: ReportPreviewItem[] =
     data?.pages.flatMap((p) => p?.data?.data?.reports?.content ?? []) ?? [];
-  const grouped = allReports.reduce<Record<string, ReportPreviewItem[]>>((acc, r) => {
-    (acc[r.groupName] ??= []).push(r);
-    return acc;
-  }, {});
+  const grouped = allReports.reduce<Record<string, ReportPreviewItem[]>>(
+    (acc, r) => {
+      (acc[r.groupName] ??= []).push(r);
+      return acc;
+    },
+    {},
+  );
 
   if (isLoading) {
-    return <div className="text-center py-16 text-gray-500">불러오는 중...</div>;
+    return (
+      <div className="text-center py-16 text-gray-500">불러오는 중...</div>
+    );
   }
   if (isError) {
-    return <div className="text-center py-16 text-red-500">보고서를 불러오지 못했습니다.</div>;
+    return (
+      <div className="text-center py-16 text-red-500">
+        보고서를 불러오지 못했습니다.
+      </div>
+    );
   }
   if (allReports.length === 0) {
-    return <div className="py-16 text-center text-sm text-gray-400">보고서가 없습니다.</div>;
+    return (
+      <div className="py-16 text-center text-body-sm text-gray-400">
+        보고서가 없습니다.
+      </div>
+    );
   }
 
   return (
@@ -287,10 +360,12 @@ function GroupedReportList({ filters }: { filters: ReportFilters }) {
       {Object.entries(grouped).map(([groupName, items], index, arr) => (
         <div key={groupName}>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">{groupName}</h2>
-            <span className="text-xs text-gray-400">{items.length}건</span>
+            <h2 className="text-body-sm font-semibold text-gray-700">
+              {groupName}
+            </h2>
+            <span className="text-caption text-gray-400">{items.length}건</span>
           </div>
-          {/* 최대 9개(3줄) 높이로 고정 — 초과분은 박스 안에서 세로 스크롤 */}
+          {/* 고정 픽셀 UI(styling.md §5): 최대 9개(3줄)만 보이고 초과분은 박스 안에서 세로 스크롤 */}
           <div className="max-h-[42rem] overflow-y-auto pr-1">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {items.map(renderReportCard)}
@@ -302,7 +377,9 @@ function GroupedReportList({ filters }: { filters: ReportFilters }) {
       {/* 무한스크롤 트리거 */}
       <div ref={sentinelRef} className="h-4 mt-8" />
       {isFetchingNextPage && (
-        <div className="text-center py-4 text-sm text-gray-400">불러오는 중...</div>
+        <div className="text-center py-4 text-body-sm text-gray-400">
+          불러오는 중...
+        </div>
       )}
     </div>
   );
