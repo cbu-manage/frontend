@@ -42,20 +42,14 @@ export default function NewsPage() {
 
   const { data, isLoading, isError } = useNewsList({
     category: "NEWSLETTER",
+    newsletterType: TAB_TO_TYPE[activeTab],
     keyword: submittedKeyword || undefined,
     page: currentPage,
     size: 11,
   });
 
-  // TODO(백엔드): GET /api/v1/news에 newsletterType 쿼리 필터 추가되면 이 클라이언트 필터링 제거하고
-  // useNewsList에 newsletterType 파라미터로 넘겨서 서버 페이지네이션을 그대로 쓰도록 변경할 것.
-  // 현재는 서버가 category=NEWSLETTER 기준으로 11개씩 잘라 보낸 뒤 그 안에서만 주간/특집/공지를 거르므로,
-  // 2페이지 이상에서 결과 누락·totalPages 불일치가 발생할 수 있음.
-  const allItems = data?.content ?? [];
-  const activeType = TAB_TO_TYPE[activeTab];
-  const items = activeType
-    ? allItems.filter((n) => n.newsletterType === activeType)
-    : allItems;
+  // 주간/특집/공지 필터는 서버가 처리(newsletterType) → 필터링된 결과 기준으로 페이지네이션이 계산됨.
+  const items = data?.content ?? [];
   const totalPages = data?.page?.totalPages
     ? Array.from({ length: data.page.totalPages }, (_, i) => i + 1)
     : [1];
