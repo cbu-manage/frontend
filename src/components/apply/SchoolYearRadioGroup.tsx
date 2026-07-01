@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 const OPTIONS = [
   "1학년",
   "2학년",
@@ -26,11 +28,8 @@ export default function SchoolYearRadioGroup({
       </p>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         {OPTIONS.map((option) => (
-          <>
-            <label
-              key={option}
-              className="flex items-center gap-2 cursor-pointer"
-            >
+          <React.Fragment key={option}>
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="schoolYear"
@@ -53,7 +52,7 @@ export default function SchoolYearRadioGroup({
             {option === DIVIDER_AFTER && (
               <div className="w-px h-4 bg-gray-300" />
             )}
-          </>
+          </React.Fragment>
         ))}
       </div>
     </div>
