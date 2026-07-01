@@ -7,13 +7,11 @@ export {
   type LoginResponse,
   type SignupRequest,
   type ChangePasswordRequest,
+  type ResetPasswordRequest,
 } from "./auth.api";
 
 // Mail
-export {
-  mailApi,
-  type MailUpdateRequest,
-} from "./mail.api";
+export { mailApi, type MailUpdateRequest } from "./mail.api";
 
 // User
 export { userApi, type UserInfo, type ValidateUserRequest } from "./user.api";
