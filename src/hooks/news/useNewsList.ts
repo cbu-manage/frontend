@@ -10,7 +10,12 @@ export type UseNewsListParams = {
   size?: number;
 };
 
-export function useNewsList({ category, keyword, page, size = 11 }: UseNewsListParams) {
+export function useNewsList({
+  category,
+  keyword,
+  page,
+  size = 11,
+}: UseNewsListParams) {
   const categoryKey = Array.isArray(category) ? category.join(",") : category;
   return useQuery({
     queryKey: ["news-list", categoryKey, keyword, page, size],

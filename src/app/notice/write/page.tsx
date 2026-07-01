@@ -22,7 +22,9 @@ const CATEGORY_LABEL: Record<string, string> = {
 function NoticeWriteClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams.get("edit") ? Number(searchParams.get("edit")) : null;
+  const editId = searchParams.get("edit")
+    ? Number(searchParams.get("edit"))
+    : null;
 
   const { mutateAsync: createNews, isPending: isCreating } = useNewsCreate();
   const { mutateAsync: updateNews, isPending: isUpdating } = useNewsUpdate();
@@ -41,7 +43,9 @@ function NoticeWriteClient() {
   if (editId && postQuery.isLoading) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+          불러오는 중...
+        </div>
       </main>
     );
   }
@@ -49,7 +53,9 @@ function NoticeWriteClient() {
   if (editId && postQuery.isError) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">게시글을 불러오지 못했습니다.</div>
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+          게시글을 불러오지 못했습니다.
+        </div>
       </main>
     );
   }
@@ -57,7 +63,9 @@ function NoticeWriteClient() {
   if (editId && !postQuery.isLoading && !editPost) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">게시글을 찾을 수 없습니다.</div>
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+          게시글을 찾을 수 없습니다.
+        </div>
       </main>
     );
   }
@@ -72,7 +80,11 @@ function NoticeWriteClient() {
       backPath={editId ? `/notice/${editId}` : "/notice"}
       initialValues={
         editPost
-          ? { title: editPost.title, content: editPost.content, category: CATEGORY_LABEL[editPost.category] }
+          ? {
+              title: editPost.title,
+              content: editPost.content,
+              category: CATEGORY_LABEL[editPost.category],
+            }
           : undefined
       }
       isSubmitting={isCreating || isUpdating}
@@ -83,10 +95,17 @@ function NoticeWriteClient() {
         }
         try {
           if (editId) {
-            await updateNews({ id: editId, data: { title, content, category: CATEGORY_MAP[category] } });
+            await updateNews({
+              id: editId,
+              data: { title, content, category: CATEGORY_MAP[category] },
+            });
             router.push(`/notice/${editId}`);
           } else {
-            await createNews({ title, content, category: CATEGORY_MAP[category] });
+            await createNews({
+              title,
+              content,
+              category: CATEGORY_MAP[category],
+            });
             router.push("/notice");
           }
         } catch {
@@ -102,7 +121,9 @@ export default function NoticeWritePage() {
     <Suspense
       fallback={
         <main className="min-h-screen bg-white">
-          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
         </main>
       }
     >

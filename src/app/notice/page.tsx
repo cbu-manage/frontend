@@ -58,7 +58,9 @@ export default function NoticePage() {
         <div className="container-x-lg">
           <div className="pt-6 lg:pt-16 pb-6">
             <h1 className="text-h1 text-gray-900 mb-2">씨부엉 소식</h1>
-            <p className="text-base text-gray-700">동아리 공지와 새 소식을 확인하세요</p>
+            <p className="text-base text-gray-700">
+              동아리 공지와 새 소식을 확인하세요
+            </p>
           </div>
 
           {/* 탭 + 검색 + 글 작성 */}
@@ -75,7 +77,9 @@ export default function NoticePage() {
               <SearchBar
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") runSearch(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") runSearch();
+                }}
                 placeholder="제목 · 내용으로 검색해주세요."
                 className="w-full sm:w-80"
               />
@@ -99,21 +103,30 @@ export default function NoticePage() {
               <span className="w-20 text-center shrink-0">조회</span>
             </div>
             {isLoading && (
-              <div className="py-16 text-center text-sm text-gray-500">불러오는 중…</div>
+              <div className="py-16 text-center text-sm text-gray-500">
+                불러오는 중…
+              </div>
             )}
             {!isLoading && isError && (
-              <div className="py-16 text-center text-sm text-gray-500">목록을 불러오지 못했습니다.</div>
+              <div className="py-16 text-center text-sm text-gray-500">
+                목록을 불러오지 못했습니다.
+              </div>
             )}
             {!isLoading && !isError && items.length === 0 && (
-              <div className="py-16 text-center text-sm text-gray-900">검색 결과가 없습니다.</div>
+              <div className="py-16 text-center text-sm text-gray-900">
+                검색 결과가 없습니다.
+              </div>
             )}
-            {!isLoading && !isError &&
+            {!isLoading &&
+              !isError &&
               items.map((notice) => (
                 <Link
                   key={notice.newsId}
                   href={`/notice/${notice.newsId}`}
                   className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors ${
-                    notice.pinned ? "bg-brand/5 hover:bg-brand/10" : "hover:bg-gray-50"
+                    notice.pinned
+                      ? "bg-brand/5 hover:bg-brand/10"
+                      : "hover:bg-gray-50"
                   }`}
                 >
                   <span className="w-28 text-center shrink-0 text-sm text-gray-900">
@@ -121,20 +134,29 @@ export default function NoticePage() {
                   </span>
                   <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
                     {notice.pinned && (
-                      <Pin size={13} className="shrink-0 text-brand fill-brand" />
+                      <Pin
+                        size={13}
+                        className="shrink-0 text-brand fill-brand"
+                      />
                     )}
                     <span className="truncate">{notice.title}</span>
                   </span>
                   <span className="w-28 text-center shrink-0 text-sm text-gray-900">
                     {formatDate(notice.createdAt)}
                   </span>
-                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">{notice.viewCount}</span>
+                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">
+                    {notice.viewCount}
+                  </span>
                 </Link>
               ))}
           </div>
 
           <div className="mt-8">
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </main>
