@@ -119,7 +119,7 @@ export {
   GATHERING_TYPE_LABEL,
   type GatheringType,
   type MyAttendanceStatus,
-  type VoteDecision,
+  // VoteDecision("PASS"|"FAIL")은 applicant.api 재export와 동일 → 중복 제거(모임도 그걸 사용)
   type AttendanceSummary,
   type Gathering,
   type GatheringMember,
