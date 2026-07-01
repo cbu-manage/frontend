@@ -28,7 +28,15 @@ function buildHwpFilename(detail?: ReportDetail): string {
   const team = detail.reportInfoDTO.groupInfoDTO.groupName;
   const author = detail.postInfoDTO.authorName;
   const date = detail.reportInfoDTO.date;
-  const dateStr = date ? format(new Date(date), "yyMMdd") : "";
+  // formatDate와 동일하게 파싱 실패를 삼켜 예외를 던지지 않음 (handleExport의 objectURL 누수 방지)
+  let dateStr = "";
+  if (date) {
+    try {
+      dateStr = format(new Date(date), "yyMMdd");
+    } catch {
+      dateStr = "";
+    }
+  }
   const parts = [team, author, dateStr].filter(Boolean).map(sanitizeFilePart);
   const base = parts.join("_") || "report";
   return `${base}.hwp`;
