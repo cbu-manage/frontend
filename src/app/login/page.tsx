@@ -68,7 +68,7 @@ function LoginClient() {
               회원가입
             </Button>
           </Link>
-          {/* <Link href="/find-password">
+          <Link href="/find-password">
             <Button
               type="button"
               variant="ghost"
@@ -76,7 +76,7 @@ function LoginClient() {
             >
               비밀번호 찾기
             </Button>
-          </Link> */}
+          </Link>
         </div>
       </div>
     </main>
