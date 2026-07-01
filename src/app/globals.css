@@ -32,6 +32,9 @@
   --color-success: #45cd89;
   --color-danger: #fc5e6e;
   --color-waiting: #3bc1e0; /* 참석 대기(Waiting) 청록 */
+  /* 모임 참석 투표 CTA 그라데이션 (마스코트 그린→민트) */
+  --color-mascot-from: #48c281;
+  --color-mascot-to: #58d4c5;
   /* 보고서 디자인 토큰 */
   --color-report-ring: #43d48b; /* 달력·입력 박스 포커스 외곽선 */
   --color-report-badge: #7bc747; /* 보고서 카드 뱃지 */
@@ -71,7 +74,14 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card); /* 36px */ --radius-sm: calc(var(--radius) - 4px); --radius-md: calc(var(--radius) - 2px); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) + 4px); --radius-2xl: calc(var(--radius) + 8px); --radius-3xl: calc(var(--radius) + 12px); --radius-4xl: calc(var(--radius) + 16px);
+  --color-card: var(--card); /* 36px */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 html,
@@ -80,7 +90,22 @@ body {
 }
 
 body {
-  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+  font-family:
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    Roboto,
+    "Helvetica Neue",
+    "Segoe UI",
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    sans-serif;
 }
 
 @keyframes cbu-marquee {
@@ -94,13 +119,13 @@ body {
 
 :root {
   /* ========== 반응형 타이포 토큰 (clamp: 360 ~ 1440px 사이에서 스케일) ========== */
-  --text-display: clamp(1.75rem, 1.25rem + 2.2vw, 2.5rem);   /* 28 → 40 */
-  --text-h1:      clamp(1.5rem, 1.1rem + 1.75vw, 2rem);      /* 24 → 32 */
-  --text-h2:      clamp(1.25rem, 1rem + 1.1vw, 1.5rem);      /* 20 → 24 */
-  --text-h3:      clamp(1.125rem, 1rem + 0.55vw, 1.25rem);   /* 18 → 20 */
-  --text-body:    clamp(0.9375rem, 0.875rem + 0.3vw, 1rem);  /* 15 → 16 */
+  --text-display: clamp(1.75rem, 1.25rem + 2.2vw, 2.5rem); /* 28 → 40 */
+  --text-h1: clamp(1.5rem, 1.1rem + 1.75vw, 2rem); /* 24 → 32 */
+  --text-h2: clamp(1.25rem, 1rem + 1.1vw, 1.5rem); /* 20 → 24 */
+  --text-h3: clamp(1.125rem, 1rem + 0.55vw, 1.25rem); /* 18 → 20 */
+  --text-body: clamp(0.9375rem, 0.875rem + 0.3vw, 1rem); /* 15 → 16 */
   --text-body-sm: clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem); /* 13 → 14 */
-  --text-xs:      0.75rem;                                   /* 12 고정 */
+  --text-xs: 0.75rem; /* 12 고정 */
 
   /* line-height */
   --leading-tight: 1.2;
@@ -109,12 +134,12 @@ body {
   --leading-relaxed: 1.65;
 
   /* ========== 스페이싱/레이아웃 토큰 ========== */
-  --container-px:    clamp(1.5rem, 0.4rem + 2.5vw, 9.375rem); /* 24 → 150 (기본) */
-  --container-px-lg: clamp(1rem, 15vw, 20rem);                /* 15% (최소 16, 최대 320) */
-  --section-gap:    clamp(2rem, 1.2rem + 3.5vw, 4rem);       /* 32 → 64 */
-  --block-gap:      clamp(1rem, 0.8rem + 0.8vw, 1.5rem);     /* 16 → 24 */
-  --card-radius:    clamp(0.75rem, 0.65rem + 0.4vw, 1rem);   /* 12 → 16 */
-  --touch-min:      2.75rem;                                  /* 44px */
+  --container-px: clamp(1.5rem, 0.4rem + 2.5vw, 9.375rem); /* 24 → 150 (기본) */
+  --container-px-lg: clamp(1rem, 15vw, 20rem); /* 15% (최소 16, 최대 320) */
+  --section-gap: clamp(2rem, 1.2rem + 3.5vw, 4rem); /* 32 → 64 */
+  --block-gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem); /* 16 → 24 */
+  --card-radius: clamp(0.75rem, 0.65rem + 0.4vw, 1rem); /* 12 → 16 */
+  --touch-min: 2.75rem; /* 44px */
 
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -235,16 +260,53 @@ body {
 /* ========== Figma 타이포 스케일 (고정 px · 디자인 스펙 1:1) ==========
    Figma "Text styles" 패널 기준. 표기 = 폰트크기/줄높이(%). 반응형이 필요 없는
    버튼·라벨·카드 등 디자인이 px로 못박은 곳에 사용(섹션 제목 등 반응형은 위 시맨틱 유틸). */
-@utility text-display-md  { font-size: 45px; line-height: 1.6; font-weight: 500; } /* Display/Medium */
-@utility text-headline-lg { font-size: 32px; line-height: 1.6; font-weight: 700; } /* Headline/Large */
-@utility text-headline-md { font-size: 28px; line-height: 1.6; font-weight: 700; } /* Headline/Medium */
-@utility text-headline-sm { font-size: 24px; line-height: 1.6; font-weight: 600; } /* Headline/small */
-@utility text-title-lg    { font-size: 20px; line-height: 1.6; font-weight: 600; } /* Title/Large */
-@utility text-title-md    { font-size: 16px; line-height: 1.6; font-weight: 600; } /* Title/Medium */
-@utility text-title-sm    { font-size: 14px; line-height: 1.6; font-weight: 600; } /* Title/small */
-@utility text-body-md     { font-size: 16px; line-height: 26px; }                  /* body/body 16·26 */
-@utility text-body-rg     { font-size: 14px; line-height: 21px; }                  /* body/small 14·21 */
-@utility text-body-loose  { font-size: 14px; line-height: 1.6; }                   /* body/small2 14 */
+@utility text-display-md {
+  font-size: 45px;
+  line-height: 1.6;
+  font-weight: 500;
+} /* Display/Medium */
+@utility text-headline-lg {
+  font-size: 32px;
+  line-height: 1.6;
+  font-weight: 700;
+} /* Headline/Large */
+@utility text-headline-md {
+  font-size: 28px;
+  line-height: 1.6;
+  font-weight: 700;
+} /* Headline/Medium */
+@utility text-headline-sm {
+  font-size: 24px;
+  line-height: 1.6;
+  font-weight: 600;
+} /* Headline/small */
+@utility text-title-lg {
+  font-size: 20px;
+  line-height: 1.6;
+  font-weight: 600;
+} /* Title/Large */
+@utility text-title-md {
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 600;
+} /* Title/Medium */
+@utility text-title-sm {
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 600;
+} /* Title/small */
+@utility text-body-md {
+  font-size: 16px;
+  line-height: 26px;
+} /* body/body 16·26 */
+@utility text-body-rg {
+  font-size: 14px;
+  line-height: 21px;
+} /* body/small 14·21 */
+@utility text-body-loose {
+  font-size: 14px;
+  line-height: 1.6;
+} /* body/small2 14 */
 
 /* ========== 레이아웃 유틸 ========== */
 @utility container-x {
