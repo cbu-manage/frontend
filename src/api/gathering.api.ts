@@ -55,6 +55,14 @@ export type GatheringMember = {
   generation: number;
 };
 
+/** 관리자 명단 멤버 — 학번·학과·학년·투표일시 포함 (votedAt: 미응답자는 null) */
+export type AdminGatheringMember = GatheringMember & {
+  studentNumber: number;
+  major: string;
+  grade: string;
+  votedAt: string | null;
+};
+
 /** 참석 명단 (일반) */
 export type AttendanceList = {
   gatheringId: number;
@@ -68,9 +76,19 @@ export type AttendanceList = {
   undecidedMembers: GatheringMember[];
 };
 
-/** 참석 명단 (관리자 — 미응답 포함) */
-export type AdminAttendanceList = AttendanceList & {
-  unansweredMembers: GatheringMember[];
+/** 참석 명단 (관리자 — 학번·학과·학년·투표일시 + 미응답 포함). ADMIN 전용 */
+export type AdminAttendanceList = {
+  gatheringId: number;
+  title: string;
+  gatheringDate: string;
+  voteDeadline: string;
+  voteClosed: boolean;
+  summary: AttendanceSummary;
+  attendingMembers: AdminGatheringMember[];
+  notAttendingMembers: AdminGatheringMember[];
+  undecidedMembers: AdminGatheringMember[];
+  /** allMembersTarget=true 모임에서만 존재 */
+  unansweredMembers: AdminGatheringMember[];
 };
 
 export type CreateGatheringBody = {

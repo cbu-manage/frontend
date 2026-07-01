@@ -108,6 +108,7 @@ export {
   type AttendanceSummary,
   type Gathering,
   type GatheringMember,
+  type AdminGatheringMember,
   type AttendanceList,
   type AdminAttendanceList,
   type CreateGatheringBody,

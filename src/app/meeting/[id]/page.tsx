@@ -10,6 +10,7 @@ import KebabMenu from "@/components/common/KebabMenu";
 import Mascot, { type MascotEmotion } from "@/components/common/Mascot";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { useIsStaff } from "@/hooks/auth/useIsStaff";
+import { useUserStore } from "@/store/userStore";
 import {
   useGathering,
   useAttendance,
@@ -18,6 +19,7 @@ import {
   useCloseGathering,
 } from "@/hooks/meeting";
 import {
+  gatheringApi,
   GATHERING_TYPE_LABEL,
   type GatheringMember,
   type VoteDecision,
@@ -65,6 +67,7 @@ export default function MeetingDetailPage() {
   const params = useParams();
   const id = Number(params?.id);
   const isStaff = useIsStaff();
+  const isAdmin = useUserStore((s) => s.isAdmin); // 참석명단 엑셀은 ADMIN 전용
 
   const { data: meeting, isLoading, isError } = useGathering(id || null);
   const { data: attendance } = useAttendance(id || null);
@@ -126,6 +129,21 @@ export default function MeetingDetailPage() {
   const handleVote = () => {
     if (!choice) return;
     voteMutation.mutate(choice);
+  };
+
+  // 참석 명단 엑셀 다운로드 (ADMIN 전용)
+  const handleExport = async () => {
+    try {
+      const res = await gatheringApi.exportAttendance(id);
+      const url = URL.createObjectURL(res.data as Blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${meeting.title}_참석명단.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("명단 다운로드에 실패했습니다.");
+    }
   };
 
   return (
@@ -203,16 +221,27 @@ export default function MeetingDetailPage() {
               <span className="flex items-center gap-1">
                 <Clock size={16} /> 응답 마감 {fmt(meeting.voteDeadline)}
               </span>
-              {isStaff && !meeting.voteClosed && (
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={closeMutation.isPending}
-                  className="rounded-full border border-gray-200 px-4 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
-                >
-                  {closeMutation.isPending ? "마감 중..." : "투표 마감"}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={handleExport}
+                    className="rounded-full border border-gray-200 px-4 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50"
+                  >
+                    명단 엑셀
+                  </button>
+                )}
+                {isStaff && !meeting.voteClosed && (
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    disabled={closeMutation.isPending}
+                    className="rounded-full border border-gray-200 px-4 py-2 text-xs text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-40"
+                  >
+                    {closeMutation.isPending ? "마감 중..." : "투표 마감"}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* 참석 투표 */}
