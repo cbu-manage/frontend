@@ -48,6 +48,8 @@ export type ChangePasswordRequest = {
 export type ResetPasswordRequest = {
   studentNumber: number;
   email: string;
+  authCode: string;
+  newPassword: string;
 };
 
 export const authApi = {
