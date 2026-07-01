@@ -98,6 +98,23 @@ export {
   type ApplicantStatus,
 } from "./applicant.api";
 
+// Gathering (모임 일정)
+export {
+  gatheringApi,
+  GATHERING_TYPE_LABEL,
+  type GatheringType,
+  type MyAttendanceStatus,
+  type VoteDecision,
+  type AttendanceSummary,
+  type Gathering,
+  type GatheringMember,
+  type AdminGatheringMember,
+  type AttendanceList,
+  type AdminAttendanceList,
+  type CreateGatheringBody,
+  type UpdateGatheringBody,
+} from "./gathering.api";
+
 // Image
 export { imageApi } from "./image.api";
 
