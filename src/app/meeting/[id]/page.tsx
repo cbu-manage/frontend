@@ -34,7 +34,7 @@ function fmt(iso?: string, pattern = "yyyy.MM.dd (EEE) HH:mm") {
   }
 }
 
-// 참석 투표 — 서버는 PASS/FAIL 2지선다. (UNDECIDED/미정 투표는 서버 미지원)
+// 참석 투표 (참석 / 불참)
 const VOTE_OPTIONS: {
   key: VoteDecision;
   label: string;
@@ -291,7 +291,7 @@ export default function MeetingDetailPage() {
                 </>
               )}
 
-              {/* 응답 명단 — 참석/불참 (미정 상태는 제거 결정) */}
+              {/* 응답 명단 */}
               {attendance && (
                 <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {[
