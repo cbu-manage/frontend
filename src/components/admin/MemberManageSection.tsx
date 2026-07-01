@@ -2,16 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { memberApi, type MemberInfo } from "@/api/member.api";
-import { useCan } from "@/hooks/auth";
 import PGN from "@/components/shared/Pagination";
+// TODO(BE 대기): 회비 관리 — 아래 엔드포인트 나오면 아래 주석들 복구.
+//   PATCH /members/dues/reset  (운영진 제외 전원 due=false / inactive) — 일괄 초기화
+//   PATCH /member/{id}/due     (body {due})                           — 개별 납부 토글
+//   ※ 기존 approve-payment 는 "신입 회원 승인(ACTIVE + 환영메일 발송)"이라 회비 토글 아님.
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { useCan } from "@/hooks/auth";
 
 const PAGE_SIZE = 10;
 
 export default function MemberManageSection() {
-  const queryClient = useQueryClient();
-  const canApproveFee = useCan("members.approveFee");
+  // const queryClient = useQueryClient(); // 회비 관리 BE 대기
+  // const canApproveFee = useCan("members.approveFee"); // 회비 관리 BE 대기
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [generationFilter, setGenerationFilter] = useState<number | null>(null);
   const [searchName, setSearchName] = useState("");
@@ -45,7 +50,8 @@ export default function MemberManageSection() {
     },
   });
 
-  // 회비 일괄 승인 — 각각 approve-payment(단방향). 부분 실패도 성공분은 반영되도록 allSettled.
+  /* TODO(BE 대기): 회비 일괄 처리 — dues/reset·due 토글 엔드포인트 나오면 복구.
+     기존 approve-payment 는 신입 승인(환영메일 발송)이라 회비 토글로 쓰면 안 됨.
   const approveFeeMutation = useMutation({
     mutationFn: async (ids: number[]) => {
       const results = await Promise.allSettled(
@@ -63,6 +69,7 @@ export default function MemberManageSection() {
     onError: () =>
       alert("회비 처리 중 오류가 발생했습니다. 다시 시도해주세요."),
   });
+  */
 
   const generationList = useMemo(() => {
     return [...new Set(allMembers.map((m) => m.generation))].sort(
@@ -276,6 +283,8 @@ export default function MemberManageSection() {
         </table>
       </div>
 
+      {/* TODO(BE 대기): 회비 일괄 처리 UI — dues/reset(운영진 제외 초기화)·due 토글 엔드포인트 나오면 복구.
+          설계: 검색창 옆 "회비 상태 초기화"(운영진 제외 전원 미납) + 표 회비 셀 클릭 토글(미납↔납부).
       {canApproveFee && selectedItems.length > 0 && (
         <div className="mt-4 flex items-center gap-3">
           <span className="text-sm text-gray-600">
@@ -300,6 +309,7 @@ export default function MemberManageSection() {
           </button>
         </div>
       )}
+      */}
 
       <PGN
         currentPage={currentPage}
