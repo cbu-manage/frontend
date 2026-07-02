@@ -36,14 +36,15 @@ export default function HowFoundRadioGroup({
               className="sr-only peer"
             />
             <span
-              className={`flex items-center justify-center w-4 h-4 rounded-full border-2 transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-1 ${value === option ? "border-brand" : "border-gray-300"
-                }`}
+              className={`flex items-center justify-center w-4 h-4 rounded-full border-2 transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-1 ${
+                value === option ? "border-brand" : "border-gray-300"
+              }`}
             >
               {value === option && (
                 <span className="w-2 h-2 rounded-full bg-brand block" />
               )}
             </span>
-            <span className="text-body-sm text-gray-900">{option}</span>
+            <span className="text-base text-gray-900">{option}</span>
           </label>
         ))}
       </div>
