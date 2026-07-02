@@ -153,6 +153,9 @@ export {
   type NewsSearchInfo,
 } from "./news.api";
 
+// Settings
+export { settingsApi, type OnboardingLinks } from "./settings.api";
+
 // Free Board
 export {
   freeboardApi,
