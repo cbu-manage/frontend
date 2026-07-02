@@ -5,11 +5,10 @@ export type NewsCategory = "NOTICE" | "EVENT" | "NEWSLETTER" | "IT_NEWS";
 
 export type NewsletterType = "WEEKLY" | "SPECIAL" | "NOTICE";
 
-// TODO(백엔드): GET /api/v1/news에 newsletterType 쿼리 파라미터(복수 지원) 추가 요청됨.
-// 추가되면 NewsListParams에 newsletterType?: NewsletterType | NewsletterType[] 필드 추가하고
-// getList 호출부(useNewsList, news/page.tsx)에서 서버 필터링으로 전환할 것.
 export type NewsListParams = {
   category?: NewsCategory | NewsCategory[];
+  // category=NEWSLETTER 안에서 주간/특집/공지 필터. 복수 지정 시 repeated 쿼리로 직렬화됨.
+  newsletterType?: NewsletterType | NewsletterType[];
   keyword?: string;
   page?: number;
   size?: number;
