@@ -41,7 +41,7 @@ export default function AttendanceRadioGroup({
                 <span className="w-2 h-2 rounded-full bg-brand block" />
               )}
             </span>
-            <span className="text-body-sm text-gray-900">{option}</span>
+            <span className="text-base text-gray-900">{option}</span>
           </label>
         ))}
       </div>

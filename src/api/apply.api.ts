@@ -5,6 +5,7 @@ export type ApplicationRequest = {
   name: string;
   nickname: string;
   studentId: string;
+  phoneNumber: string;
   department: string;
   schoolYear: string;
   applyFields: string[];

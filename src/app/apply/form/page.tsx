@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { applyApi } from "@/api/apply.api";
+import { applyApi } from "@/api";
 import InputBox from "@/components/common/InputBox";
 import { Button } from "@/components/ui/button";
 import RecruitmentNotice from "@/components/apply/RecruitmentNotice";
@@ -23,6 +23,7 @@ type FormState = {
   name: string;
   nickname: string;
   studentId: string;
+  phoneNumber: string;
   department: string;
   schoolYear: string;
   applyFields: string[];
@@ -41,6 +42,7 @@ type FormErrors = {
   name?: string;
   nickname?: string;
   studentId?: string;
+  phoneNumber?: string;
   department?: string;
   applyFields?: string;
   teamExperience?: string;
@@ -56,6 +58,7 @@ const INITIAL_FORM: FormState = {
   name: "",
   nickname: "",
   studentId: "",
+  phoneNumber: "",
   department: "",
   schoolYear: "1학년",
   applyFields: [],
@@ -78,6 +81,11 @@ function validate(form: FormState): FormErrors {
     errors.studentId = "학번을 입력해주세요.";
   } else if (!/^\d{10}$/.test(form.studentId)) {
     errors.studentId = "10자리 숫자로 입력해주세요. (예: 2026000000)";
+  }
+  if (!form.phoneNumber.trim()) {
+    errors.phoneNumber = "전화번호를 입력해주세요.";
+  } else if (!/^010\d{8}$/.test(form.phoneNumber.replace(/-/g, ""))) {
+    errors.phoneNumber = "올바른 전화번호를 입력해주세요. (예: 01012345678)";
   }
   if (!form.department) errors.department = "학과를 선택해주세요.";
   if (form.applyFields.length === 0) {
@@ -202,6 +210,7 @@ export default function ApplyFormPage() {
         name: form.name,
         nickname: form.nickname,
         studentId: form.studentId,
+        phoneNumber: form.phoneNumber.replace(/-/g, ""),
         department: form.department,
         schoolYear: form.schoolYear,
         applyFields: form.applyFields,
@@ -313,6 +322,16 @@ export default function ApplyFormPage() {
                   )}
                 </div>
               </div>
+
+              <InputBox
+                label="전화번호"
+                placeholder="01012345678"
+                value={form.phoneNumber}
+                onChange={(e) => setField("phoneNumber")(e.target.value)}
+                errorMessage={errors.phoneNumber}
+                variant="outline"
+                required
+              />
 
               <SchoolYearRadioGroup
                 value={form.schoolYear}
