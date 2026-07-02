@@ -5,7 +5,11 @@
 import { api } from "./client";
 
 // page: 0부터 시작, size: 페이지 당 개수, category: 백엔드 enum 번호
-export type StudyListParams = { page?: number; size?: number; category?: number };
+export type StudyListParams = {
+  page?: number;
+  size?: number;
+  category?: number;
+};
 
 /** GET /post/study/me — Swagger상 page, size, category 필수 (스터디 category=1) */
 export type StudyMyListParams = {
@@ -24,7 +28,9 @@ export type CreateStudyRequest = {
   category: number;
 };
 
-export type UpdateStudyRequest = Partial<Omit<CreateStudyRequest, "category" | "recruiting">> & {
+export type UpdateStudyRequest = Partial<
+  Omit<CreateStudyRequest, "category" | "recruiting">
+> & {
   // 모집 상태 변경은 close API를 사용하므로 여기선 제외
 };
 
@@ -57,14 +63,14 @@ export type StudyDetailResponse = {
 
 export const studyApi = {
   /** 스터디 게시글 전체 목록 페이징 조회 (카테고리별, 최신순) */
-  getList: (params?: StudyListParams) =>
-    api.get("/post/study", { params }),
+  getList: (params?: StudyListParams) => api.get("/post/study", { params }),
 
   /** 스터디 게시글 생성 */
   create: (data: CreateStudyRequest) => api.post("/post/study", data),
 
   /** 스터디 게시글 상세 조회 */
-  getById: (postId: number) => api.get<StudyDetailResponse>("/post/study/" + postId),
+  getById: (postId: number) =>
+    api.get<StudyDetailResponse>("/post/study/" + postId),
 
   /** 스터디 게시글 수정 */
   update: (postId: number, data: UpdateStudyRequest) =>
@@ -76,20 +82,7 @@ export const studyApi = {
   /** 스터디 모집 마감 */
   close: (postId: number) => api.post(`/post/study/${postId}/close`),
 
-  /** 스터디 신청 목록 조회 */
-  getApplyList: (postId: number) =>
-    api.get(`/post/study/${postId}/apply`),
-
-  /** 스터디 참가 신청 */
-  apply: (postId: number) => api.post(`/post/study/${postId}/apply`),
-
-  /** 스터디 신청 취소 */
-  cancelApply: (postId: number) =>
-    api.delete(`/post/study/${postId}/apply`),
-
-  /** 스터디 신청 수락/거절 */
-  updateApplyStatus: (postId: number, applyId: number, data: unknown) =>
-    api.patch(`/post/study/${postId}/apply/${applyId}`, data),
+  // 신청(apply) 관련 API 없음 — 스터디 참가 신청/수락은 groups API 경유 (구버전 /apply 경로는 서버에 존재하지 않아 제거, #225)
 
   /** 내가 작성한 스터디 게시글 목록 조회 (authorName·authorGeneration 등 content 스키마) */
   getMyList: (params: StudyMyListParams) =>

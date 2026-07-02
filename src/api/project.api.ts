@@ -13,8 +13,6 @@ export type ProjectListParams = {
   recruiting?: boolean;
 };
 
-export type ProjectFilterParams = { category?: string; page?: number; size?: number };
-
 /** 프로젝트 목록 아이템 (API 응답 content 요소) */
 export type ProjectListItem = {
   postId: number;
@@ -78,17 +76,19 @@ export type ProjectDetailData = {
   authorGeneration?: number;
   authorName?: string;
   viewCount?: number;
-  /** 작성자(팀장) 여부 - 신청 인원 확인 버튼 노출 */
+  /**
+   * 작성자(팀장) 여부 - 신청 인원 확인 버튼 노출.
+   * ⚠️ 스웨거(ProjectInfoDetailDTO)의 실제 필드는 isLeader — 스터디(leader)와 이름이 다름.
+   */
+  isLeader?: boolean;
+  /** 스터디 상세와의 호환용 별칭 — 서버 응답엔 없음, isLeader를 사용할 것 */
   leader?: boolean;
   /** 신청 여부 - 신청하기/취소하기/가입완료 분기 */
   hasApplied?: boolean;
-  /** @deprecated leader 사용 */
-  isLeader?: boolean;
 };
 export const projectApi = {
   /** 프로젝트 게시글 전체 목록 페이징 조회 */
-  getList: (params?: ProjectListParams) =>
-    api.get("/post/project", { params }),
+  getList: (params?: ProjectListParams) => api.get("/post/project", { params }),
 
   /** 프로젝트 게시글 생성 */
   create: (data: CreateProjectRequest) => api.post("/post/project", data),
@@ -103,14 +103,10 @@ export const projectApi = {
   /** 프로젝트 게시글 삭제 */
   delete: (postId: number) => api.delete(`/post/project/${postId}`),
 
-  /** 프로젝트 모집 마감 */
-  close: (postId: number) => api.post(`/post/project/${postId}/close`),
+  // 모집 마감(close) API 없음 — 스웨거엔 스터디 close만 존재. 프로젝트 마감은 update(recruiting: false) 사용 (구버전 경로 제거, #225)
+  // 분야별 필터(/post/project/filter, params: fields·recruiting)는 미사용이라 미구현 — 필요 시 스웨거 기준으로 추가
 
-  /** 내가 작성한 프로젝트 게시글 목록 조회 */
-  getMyList: (params?: ProjectListParams) =>
+  /** 내가 작성한 프로젝트 게시글 목록 조회 — /me는 recruiting 파라미터 미지원 */
+  getMyList: (params?: Omit<ProjectListParams, "recruiting">) =>
     api.get("/post/project/me", { params }),
-
-  /** 프로젝트 모집분야 카테고리별 목록 페이징 조회 */
-  getFilteredList: (params?: ProjectFilterParams) =>
-    api.get("/post/project/filter", { params }),
 };
