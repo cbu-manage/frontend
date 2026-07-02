@@ -210,7 +210,7 @@ export default function ApplyFormPage() {
         name: form.name,
         nickname: form.nickname,
         studentId: form.studentId,
-        phoneNumber: form.phoneNumber,
+        phoneNumber: form.phoneNumber.replace(/-/g, ""),
         department: form.department,
         schoolYear: form.schoolYear,
         applyFields: form.applyFields,
