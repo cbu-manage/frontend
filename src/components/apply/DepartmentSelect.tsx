@@ -42,7 +42,7 @@ export default function DepartmentSelect({
     <div className="space-y-1.5">
       <label
         htmlFor="department-select"
-        className="text-body-sm font-medium text-gray-900"
+        className="block text-body-sm font-medium text-gray-900"
       >
         학과 <span className="text-notice">*</span>
       </label>
