@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { applyApi } from "@/api/apply.api";
+import { applyApi } from "@/api";
 import InputBox from "@/components/common/InputBox";
 import { Button } from "@/components/ui/button";
 import RecruitmentNotice from "@/components/apply/RecruitmentNotice";
