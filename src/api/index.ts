@@ -156,6 +156,7 @@ export {
 // Free Board
 export {
   freeboardApi,
+  freeboardAuthorLabel,
   type FreeBoardCreateBody,
   type FreeBoardUpdateBody,
   type FreeBoardListItem,

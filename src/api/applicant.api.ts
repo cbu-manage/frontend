@@ -116,9 +116,15 @@ export type FinalizeDecision = {
 };
 
 export const recruitmentApi = {
-  /** 현재 진행 중인 모집 */
+  /** 현재 진행 중인 모집 (없으면 404) */
   getCurrent: () =>
     api.get<ApiEnvelope<Recruitment>>("/admin/recruitments/current"),
+
+  /** 모집 시작 — 시작 시점 운영진 수를 투표자 수로 고정 */
+  create: (generation: number) =>
+    api.post<ApiEnvelope<Recruitment>>("/admin/recruitments", { generation }),
+
+  // 모집 종료는 applicantApi.close 사용 (finalize flow와 한 세트)
 
   /** 모집 요약(상태별 카운트·투표 카드) */
   getSummary: (recruitmentUuid: string) =>

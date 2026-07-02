@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { AxiosError } from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   applicantApi,
@@ -33,7 +34,9 @@ function baseDecision(item: ApplicationListItem): FinalDecision {
 export default function NewMemberManageSection() {
   const queryClient = useQueryClient();
   const canFinalize = useCan("applications.finalize");
+  const canManageRecruitment = useCan("recruitment.manage");
   const [searchQuery, setSearchQuery] = useState("");
+  const [newGeneration, setNewGeneration] = useState("");
   const [overrides, setOverrides] = useState<
     Record<string, "ACCEPT" | "REJECT">
   >({});
@@ -46,10 +49,18 @@ export default function NewMemberManageSection() {
     null | "finalize" | "close"
   >(null);
 
-  // 1) 현재 모집
-  const { data: recruitment } = useQuery({
+  // 1) 현재 모집 — 진행 중 모집이 없으면 404 → 에러가 아닌 "모집 없음(null)"으로 취급
+  const { data: recruitment, isLoading: recruitmentLoading } = useQuery({
     queryKey: ["admin", "recruitment", "current"],
-    queryFn: async () => (await recruitmentApi.getCurrent()).data.data,
+    queryFn: async () => {
+      try {
+        return (await recruitmentApi.getCurrent()).data.data;
+      } catch (err) {
+        if (err instanceof AxiosError && err.response?.status === 404)
+          return null;
+        throw err;
+      }
+    },
   });
   const recruitmentUuid = recruitment?.recruitmentUuid ?? null;
 
@@ -149,6 +160,35 @@ export default function NewMemberManageSection() {
       alert("처리 중 오류가 발생했습니다. 다시 시도해주세요.");
     },
   });
+
+  // 모집 시작 — 시작 시점 운영진 수가 투표자 수로 고정된다 (recruitment.manage 전용)
+  const startMutation = useMutation({
+    mutationFn: (generation: number) => recruitmentApi.create(generation),
+    onSuccess: () => {
+      setNewGeneration("");
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "recruitment", "current"],
+      });
+    },
+    onError: () =>
+      alert("모집 시작 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+
+  const handleStart = () => {
+    const generation = Number(newGeneration);
+    if (!Number.isInteger(generation) || generation <= 0) {
+      alert("기수를 숫자로 입력해주세요. (예: 12)");
+      return;
+    }
+    if (
+      !window.confirm(
+        `${generation}기 모집을 시작합니다.\n\n` +
+          `시작 시점의 운영진 수가 투표자 수로 고정됩니다.\n계속하시겠습니까?`,
+      )
+    )
+      return;
+    startMutation.mutate(generation);
+  };
 
   const handleDecisionSelect = (uuid: string, value: "ACCEPT" | "REJECT") => {
     setOverrides((prev) => ({ ...prev, [uuid]: value }));
@@ -388,6 +428,44 @@ export default function NewMemberManageSection() {
             </div>
           </>
         )}
+      </div>
+    );
+  }
+
+  // ── 모집 없음(시작 전) 화면 ────────────────────────────────
+  if (!recruitmentLoading && recruitment === null) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-h1 text-gray-900 mb-5">신청서 조회</h1>
+
+        <div className="rounded-2xl border border-gray-200 py-20 text-center">
+          <p className="text-gray-500">진행 중인 모집이 없습니다.</p>
+
+          {canManageRecruitment ? (
+            <div className="mt-6 flex items-center justify-center gap-2">
+              <input
+                type="number"
+                min={1}
+                value={newGeneration}
+                onChange={(e) => setNewGeneration(e.target.value)}
+                placeholder="기수 (예: 12)"
+                className="w-32 rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-center outline-none placeholder:text-gray-400 focus:border-gray-400"
+              />
+              <button
+                type="button"
+                onClick={handleStart}
+                disabled={startMutation.isPending || !newGeneration.trim()}
+                className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+              >
+                {startMutation.isPending ? "모집 시작 중..." : "모집 시작"}
+              </button>
+            </div>
+          ) : (
+            <p className="mt-2 text-sm text-gray-400">
+              모집 시작 권한이 있는 운영진에게 문의해주세요.
+            </p>
+          )}
+        </div>
       </div>
     );
   }
