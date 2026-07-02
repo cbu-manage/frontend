@@ -35,7 +35,6 @@ export {
 export {
   projectApi,
   type ProjectListParams,
-  type ProjectFilterParams,
   type ProjectListItem,
   type ProjectListResponse,
   type ProjectDetailData,
