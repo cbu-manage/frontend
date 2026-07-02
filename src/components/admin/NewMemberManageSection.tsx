@@ -34,6 +34,8 @@ function baseDecision(item: ApplicationListItem): FinalDecision {
 export default function NewMemberManageSection() {
   const queryClient = useQueryClient();
   const canFinalize = useCan("applications.finalize");
+  // 투표는 운영진급만 — ADMIN(개발자 관리자)은 서버 허용 역할에 없어 집계만 열람
+  const canVote = useCan("applications.vote");
   const canManageRecruitment = useCan("recruitment.manage");
   const [searchQuery, setSearchQuery] = useState("");
   const [newGeneration, setNewGeneration] = useState("");
@@ -377,53 +379,62 @@ export default function NewMemberManageSection() {
                   )}
                 </div>
 
-                <div className="rounded-2xl border border-gray-200 p-5">
-                  <h2 className="text-base font-bold text-gray-900">내 투표</h2>
-                  <div className="mt-3 inline-flex rounded-full bg-gray-100 p-1">
+                {!canVote ? (
+                  <p className="rounded-2xl border border-gray-200 p-5 text-sm text-gray-400">
+                    투표는 운영진만 가능해요. 관리자 계정은 투표 현황 열람만
+                    지원돼요.
+                  </p>
+                ) : (
+                  <div className="rounded-2xl border border-gray-200 p-5">
+                    <h2 className="text-base font-bold text-gray-900">
+                      내 투표
+                    </h2>
+                    <div className="mt-3 inline-flex rounded-full bg-gray-100 p-1">
+                      <button
+                        type="button"
+                        onClick={() => setVoteChoice("PASS")}
+                        className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
+                          voteChoice === "PASS"
+                            ? "bg-success text-white"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        합격
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setVoteChoice("FAIL")}
+                        className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
+                          voteChoice === "FAIL"
+                            ? "bg-danger text-white"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        불합격
+                      </button>
+                    </div>
+                    <textarea
+                      value={voteReason}
+                      onChange={(e) => setVoteReason(e.target.value)}
+                      rows={4}
+                      aria-label="투표 사유"
+                      placeholder="사유를 입력하세요 (불합격 시 필수)"
+                      className="mt-3 w-full resize-none rounded-xl border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+                    />
                     <button
                       type="button"
-                      onClick={() => setVoteChoice("PASS")}
-                      className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
-                        voteChoice === "PASS"
-                          ? "bg-success text-white"
-                          : "text-gray-500"
-                      }`}
+                      disabled={
+                        !voteChoice ||
+                        (voteChoice === "FAIL" && !voteReason.trim()) ||
+                        voteMutation.isPending
+                      }
+                      onClick={handleVoteSave}
+                      className="mt-3 w-full rounded-full bg-gray-900 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
                     >
-                      합격
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setVoteChoice("FAIL")}
-                      className={`rounded-full px-6 py-2 text-sm font-semibold transition-colors ${
-                        voteChoice === "FAIL"
-                          ? "bg-danger text-white"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      불합격
+                      {voteMutation.isPending ? "저장 중..." : "투표 저장"}
                     </button>
                   </div>
-                  <textarea
-                    value={voteReason}
-                    onChange={(e) => setVoteReason(e.target.value)}
-                    rows={4}
-                    aria-label="투표 사유"
-                    placeholder="사유를 입력하세요 (불합격 시 필수)"
-                    className="mt-3 w-full resize-none rounded-xl border border-gray-200 p-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    disabled={
-                      !voteChoice ||
-                      (voteChoice === "FAIL" && !voteReason.trim()) ||
-                      voteMutation.isPending
-                    }
-                    onClick={handleVoteSave}
-                    className="mt-3 w-full rounded-full bg-gray-900 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
-                  >
-                    {voteMutation.isPending ? "저장 중..." : "투표 저장"}
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           </>
