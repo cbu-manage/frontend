@@ -1,7 +1,4 @@
 import { api } from "./client";
-import type { AxiosRequestConfig } from "axios";
-
-type RetriableConfig = AxiosRequestConfig & { _retry?: boolean };
 
 export type ApplicationRequest = {
   email: string;
@@ -21,8 +18,7 @@ export type ApplicationRequest = {
 };
 
 export const applyApi = {
-  submit: (data: ApplicationRequest) =>
-    api.post("/applications", data, { _retry: true } as RetriableConfig),
+  submit: (data: ApplicationRequest) => api.post("/applications", data),
   check: (studentId: string, email: string) =>
     api.get("/application/check", { params: { studentId, email } }),
 };
