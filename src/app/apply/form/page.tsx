@@ -191,21 +191,9 @@ export default function ApplyFormPage() {
       });
       router.push("/");
     } catch (err) {
-      const code = (err as { response?: { data?: { code?: string } } }).response
-        ?.data?.code;
-      if (code === "E-APP-0002") {
-        setErrors((prev) => ({
-          ...prev,
-          studentId: "이미 신청서가 존재하는 학번입니다.",
-        }));
-      } else if (code === "E-COMMON-0005") {
-        setErrors((prev) => ({
-          ...prev,
-          studentId: "이미 가입된 학번입니다.",
-        }));
-      } else {
-        window.alert("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
-      }
+      window.alert(
+        (err as Error).message || "신청서 제출 중 오류가 발생했습니다.",
+      );
       setIsSubmitting(false);
     }
   };
