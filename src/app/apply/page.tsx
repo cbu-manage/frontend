@@ -16,11 +16,16 @@ export default function ApplyIntroPage() {
 
   const handleCheck = async () => {
     if (!studentId || !nickname) return;
+    const studentNumber = parseInt(studentId, 10);
+    if (Number.isNaN(studentNumber)) {
+      setErrorMessage("학번은 숫자로 입력해주세요.");
+      return;
+    }
     setIsChecking(true);
     setErrorMessage("");
     try {
       const res = await applyApi.getMy({
-        studentNumber: parseInt(studentId, 10),
+        studentNumber,
         nickname,
       });
       sessionStorage.setItem("applyDraft", JSON.stringify(res.data.data));
