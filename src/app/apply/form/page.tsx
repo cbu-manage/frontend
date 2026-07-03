@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { applyApi } from "@/api";
+import { applyApi, type ApplicationMyResponse } from "@/api";
 import InputBox from "@/components/common/InputBox";
 import { Button } from "@/components/ui/button";
 import RecruitmentNotice from "@/components/apply/RecruitmentNotice";
@@ -111,12 +111,9 @@ const GRADE_MAP: Record<string, string> = {
   휴학생: "ABSENCE",
 };
 
-const REF_SOURCE_MAP: Record<string, string> = {
-  에브리타임: "SNS",
-  인스타그램: "SNS",
-  지인추천: "FRIEND",
-  기타: "ETC",
-};
+const GRADE_MAP_REVERSE = Object.fromEntries(
+  Object.entries(GRADE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, string>;
 
 const APPLY_FIELD_MAP: Record<string, string> = {
   스터디: "STUDY",
@@ -124,6 +121,21 @@ const APPLY_FIELD_MAP: Record<string, string> = {
   "프로젝트(디자인)": "DESIGN",
   "프로젝트(기획)": "PLAN",
 };
+
+const APPLY_FIELD_MAP_REVERSE = Object.fromEntries(
+  Object.entries(APPLY_FIELD_MAP).map(([k, v]) => [v, k]),
+) as Record<string, string>;
+
+const REF_SOURCE_MAP: Record<string, string> = {
+  에브리타임: "EVERYTIME",
+  인스타그램: "INSTAGRAM",
+  지인추천: "FRIEND",
+  기타: "ETC",
+};
+
+const REF_SOURCE_MAP_REVERSE = Object.fromEntries(
+  Object.entries(REF_SOURCE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, string>;
 
 function FieldError({ message }: { message: string }) {
   return (
@@ -148,7 +160,32 @@ function FieldError({ message }: { message: string }) {
 
 export default function ApplyFormPage() {
   const router = useRouter();
-  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [form, setForm] = useState<FormState>(() => {
+    if (typeof window === "undefined") return INITIAL_FORM;
+    const raw = sessionStorage.getItem("applyDraft");
+    if (!raw) return INITIAL_FORM;
+    sessionStorage.removeItem("applyDraft");
+    const draft = JSON.parse(raw) as ApplicationMyResponse;
+    return {
+      ...INITIAL_FORM,
+      email: draft.email.replace(/@tukorea\.ac\.kr$/, ""),
+      isEmailVerified: true,
+      name: draft.name,
+      nickname: draft.nickname,
+      studentId: String(draft.studentNumber),
+      phoneNumber: draft.phoneNumber,
+      department: draft.major,
+      schoolYear: GRADE_MAP_REVERSE[draft.grade] ?? "1학년",
+      applyFields: [APPLY_FIELD_MAP_REVERSE[draft.applicationField]].filter(
+        Boolean,
+      ),
+      devLinks: draft.portfolioUrl ?? "",
+      howFound: REF_SOURCE_MAP_REVERSE[draft.refSource] ?? "기타",
+      otAttendance: draft.canOt ? "가능" : "불가",
+      welcomePartyAttendance: draft.canWelcome ? "가능" : "불가",
+      privacyAgreed: true,
+    };
+  });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 

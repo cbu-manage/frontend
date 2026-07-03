@@ -3,29 +3,30 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { applyApi } from "@/api/apply.api";
+import { useRouter } from "next/navigation";
+import { applyApi } from "@/api";
 import { RECRUIT_GENERATION } from "./constants";
 
 export default function ApplyIntroPage() {
+  const router = useRouter();
   const [studentId, setStudentId] = useState("");
-  const [email, setEmail] = useState("");
+  const [nickname, setNickname] = useState("");
   const [isChecking, setIsChecking] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleCheck = async () => {
-    if (!studentId || !email) return;
+    if (!studentId || !nickname) return;
     setIsChecking(true);
-    setMessage(null);
+    setErrorMessage("");
     try {
-      await applyApi.check(studentId, email);
-      setMessage({ type: "success", text: "신청서가 확인되었습니다." });
+      const res = await applyApi.getMy({
+        studentNumber: parseInt(studentId, 10),
+        nickname,
+      });
+      sessionStorage.setItem("applyDraft", JSON.stringify(res.data.data));
+      router.push("/apply/form");
     } catch (err) {
-      const code = (err as { response?: { data?: { code?: string } } }).response?.data?.code;
-      if (code === "E-APP-0002") {
-        setMessage({ type: "error", text: "이미 신청된 학번 또는 이메일입니다." });
-      } else {
-        setMessage({ type: "error", text: "확인 중 오류가 발생했습니다. 다시 시도해주세요." });
-      }
+      setErrorMessage((err as Error).message || "확인 중 오류가 발생했습니다.");
     } finally {
       setIsChecking(false);
     }
@@ -37,7 +38,10 @@ export default function ApplyIntroPage() {
         {/* 왼쪽 카드 - 신청서 작성 */}
         <div
           className="flex-1 rounded-3xl flex flex-col items-center justify-between px-10 pt-8 pb-10 relative overflow-hidden min-h-[420px]"
-          style={{ background: "radial-gradient(circle at 60% 40%, #D2ECBD 0%, #BFDD98 100%)" }}
+          style={{
+            background:
+              "radial-gradient(circle at 60% 40%, #D2ECBD 0%, #BFDD98 100%)",
+          }}
         >
           <div className="w-full flex justify-center">
             <Image
@@ -95,9 +99,9 @@ export default function ApplyIntroPage() {
             />
             <input
               type="text"
-              placeholder="학교 이메일을 입력해주세요."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="닉네임을 입력해주세요."
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
               className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3.5 text-body-sm text-gray-900 placeholder:text-gray-400 outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all"
             />
           </div>
@@ -105,15 +109,15 @@ export default function ApplyIntroPage() {
           <button
             type="button"
             onClick={handleCheck}
-            disabled={!studentId || !email || isChecking}
+            disabled={!studentId || !nickname || isChecking}
             className="w-full h-12 rounded-xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-brand text-white"
           >
-            제출한 서류 확인하기
+            {isChecking ? "확인 중..." : "제출한 서류 확인하기"}
           </button>
 
-          {message && (
-            <p className={`text-body-sm text-center ${message.type === "success" ? "text-brand" : "text-notice"}`}>
-              {message.text}
+          {errorMessage && (
+            <p className="text-body-sm text-center text-notice">
+              {errorMessage}
             </p>
           )}
         </div>
