@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { applyApi } from "@/api";
@@ -102,6 +102,29 @@ function validate(form: FormState): FormErrors {
   return errors;
 }
 
+const GRADE_MAP: Record<string, string> = {
+  "1학년": "FRESHMAN",
+  "2학년": "SOPHOMORE",
+  "3학년": "JUNIOR",
+  "4학년": "SENIOR",
+  졸업생: "GRADUATE",
+  휴학생: "ABSENCE",
+};
+
+const REF_SOURCE_MAP: Record<string, string> = {
+  에브리타임: "SNS",
+  인스타그램: "SNS",
+  지인추천: "FRIEND",
+  기타: "ETC",
+};
+
+const APPLY_FIELD_MAP: Record<string, string> = {
+  스터디: "STUDY",
+  "프로젝트(개발)": "DEV",
+  "프로젝트(디자인)": "DESIGN",
+  "프로젝트(기획)": "PLAN",
+};
+
 function FieldError({ message }: { message: string }) {
   return (
     <p className="text-caption text-notice flex items-center gap-1 mt-1">
@@ -123,14 +146,10 @@ function FieldError({ message }: { message: string }) {
   );
 }
 
-type StudentIdStatus = "idle" | "checking" | "available" | "duplicate";
-
 export default function ApplyFormPage() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [rawStudentIdStatus, setStudentIdStatus] =
-    useState<StudentIdStatus>("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setField =
@@ -140,56 +159,10 @@ export default function ApplyFormPage() {
       setErrors((prev) => ({ ...prev, [key]: undefined }));
     };
 
-  const handleStudentIdChange = (value: string) => {
-    setField("studentId")(value);
-    setStudentIdStatus("idle");
-  };
-
-  useEffect(() => {
-    if (!form.isEmailVerified || !/^\d{10}$/.test(form.studentId)) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const timer = setTimeout(async () => {
-      setStudentIdStatus("checking");
-      try {
-        await applyApi.check(form.studentId, `${form.email}@tukorea.ac.kr`);
-        if (cancelled) return;
-        setStudentIdStatus("available");
-        setErrors((prev) => ({ ...prev, studentId: undefined }));
-      } catch (err) {
-        if (cancelled) return;
-        const code = (err as { response?: { data?: { code?: string } } })
-          .response?.data?.code;
-        if (code === "E-APP-0002") {
-          setStudentIdStatus("duplicate");
-          setErrors((prev) => ({
-            ...prev,
-            studentId: "이미 신청된 학번입니다.",
-          }));
-        } else {
-          setStudentIdStatus("idle");
-        }
-      }
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [form.studentId, form.isEmailVerified, form.email]);
-
   const handleVerify = () => {
     setForm((prev) => ({ ...prev, isEmailVerified: true }));
     setErrors((prev) => ({ ...prev, email: undefined }));
   };
-
-  const studentIdStatus: StudentIdStatus =
-    !form.isEmailVerified || !/^\d{10}$/.test(form.studentId)
-      ? "idle"
-      : rawStudentIdStatus;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,33 +171,41 @@ export default function ApplyFormPage() {
       setErrors(validationErrors);
       return;
     }
-    if (studentIdStatus === "duplicate") {
-      setErrors((prev) => ({ ...prev, studentId: "이미 신청된 학번입니다." }));
-      return;
-    }
-    if (studentIdStatus !== "available") return;
     setIsSubmitting(true);
     try {
       await applyApi.submit({
         email: `${form.email}@tukorea.ac.kr`,
         name: form.name,
         nickname: form.nickname,
-        studentId: form.studentId,
+        studentNumber: parseInt(form.studentId, 10),
         phoneNumber: form.phoneNumber.replace(/-/g, ""),
-        department: form.department,
-        schoolYear: form.schoolYear,
-        applyFields: form.applyFields,
-        teamExperience: form.teamExperience,
-        programmingMotivation: form.programmingMotivation,
-        applyPurpose: form.applyPurpose,
-        devLinks: form.devLinks,
-        howFound: form.howFound,
-        otAttendance: form.otAttendance,
-        welcomePartyAttendance: form.welcomePartyAttendance,
+        emailAuthCode: form.verificationCode,
+        major: form.department,
+        grade: GRADE_MAP[form.schoolYear],
+        applicationField: form.applyFields.map((f) => APPLY_FIELD_MAP[f]),
+        portfolioUrl: form.devLinks,
+        refSource: REF_SOURCE_MAP[form.howFound] ?? "ETC",
+        canOt: form.otAttendance === "가능",
+        canWelcome: form.welcomePartyAttendance === "가능",
+        privacyPolicy: form.privacyAgreed,
       });
       router.push("/");
-    } catch {
-      window.alert("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } catch (err) {
+      const code = (err as { response?: { data?: { code?: string } } }).response
+        ?.data?.code;
+      if (code === "E-APP-0002") {
+        setErrors((prev) => ({
+          ...prev,
+          studentId: "이미 신청서가 존재하는 학번입니다.",
+        }));
+      } else if (code === "E-COMMON-0005") {
+        setErrors((prev) => ({
+          ...prev,
+          studentId: "이미 가입된 학번입니다.",
+        }));
+      } else {
+        window.alert("신청서 제출 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
       setIsSubmitting(false);
     }
   };
@@ -299,28 +280,15 @@ export default function ApplyFormPage() {
                   onChange={setField("department")}
                   errorMessage={errors.department}
                 />
-                <div>
-                  <InputBox
-                    label="학번"
-                    placeholder="2026000000"
-                    value={form.studentId}
-                    onChange={(e) => handleStudentIdChange(e.target.value)}
-                    errorMessage={errors.studentId}
-                    success={studentIdStatus === "available"}
-                    variant="outline"
-                    required
-                  />
-                  {studentIdStatus === "checking" && (
-                    <p className="text-caption text-gray-500 flex items-center gap-1 mt-1">
-                      학번 중복 확인 중...
-                    </p>
-                  )}
-                  {studentIdStatus === "available" && !errors.studentId && (
-                    <p className="text-caption text-brand flex items-center gap-1 mt-1">
-                      사용 가능한 학번입니다.
-                    </p>
-                  )}
-                </div>
+                <InputBox
+                  label="학번"
+                  placeholder="2026000000"
+                  value={form.studentId}
+                  onChange={(e) => setField("studentId")(e.target.value)}
+                  errorMessage={errors.studentId}
+                  variant="outline"
+                  required
+                />
               </div>
 
               <InputBox
