@@ -166,6 +166,9 @@ export default function ApplyFormPage() {
     if (!raw) return INITIAL_FORM;
     sessionStorage.removeItem("applyDraft");
     const draft = JSON.parse(raw) as ApplicationMyResponse;
+    const answerMap = Object.fromEntries(
+      draft.answers.map(({ question, answer }) => [question, answer]),
+    );
     return {
       ...INITIAL_FORM,
       email: draft.email.replace(/@tukorea\.ac\.kr$/, ""),
@@ -176,9 +179,12 @@ export default function ApplyFormPage() {
       phoneNumber: draft.phoneNumber,
       department: draft.major,
       schoolYear: GRADE_MAP_REVERSE[draft.grade] ?? "1학년",
-      applyFields: [APPLY_FIELD_MAP_REVERSE[draft.applicationField]].filter(
-        Boolean,
-      ),
+      applyFields: draft.applicationFields
+        .map((f) => APPLY_FIELD_MAP_REVERSE[f])
+        .filter(Boolean),
+      teamExperience: answerMap["MOTIVATE"] ?? "",
+      programmingMotivation: answerMap["START_REASON"] ?? "",
+      applyPurpose: answerMap["PURPOSE"] ?? "",
       devLinks: draft.portfolioUrl ?? "",
       howFound: REF_SOURCE_MAP_REVERSE[draft.refSource] ?? "기타",
       otAttendance: draft.canOt ? "가능" : "불가",
@@ -219,7 +225,12 @@ export default function ApplyFormPage() {
         emailAuthCode: form.verificationCode,
         major: form.department,
         grade: GRADE_MAP[form.schoolYear],
-        applicationField: form.applyFields.map((f) => APPLY_FIELD_MAP[f]),
+        applicationFields: form.applyFields.map((f) => APPLY_FIELD_MAP[f]),
+        answers: {
+          MOTIVATE: form.teamExperience,
+          START_REASON: form.programmingMotivation,
+          PURPOSE: form.applyPurpose,
+        },
         portfolioUrl: form.devLinks,
         refSource: REF_SOURCE_MAP[form.howFound] ?? "ETC",
         canOt: form.otAttendance === "가능",

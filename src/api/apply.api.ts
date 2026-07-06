@@ -16,7 +16,7 @@ export type ApplicationMyResponse = {
   major: string;
   phoneNumber: string;
   generation: number;
-  applicationField: string;
+  applicationFields: string[];
   portfolioUrl: string;
   refSource: string;
   refLinkEtc: string;
@@ -39,7 +39,8 @@ export type ApplicationRequest = {
   emailAuthCode: string;
   major: string;
   grade: string;
-  applicationField: string[];
+  applicationFields: string[];
+  answers: Record<string, string>;
   portfolioUrl: string;
   refSource: string;
   canOt: boolean;
