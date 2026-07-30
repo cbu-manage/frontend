@@ -133,7 +133,12 @@ export {
 export { imageApi } from "./image.api";
 
 // Apply
-export { applyApi, type ApplicationRequest } from "./apply.api";
+export {
+  applyApi,
+  type ApplicationRequest,
+  type ApplicationMyRequest,
+  type ApplicationMyResponse,
+} from "./apply.api";
 
 // News (공지·뉴스레터)
 export {
