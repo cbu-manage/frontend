@@ -5,7 +5,7 @@ import {
   gatheringApi,
   type Gathering,
   type AttendanceList,
-  type VoteDecision,
+  type AttendanceVote,
   type CreateGatheringBody,
   type UpdateGatheringBody,
 } from "@/api";
@@ -82,7 +82,7 @@ export function useDeleteGathering() {
 export function useVoteGathering(id: number) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (decision: VoteDecision) => gatheringApi.vote(id, decision),
+    mutationFn: (status: AttendanceVote) => gatheringApi.vote(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: detailKey(id) });
       qc.invalidateQueries({ queryKey: attendanceKey(id) });

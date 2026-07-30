@@ -21,7 +21,7 @@ import {
   gatheringApi,
   GATHERING_TYPE_LABEL,
   type GatheringMember,
-  type VoteDecision,
+  type AttendanceVote,
 } from "@/api";
 
 function fmt(iso?: string, pattern = "yyyy.MM.dd (EEE) HH:mm") {
@@ -35,12 +35,12 @@ function fmt(iso?: string, pattern = "yyyy.MM.dd (EEE) HH:mm") {
 
 // 참석 투표 (참석 / 불참)
 const VOTE_OPTIONS: {
-  key: VoteDecision;
+  key: AttendanceVote;
   label: string;
   emotion: MascotEmotion;
 }[] = [
-  { key: "PASS", label: "참석할게요", emotion: "default" },
-  { key: "FAIL", label: "참석이 어려워요", emotion: "sad" },
+  { key: "ATTENDING", label: "참석할게요", emotion: "default" },
+  { key: "NOT_ATTENDING", label: "참석이 어려워요", emotion: "sad" },
 ];
 
 function MemberList({ members }: { members: GatheringMember[] }) {
@@ -75,7 +75,7 @@ export default function MeetingDetailPage() {
   const closeMutation = useCloseGathering(id);
 
   // 내 기존 투표를 기본 선택으로 파생, 사용자가 바꾸면 override 우선
-  const [choiceOverride, setChoiceOverride] = useState<VoteDecision | null>(
+  const [choiceOverride, setChoiceOverride] = useState<AttendanceVote | null>(
     null,
   );
 
@@ -104,12 +104,10 @@ export default function MeetingDetailPage() {
     );
   }
 
-  const defaultChoice: VoteDecision | null =
-    meeting.myStatus === "ATTENDING"
-      ? "PASS"
-      : meeting.myStatus === "NOT_ATTENDING"
-        ? "FAIL"
-        : null;
+  const defaultChoice: AttendanceVote | null =
+    meeting.myStatus === "ATTENDING" || meeting.myStatus === "NOT_ATTENDING"
+      ? meeting.myStatus
+      : null;
   const choice = choiceOverride ?? defaultChoice;
 
   const handleDelete = () => {
