@@ -118,7 +118,8 @@ export {
   GATHERING_TYPE_LABEL,
   type GatheringType,
   type MyAttendanceStatus,
-  // VoteDecision("PASS"|"FAIL")은 applicant.api 재export와 동일 → 중복 제거(모임도 그걸 사용)
+  // VoteDecision("PASS"|"FAIL")은 지원자 합불 전용(applicant.api) — 모임 투표는 AttendanceVote 사용
+  type AttendanceVote,
   type AttendanceSummary,
   type Gathering,
   type GatheringMember,
