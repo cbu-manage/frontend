@@ -10,8 +10,8 @@ export type GatheringType = "DINING" | "MT" | "FAIR" | "EVENT" | "OTHER";
 /** 내 참석 상태 */
 export type MyAttendanceStatus =
   "ATTENDING" | "NOT_ATTENDING" | "UNDECIDED" | "NOT_RESPONDED";
-/** 투표 값 (서버는 참석/불참 2지선다만 받음) */
-export type VoteDecision = "PASS" | "FAIL";
+/** 투표 값 (서버는 참석/불참 2지선다만 받음 — BE GatheringDTO.VoteRequest의 AttendanceStatus) */
+export type AttendanceVote = "ATTENDING" | "NOT_ATTENDING";
 
 /** 종류 enum ↔ 한글 라벨 */
 export const GATHERING_TYPE_LABEL: Record<GatheringType, string> = {
@@ -123,9 +123,9 @@ export const gatheringApi = {
   /** 모임 삭제 */
   remove: (id: number) => api.delete<ApiEnvelope<null>>(`/gatherings/${id}`),
 
-  /** 참석 투표 (PASS=참석 / FAIL=불참) */
-  vote: (id: number, decision: VoteDecision, reason = "") =>
-    api.post<ApiEnvelope<null>>(`/gatherings/${id}/vote`, { decision, reason }),
+  /** 참석 투표 (ATTENDING=참석 / NOT_ATTENDING=불참) */
+  vote: (id: number, status: AttendanceVote) =>
+    api.post<ApiEnvelope<null>>(`/gatherings/${id}/vote`, { status }),
 
   /** 투표 마감 */
   close: (id: number) =>

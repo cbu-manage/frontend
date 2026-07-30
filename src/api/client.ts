@@ -12,7 +12,10 @@ function isPublicAuthPath(url: string): boolean {
     url.includes("/mail/") ||
     url.endsWith("/login/password/reset") ||
     url.endsWith("/login/signup") ||
-    url.endsWith("/validate")
+    url.endsWith("/validate") ||
+    // 지원서(비로그인 지원자) — 서버가 이메일 인증 실패를 401로 반환한다.
+    // /admin/applications(운영진용)는 매칭되면 안 되므로 세그먼트 단위로 제한.
+    /^\/applications([/?]|$)/.test(url)
   );
 }
 

@@ -172,7 +172,7 @@ export default function ApplyFormPage() {
     return {
       ...INITIAL_FORM,
       email: draft.email.replace(/@tukorea\.ac\.kr$/, ""),
-      isEmailVerified: true,
+      // 서버가 제출 시 emailAuthCode를 Redis와 대조하므로, 복원해도 인증은 다시 받아야 함
       name: draft.name,
       nickname: draft.nickname,
       studentId: String(draft.studentNumber),
