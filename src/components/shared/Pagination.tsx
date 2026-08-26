@@ -1,33 +1,46 @@
 // src/components/shared/Pagination.tsx
-'use client';
+"use client";
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number[];
   onPageChange: (page: number) => void;
+  /** 컨테이너 여백 오버라이드 — 미지정 시 기존 목록 페이지 기본값(mt-16 pb-8) 유지 */
+  className?: string;
 }
 
-export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
+export default function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  className,
+}: PaginationProps) {
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === totalPages[totalPages.length - 1];
 
   return (
-    <div className="flex justify-center items-center gap-1 mt-16 pb-8">
+    <div
+      className={cn(
+        "flex justify-center items-center gap-1",
+        className ?? "mt-16 pb-8",
+      )}
+    >
       {/* 이전 페이지 버튼 */}
-      <button 
+      <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={isFirstPage}
         className={`p-2 rounded-lg transition-all ${
           isFirstPage
-            ? 'text-gray-300 cursor-not-allowed'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            ? "text-gray-300 cursor-not-allowed"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
         }`}
       >
         <ChevronLeft size={20} />
       </button>
-      
+
       {/* 페이지 번호 목록 */}
       {totalPages.map((num) => (
         <button
@@ -35,8 +48,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
           onClick={() => onPageChange(num)}
           className={`w-10 h-10 flex items-center justify-center rounded-lg text-base font-medium transition-all ${
             currentPage === num
-              ? 'bg-[#E3E7ED] text-gray-700'
-              : 'text-gray-700 hover:bg-gray-100'
+              ? "bg-[#E3E7ED] text-gray-700"
+              : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           {num}
@@ -44,13 +57,17 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       ))}
 
       {/* 다음 페이지 버튼 */}
-      <button 
-        onClick={() => onPageChange(Math.min(totalPages[totalPages.length - 1], currentPage + 1))}
+      <button
+        onClick={() =>
+          onPageChange(
+            Math.min(totalPages[totalPages.length - 1], currentPage + 1),
+          )
+        }
         disabled={isLastPage}
         className={`p-2 rounded-lg transition-all ${
           isLastPage
-            ? 'text-gray-300 cursor-not-allowed'
-            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+            ? "text-gray-300 cursor-not-allowed"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
         }`}
       >
         <ChevronRight size={20} />
