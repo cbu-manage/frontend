@@ -11,6 +11,19 @@ export type OnboardingLinks = {
   discordUrl: string;
 };
 
+/** 회비·입금 계좌 안내 (지원자 `/apply/fee` 노출용) */
+export type FeeInfo = {
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  /** 회비 금액(원) */
+  feeAmount: number;
+  /** 감면 금액(원) — 휴학·졸업생 */
+  discountAmount: number;
+  /** 납부 마감일 yyyy-MM-dd */
+  paymentDeadline: string;
+};
+
 export const settingsApi = {
   /** 온보딩 링크 조회 — 회장/부회장/ADMIN */
   getOnboardingLinks: () =>
@@ -22,4 +35,11 @@ export const settingsApi = {
       "/admin/settings/onboarding-links",
       data,
     ),
+
+  /** 회비 안내 조회 — 회장/부회장/총무/ADMIN. 미등록이면 404(E-FEE-0001) */
+  getFeeInfo: () => api.get<ApiEnvelope<FeeInfo>>("/admin/settings/fee-info"),
+
+  /** 회비 안내 등록/수정 (없으면 생성) */
+  updateFeeInfo: (data: FeeInfo) =>
+    api.put<ApiEnvelope<FeeInfo>>("/admin/settings/fee-info", data),
 };

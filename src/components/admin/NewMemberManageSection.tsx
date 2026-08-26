@@ -12,6 +12,7 @@ import {
   type VoteDecision,
 } from "@/api";
 import { useCan } from "@/hooks/auth";
+import ApplicationQuestionsSection from "@/components/admin/ApplicationQuestionsSection";
 
 const DECISION_LABEL: Record<FinalDecision, string> = {
   ACCEPT: "합격",
@@ -477,6 +478,8 @@ export default function NewMemberManageSection() {
             </p>
           )}
         </div>
+
+        <ApplicationQuestionsSection recruitmentUuid={null} />
       </div>
     );
   }
@@ -693,6 +696,8 @@ export default function NewMemberManageSection() {
           </button>
         </div>
       )}
+
+      <ApplicationQuestionsSection recruitmentUuid={recruitmentUuid} />
     </div>
   );
 }

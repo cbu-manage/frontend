@@ -94,11 +94,16 @@ export { memberApi, type MemberInfo, type MemberUpdateDTO } from "./member.api";
 export {
   applicantApi,
   recruitmentApi,
+  questionApi,
   type VoteDecision,
   type FinalDecision,
   type ApplicationTab,
   type ApplicationField,
   type Recruitment,
+  type RecruitmentUpdateBody,
+  type ApplicationQuestion,
+  type QuestionCreateBody,
+  type QuestionUpdateBody,
   type ApplicationListItem,
   type ApplicationListResponse,
   type ApplicationListParams,
@@ -159,7 +164,11 @@ export {
 } from "./news.api";
 
 // Settings
-export { settingsApi, type OnboardingLinks } from "./settings.api";
+export {
+  settingsApi,
+  type OnboardingLinks,
+  type FeeInfo,
+} from "./settings.api";
 
 // Free Board
 export {

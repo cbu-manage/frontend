@@ -17,7 +17,7 @@ export type ApplicationTab = "ALL" | "REVIEWING" | "ACCEPTED" | "REJECTED";
 export type ApplicationField =
   "PROJECT" | "ALGORITHM" | "STUDY" | "DESIGN" | "ETC";
 
-/** 현재 모집 정보 */
+/** 현재 모집 정보 — 모집 기간·발표일은 yyyy-MM-dd, 미설정 시 null */
 export type Recruitment = {
   recruitmentUuid: string;
   generation: number;
@@ -25,6 +25,44 @@ export type Recruitment = {
   status: string;
   startedAt: string;
   endedAt: string;
+  plannedStartDate: string | null;
+  plannedEndDate: string | null;
+  announcementDate: string | null;
+};
+
+/** 모집 회차 수정 바디 — 보낸 필드만 반영(부분 수정) */
+export type RecruitmentUpdateBody = {
+  generation?: number;
+  plannedStartDate?: string;
+  plannedEndDate?: string;
+  announcementDate?: string;
+};
+
+/** 지원서 질문 */
+export type ApplicationQuestion = {
+  questionUuid: string;
+  /** 답변 제출 시 매칭 키. 기수 내 유일 (예: MOTIVATE) */
+  type: string;
+  question: string;
+  description: string | null;
+  isRequired: boolean;
+  sortOrder: number;
+};
+
+export type QuestionCreateBody = {
+  type: string;
+  question: string;
+  description?: string;
+  isRequired?: boolean;
+  sortOrder?: number;
+};
+
+/** 질문 수정 바디 — type은 변경 불가(제출 답변의 매칭 키라서) */
+export type QuestionUpdateBody = {
+  question?: string;
+  description?: string;
+  isRequired?: boolean;
+  sortOrder?: number;
 };
 
 /** 신청서 목록 한 줄 */
@@ -126,10 +164,53 @@ export const recruitmentApi = {
 
   // 모집 종료는 applicantApi.close 사용 (finalize flow와 한 세트)
 
+  /** 모집 회차 정보 수정 — 기수·모집 기간·발표일 */
+  update: (recruitmentUuid: string, data: RecruitmentUpdateBody) =>
+    api.patch<ApiEnvelope<Recruitment>>(
+      `/admin/recruitments/${recruitmentUuid}`,
+      data,
+    ),
+
   /** 모집 요약(상태별 카운트·투표 카드) */
   getSummary: (recruitmentUuid: string) =>
     api.get<ApiEnvelope<unknown>>(
       `/admin/recruitments/${recruitmentUuid}/summary`,
+    ),
+};
+
+/**
+ * 지원서 질문 관리 — 질문은 모집 회차(recruitmentUuid)에 종속된다.
+ * 조회만 공개 경로(현재 기수)라 관리자 화면도 이 GET을 쓴다.
+ */
+export const questionApi = {
+  /** 현재 기수의 질문 목록 (공개) */
+  getCurrent: () =>
+    api.get<ApiEnvelope<ApplicationQuestion[]>>(
+      "/applications/questions/current",
+    ),
+
+  /** 질문 추가 — type이 기수 내 중복이면 409(E-APP-0015) */
+  create: (recruitmentUuid: string, data: QuestionCreateBody) =>
+    api.post<ApiEnvelope<ApplicationQuestion>>(
+      `/admin/recruitments/${recruitmentUuid}/questions`,
+      data,
+    ),
+
+  /** 질문 수정 */
+  update: (
+    recruitmentUuid: string,
+    questionUuid: string,
+    data: QuestionUpdateBody,
+  ) =>
+    api.patch<ApiEnvelope<ApplicationQuestion>>(
+      `/admin/recruitments/${recruitmentUuid}/questions/${questionUuid}`,
+      data,
+    ),
+
+  /** 질문 삭제 */
+  remove: (recruitmentUuid: string, questionUuid: string) =>
+    api.delete<ApiEnvelope<null>>(
+      `/admin/recruitments/${recruitmentUuid}/questions/${questionUuid}`,
     ),
 };
 

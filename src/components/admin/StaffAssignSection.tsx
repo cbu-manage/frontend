@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Modal from "@/components/common/Modal";
 import SearchBar from "@/components/common/SearchBar";
+import Pagination from "@/components/shared/Pagination";
 import { useCan } from "@/hooks/auth";
 import { memberApi, type MemberInfo, type MemberUpdateDTO } from "@/api";
 
@@ -17,6 +18,9 @@ import { memberApi, type MemberInfo, type MemberUpdateDTO } from "@/api";
  */
 
 const PAGE_SIZE = 50;
+// 모달 목록 페이지당 인원 / 페이지 번호 최대 노출 개수
+const MODAL_PAGE_SIZE = 10;
+const MODAL_PAGE_WINDOW = 5;
 
 type RoleDef = { label: string; role: string };
 
@@ -64,6 +68,7 @@ export default function StaffAssignSection() {
   const [addTarget, setAddTarget] = useState<RoleDef | null>(null);
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<number[]>([]);
+  const [modalPage, setModalPage] = useState(1);
 
   // 전체 회원 (검색 전용 API 없음 → 전부 받아 클라 필터)
   const {
@@ -73,15 +78,28 @@ export default function StaffAssignSection() {
   } = useQuery({
     queryKey: ["admin", "members", "staff"],
     queryFn: async () => {
-      // 서버가 size 파라미터를 무시할 수 있어 length 기반 종료는 잘림 위험 → last 플래그로 종료
+      // 서버 응답이 배열(ApiResponseListMemberDTO)·페이징 둘 다 존재해 방어적으로 파싱 (MemberManageSection과 동일)
+      const parseResponse = (raw: unknown): MemberInfo[] => {
+        if (Array.isArray(raw)) return raw as MemberInfo[];
+        const obj = raw as Record<string, unknown>;
+        const inner = obj?.data;
+        if (Array.isArray(inner)) return inner as MemberInfo[];
+        const paged = inner as { content?: MemberInfo[] } | undefined;
+        return paged?.content ?? [];
+      };
+
+      // 서버가 size 파라미터를 무시하고 고정 크기(10명)로 반환 → length<size 종료 판정 불가.
+      // 빈 페이지가 나올 때까지 순회하되, page 무시(같은 목록 반복) 시 무한루프 방지로 id 중복이면 종료.
       const all: MemberInfo[] = [];
+      const seen = new Set<number>();
       let page = 0;
       while (true) {
         const res = await memberApi.getAll(page, PAGE_SIZE);
-        const data = res.data?.data;
-        const content = data?.content ?? [];
-        all.push(...content);
-        if (!data || data.last || content.length === 0) break;
+        const content = parseResponse(res.data as unknown);
+        const fresh = content.filter((m) => !seen.has(m.id));
+        if (fresh.length === 0) break;
+        fresh.forEach((m) => seen.add(m.id));
+        all.push(...fresh);
         page += 1;
       }
       return all;
@@ -106,18 +124,40 @@ export default function StaffAssignSection() {
     return map;
   }, [members]);
 
-  // 추가 후보 = 아직 일반 회원(ROLE_USER) + 이름 검색
+  // 추가 후보 = 아직 일반 회원(ROLE_USER) + 이름·학번 검색
   const candidates = useMemo(() => {
     const q = query.trim();
     return members
       .filter((m) => m.role === "ROLE_USER")
-      .filter((m) => (q ? m.name.includes(q) : true));
+      .filter((m) =>
+        q ? m.name.includes(q) || String(m.studentNumber).includes(q) : true,
+      );
   }, [members, query]);
+
+  // 검색은 전체 후보 대상, 목록 표시는 페이지 단위로 잘라서
+  const totalModalPages = Math.max(
+    1,
+    Math.ceil(candidates.length / MODAL_PAGE_SIZE),
+  );
+  const safePage = Math.min(modalPage, totalModalPages);
+  const windowStart = Math.max(
+    1,
+    Math.min(safePage - 2, totalModalPages - MODAL_PAGE_WINDOW + 1),
+  );
+  const modalPageNumbers = Array.from(
+    { length: Math.min(MODAL_PAGE_WINDOW, totalModalPages) },
+    (_, i) => windowStart + i,
+  );
+  const visibleCandidates = candidates.slice(
+    (safePage - 1) * MODAL_PAGE_SIZE,
+    safePage * MODAL_PAGE_SIZE,
+  );
 
   const closeModal = () => {
     setAddTarget(null);
     setQuery("");
     setSelected([]);
+    setModalPage(1);
   };
 
   const handleAdd = async () => {
@@ -168,7 +208,7 @@ export default function StaffAssignSection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2">
         {roleDefs.map((def) => {
           const roleMembers = membersByRole[def.role] ?? [];
           return (
@@ -224,7 +264,7 @@ export default function StaffAssignSection() {
       <Modal
         open={addTarget !== null}
         onClose={closeModal}
-        title="이름을 검색하여 추가해주세요."
+        title="이름 또는 학번을 검색하여 추가해주세요."
         className="w-full max-w-2xl"
         footer={
           <button
@@ -240,14 +280,18 @@ export default function StaffAssignSection() {
       >
         <SearchBar
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="이름을 검색해 주세요."
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setModalPage(1);
+          }}
+          placeholder="이름 또는 학번을 검색해 주세요."
           className="w-full"
         />
         <div className="mt-4 overflow-hidden rounded-xl border border-gray-100">
           <div className="flex items-center gap-4 bg-[#eef7e9] px-4 py-2.5 text-sm font-semibold text-gray-700">
             <span className="w-8" />
-            <span className="flex-1">학과</span>
+            <span className="flex-1 text-center">학과</span>
+            <span className="w-24 text-center">학번</span>
             <span className="w-16 text-center">기수</span>
             <span className="w-20 text-center">이름</span>
           </div>
@@ -256,7 +300,7 @@ export default function StaffAssignSection() {
               검색 결과가 없어요
             </p>
           ) : (
-            candidates.map((c) => {
+            visibleCandidates.map((c) => {
               const checked = selected.includes(c.id);
               return (
                 <label
@@ -273,9 +317,37 @@ export default function StaffAssignSection() {
                           : [...prev, c.id],
                       )
                     }
-                    className="size-5 w-8 accent-brand"
+                    className="peer sr-only"
                   />
-                  <span className="flex-1">{c.major}</span>
+                  {/* 커스텀 체크박스 — PrivacyAgreement와 동일 패턴 (흰 체크 SVG) */}
+                  <span className="flex w-8 justify-center">
+                    <span
+                      className={`flex size-4 items-center justify-center rounded border-2 transition-colors duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-brand peer-focus-visible:ring-offset-1 ${
+                        checked
+                          ? "border-brand bg-brand"
+                          : "border-gray-300 bg-transparent"
+                      }`}
+                    >
+                      {checked && (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          className="size-3"
+                        >
+                          <path
+                            d="M2 6l3 3 5-5"
+                            stroke="#fff"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      )}
+                    </span>
+                  </span>
+                  <span className="flex-1 text-center">{c.major}</span>
+                  <span className="w-24 text-center">{c.studentNumber}</span>
                   <span className="w-16 text-center">{c.generation}기</span>
                   <span className="w-20 text-center">{c.name}</span>
                 </label>
@@ -283,6 +355,14 @@ export default function StaffAssignSection() {
             })
           )}
         </div>
+        {totalModalPages > 1 && (
+          <Pagination
+            currentPage={safePage}
+            totalPages={modalPageNumbers}
+            onPageChange={setModalPage}
+            className="mt-4"
+          />
+        )}
       </Modal>
     </section>
   );

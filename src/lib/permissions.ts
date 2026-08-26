@@ -31,7 +31,9 @@ export type Capability =
   | "applications.review" // 신청서 목록/상세/대시보드 조회
   | "applications.vote" // 합/불합 투표 (⚠️ ADMIN 제외)
   | "applications.finalize" // 일괄 최종처리 / 개별 최종결정 수정
-  | "recruitment.manage" // 모집 회차 시작/조회/마감
+  | "applications.questions" // 지원서 질문 추가/수정/삭제 (운영진 전부)
+  | "recruitment.manage" // 모집 회차 시작/조회/마감/정보수정
+  | "fee.settings" // 회비·계좌 안내 등록/수정 (총무 포함)
   | "members.read" // 회원 단건/전체 조회
   | "members.write" // 회원 추가/수정/삭제
   | "members.approveFee" // 회비 납부 확인 + 회원 승인
@@ -46,8 +48,12 @@ export type Capability =
   | "meetings.attendanceAdmin" // 관리자용 참석명단 조회/엑셀 (⚠️ ADMIN 전용)
   | "posts.moderate"; // 일반 포스트·댓글 관리성 삭제(작성자 아니어도)
 
-// 모든 운영진 공통: 신청서 심사 조회 + 투표
-const STAFF_REVIEW: Capability[] = ["applications.review", "applications.vote"];
+// 모든 운영진 공통: 신청서 심사 조회 + 투표 + 지원서 질문 편집
+const STAFF_REVIEW: Capability[] = [
+  "applications.review",
+  "applications.vote",
+  "applications.questions",
+];
 
 // 회장/부회장 = 전 운영 기능
 const PRESIDENT_CAPS: Capability[] = [
@@ -57,6 +63,7 @@ const PRESIDENT_CAPS: Capability[] = [
   "members.read",
   "members.write",
   "members.approveFee",
+  "fee.settings",
   "groups.manage",
   "flag.manage",
   "reportDocs.manage",
@@ -77,7 +84,12 @@ export const ROLE_CAPS: Record<Role, Capability[]> = {
   ROLE_PRESIDENT: PRESIDENT_CAPS,
   ROLE_VICE_PRESIDENT: PRESIDENT_CAPS, // 회장과 동일 (참석명단/엑셀만 ADMIN 전용)
   ROLE_MANAGER: [...STAFF_REVIEW, "posts.moderate"],
-  ROLE_TREASURER: [...STAFF_REVIEW, "members.read", "members.approveFee"],
+  ROLE_TREASURER: [
+    ...STAFF_REVIEW,
+    "members.read",
+    "members.approveFee",
+    "fee.settings",
+  ],
   ROLE_MEMBER_MANAGER: [
     ...STAFF_REVIEW,
     "members.read",
