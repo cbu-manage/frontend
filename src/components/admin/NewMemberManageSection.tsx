@@ -485,9 +485,28 @@ export default function NewMemberManageSection() {
   }
 
   // ── 목록 화면 ──────────────────────────────────────────────
+  /** 2026-09-01 → 2026.09.01 */
+  const dot = (iso: string | null) => (iso ? iso.replace(/-/g, ".") : null);
+  const periodText =
+    recruitment?.plannedStartDate && recruitment?.plannedEndDate
+      ? `${dot(recruitment.plannedStartDate)} ~ ${dot(recruitment.plannedEndDate)}`
+      : null;
+
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-h1 text-gray-900 mb-5">신청서 조회</h1>
+      <div className="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-h1 text-gray-900">신청서 조회</h1>
+        {/* 되돌릴 수 없는 마감 버튼이 같은 화면에 있어, 지금 어느 회차인지 늘 보이게 둔다 */}
+        {recruitment && (
+          <p className="text-sm text-gray-500">
+            <span className="font-semibold text-gray-900">
+              {recruitment.generation}기
+            </span>
+            {periodText && ` · ${periodText}`}
+            {` · 투표 인원 ${voterCount}명`}
+          </p>
+        )}
+      </div>
 
       <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
         <span className="shrink-0">⚑</span>

@@ -36,6 +36,9 @@ export const settingsApi = {
       data,
     ),
 
+  /** 회비 안내 공개 조회 — 비로그인 지원자용. 미등록이면 404(E-FEE-0001) */
+  getPublicFeeInfo: () => api.get<ApiEnvelope<FeeInfo>>("/fee-info"),
+
   /** 회비 안내 조회 — 회장/부회장/총무/ADMIN. 미등록이면 404(E-FEE-0001) */
   getFeeInfo: () => api.get<ApiEnvelope<FeeInfo>>("/admin/settings/fee-info"),
 

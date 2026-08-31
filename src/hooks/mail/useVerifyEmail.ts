@@ -21,32 +21,45 @@ export function useVerifyEmail() {
     },
   });
 
-  const sendEmailToServer = async (mail: string): Promise<{ success: boolean; responseMessage: string }> => {
+  const sendEmailToServer = async (
+    mail: string,
+  ): Promise<{ success: boolean; responseMessage: string }> => {
     try {
       const res = await sendMutation.mutateAsync(mail);
       return {
         success: res.data.data.success,
-        responseMessage: res.data.data.responseMessage || "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
+        responseMessage:
+          res.data.data.responseMessage ||
+          "인증번호 발송에 실패했습니다. 다시 시도해주세요.",
       };
     } catch (err) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      return { success: false, responseMessage: message || "네트워크 오류가 발생했습니다." };
+      const message = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      return {
+        success: false,
+        responseMessage: message || "네트워크 오류가 발생했습니다.",
+      };
     }
   };
 
   const verifyCodeWithServer = async (
     email: string,
-    code: string
+    code: string,
   ): Promise<{ success: boolean; responseMessage: string }> => {
     try {
       const res = await verifyMutation.mutateAsync({ email, code });
       return {
         success: res.data.data.success,
-        responseMessage: res.data.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
+        responseMessage:
+          res.data.data.responseMessage || "인증 결과를 확인할 수 없습니다.",
       };
     } catch (err) {
-      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      return { success: false, responseMessage: message || "네트워크 오류가 발생했습니다." };
+      const message = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message;
+      return {
+        success: false,
+        responseMessage: message || "네트워크 오류가 발생했습니다.",
+      };
     }
   };
 
@@ -57,7 +70,8 @@ export function useVerifyEmail() {
       : sendMutation.data?.data?.data?.responseMessage || "",
     verificationError: verifyMutation.isError,
     verificationErrorMessage: "",
-    isVerificationSent: sendMutation.isSuccess,
+    // 서버가 실패도 200 + { success: false }로 주므로 HTTP 성공만으로 판단하면 안 된다
+    isVerificationSent: sendMutation.data?.data?.data?.success === true,
     isSending: sendMutation.isPending,
     isVerifying: verifyMutation.isPending,
     sendEmailToServer,

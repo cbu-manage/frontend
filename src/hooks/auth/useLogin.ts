@@ -12,17 +12,26 @@ type LoginParams = {
   password: string;
 };
 
+/**
+ * 서버는 도메인 코드 + 한국어 메시지를 준다(E-AUTH-0004 사용자 없음 / E-AUTH-0005 비밀번호 불일치).
+ * 문구는 바뀔 수 있으니 코드를 먼저 보고, 없으면 상태코드로 판정한다.
+ */
 function parseLoginError(err: unknown): string {
-  if (err instanceof AxiosError && err.response?.data) {
-    const msg = (err.response.data as { message?: string })?.message;
-    if (msg === "Invalid password") {
-      return "비밀번호가 올바르지 않습니다.\n기억이 나지 않을 시 관리자에게 문의해주세요.";
+  if (err instanceof AxiosError && err.response) {
+    const { status, data } = err.response;
+    const code = (data as { code?: string } | undefined)?.code;
+
+    if (code === "E-AUTH-0004" || status === 404) {
+      return "해당 학번의 회원을 찾을 수 없습니다.\n관리자에게 문의해주세요.";
     }
-    if (msg === "Member isn't exist") {
-      return "해당 멤버가 존재하지 않습니다.\n관리자에게 문의해주세요.";
+    if (code === "E-AUTH-0005" || status === 401) {
+      return "비밀번호가 올바르지 않습니다.\n기억나지 않으면 비밀번호 찾기를 이용해주세요.";
     }
+
+    const msg = (data as { message?: string } | undefined)?.message;
+    if (msg) return msg;
   }
-  return "로그인 중 오류가 발생했습니다. 다시 시도해주세요.";
+  return "로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
 }
 
 function safeRedirect(url: string | undefined): string {

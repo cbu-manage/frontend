@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { RECRUIT_GENERATION } from "../constants";
+import { useRecruitmentInfo } from "@/hooks/apply";
 
 const NEXT_STEPS = [
   { step: 1, label: "본인 인증", desc: "학번 + 임시 비밀번호" },
@@ -11,6 +11,8 @@ const NEXT_STEPS = [
 ];
 
 export default function ApplyPassedPage() {
+  // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
+  const { generationLabel } = useRecruitmentInfo();
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-[420px] bg-white rounded-xl shadow-sm px-8 py-10 flex flex-col items-center gap-6">
@@ -25,7 +27,8 @@ export default function ApplyPassedPage() {
         <div className="text-center space-y-2">
           <h1 className="text-h1 text-gray-900">합격을 축하합니다!</h1>
           <p className="text-body-sm text-gray-500">
-            씨부엉 {RECRUIT_GENERATION} 신규 부원으로 선발되셨습니다.
+            씨부엉 {generationLabel && `${generationLabel} `}신규 부원으로
+            선발되셨습니다.
             <br />
             운영진 모두가 환영합니다!
           </p>
@@ -33,15 +36,21 @@ export default function ApplyPassedPage() {
 
         <div className="w-full rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2.5">
           <div className="flex items-center gap-3">
-            <span className="text-body-sm text-gray-500 w-16 shrink-0">학번</span>
+            <span className="text-body-sm text-gray-500 w-16 shrink-0">
+              학번
+            </span>
             <span className="text-body-sm text-gray-900">2026XXXXXX</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-body-sm text-gray-500 w-16 shrink-0">이름</span>
+            <span className="text-body-sm text-gray-500 w-16 shrink-0">
+              이름
+            </span>
             <span className="text-body-sm text-gray-900">지원자명</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-body-sm text-gray-500 w-16 shrink-0">지원 분야</span>
+            <span className="text-body-sm text-gray-500 w-16 shrink-0">
+              지원 분야
+            </span>
             <span className="text-caption bg-gray-100 text-gray-600 rounded-full px-2.5 py-1">
               프론트엔드
             </span>

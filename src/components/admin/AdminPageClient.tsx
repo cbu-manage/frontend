@@ -10,6 +10,7 @@ import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
 import StaffAssignSection from "@/components/admin/StaffAssignSection";
 import ClubScheduleSettingsSection from "@/components/admin/ClubScheduleSettingsSection";
 import { useCan } from "@/hooks/auth/useCan";
+import { useMe } from "@/hooks/auth";
 import type { Capability } from "@/lib/permissions";
 
 // 메뉴마다 노출 기준 capability. role→capability 매핑은 src/lib/permissions.ts (서버가 최종 차단)
@@ -37,6 +38,8 @@ const ADMIN_MENU_ITEMS = [
 type AdminMenuValue = (typeof ADMIN_MENU_ITEMS)[number]["value"];
 
 export default function AdminPageClient() {
+  // 역할은 로그인 시점에 스토어에 박힌다. 지정·해제가 바로 반영되도록 진입할 때 다시 받아온다.
+  useMe();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");

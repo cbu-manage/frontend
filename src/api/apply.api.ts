@@ -48,7 +48,22 @@ export type ApplicationRequest = {
   privacyPolicy: boolean;
 };
 
+/**
+ * 현재 진행 중인 모집의 기수·일정 (비로그인 공개).
+ * 미설정 항목은 null로 온다.
+ */
+export type CurrentGeneration = {
+  generation: number;
+  plannedStartDate: string | null;
+  plannedEndDate: string | null;
+  announcementDate: string | null;
+};
+
 export const applyApi = {
+  /** 현재 지원 기수·모집 일정 — 진행 중인 모집이 없으면 404 */
+  getCurrentGeneration: () =>
+    api.get<ApiEnvelope<CurrentGeneration>>("/applications/generation/current"),
+
   submit: (data: ApplicationRequest) => api.post("/applications", data),
   getMy: (data: ApplicationMyRequest) =>
     api.post<ApiEnvelope<ApplicationMyResponse>>("/applications/my", data),

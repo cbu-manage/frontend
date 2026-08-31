@@ -104,11 +104,18 @@ export default function ClubScheduleSettingsSection() {
 
   const startMutation = useMutation({
     mutationFn: (generation: number) => recruitmentApi.create(generation),
-    onSuccess: () => {
+    onSuccess: (res) => {
       setNewGeneration("");
       queryClient.invalidateQueries({
         queryKey: ["admin", "recruitment", "current"],
       });
+      // 투표 인원은 시작 시점에 고정되고 이후 운영진을 추가해도 갱신되지 않는다.
+      // 0명으로 굳으면 그 회차 내내 투표 진행률이 "n / 0"으로 보인다.
+      if (res.data.data?.voterCount === 0) {
+        alert(
+          "모집이 시작됐어요.\n\n다만 지금 등록된 운영진이 없어 투표 인원이 0명으로 확정됐습니다.\n운영진을 먼저 지정한 뒤 모집을 다시 시작하는 것을 권장해요.",
+        );
+      }
     },
     onError: () =>
       alert("모집 시작 중 오류가 발생했습니다. 다시 시도해주세요."),

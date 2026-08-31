@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useVerifyEmail } from "@/hooks/mail";
 
 export interface EmailVerificationFieldProps {
@@ -13,6 +13,9 @@ export interface EmailVerificationFieldProps {
   errorMessage?: string;
 }
 
+/** 재전송 대기 시간(초) — 회원가입 화면(StepOne)과 동일하게 맞춘다 */
+const RESEND_COOLDOWN_SEC = 60;
+
 export default function EmailVerificationField({
   email,
   onEmailChange,
@@ -23,20 +26,26 @@ export default function EmailVerificationField({
   errorMessage,
 }: EmailVerificationFieldProps) {
   const [apiError, setApiError] = useState("");
-  const {
-    sendEmailToServer,
-    verifyCodeWithServer,
-    isVerificationSent,
-    isSending,
-    isVerifying,
-  } = useVerifyEmail();
+  const [notice, setNotice] = useState("");
+  /** 발송에 성공한 주소. 주소를 고치면 자동으로 발송 단계로 돌아간다 */
+  const [sentTo, setSentTo] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const { sendEmailToServer, verifyCodeWithServer, isSending, isVerifying } =
+    useVerifyEmail();
 
+  const isSent = !!sentTo && sentTo === email;
   const isLoading = isSending || isVerifying;
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
   const isButtonDisabled =
     isVerified ||
     isLoading ||
-    (!isVerificationSent && !email) ||
-    (isVerificationSent && !verificationCode);
+    (!isSent && !email) ||
+    (isSent && !verificationCode);
 
   const buttonLabel = isVerified
     ? "인증완료"
@@ -44,15 +53,32 @@ export default function EmailVerificationField({
       ? "인증 중..."
       : isSending
         ? "발송 중..."
-        : isVerificationSent
+        : isSent
           ? "인증하기"
           : "인증번호 발송";
 
+  const send = async (resent: boolean) => {
+    setApiError("");
+    setNotice("");
+    const { success, responseMessage } = await sendEmailToServer(email);
+    if (!success) {
+      setApiError(responseMessage);
+      return;
+    }
+    setSentTo(email);
+    setCooldown(RESEND_COOLDOWN_SEC);
+    setNotice(
+      responseMessage ||
+        (resent
+          ? "인증번호를 다시 보냈어요."
+          : "인증번호를 보냈어요. 메일함을 확인해주세요."),
+    );
+  };
+
   const handleButtonClick = async () => {
     setApiError("");
-    if (!isVerificationSent) {
-      const { success, responseMessage } = await sendEmailToServer(email);
-      if (!success) setApiError(responseMessage);
+    if (!isSent) {
+      await send(false);
     } else {
       const { success, responseMessage } = await verifyCodeWithServer(
         email,
@@ -80,7 +106,7 @@ export default function EmailVerificationField({
         {/* 이메일 입력 + 고정 도메인 */}
         <div
           className={`flex items-center rounded-xl border transition-all duration-150 ${
-            isVerified || isVerificationSent
+            isVerified
               ? "bg-gray-100 border-gray-200"
               : "bg-gray-0 border-gray-200 focus-within:border-brand focus-within:ring-1 focus-within:ring-brand"
           }`}
@@ -89,8 +115,17 @@ export default function EmailVerificationField({
             type="text"
             placeholder="이메일 아이디"
             value={email}
-            onChange={(e) => onEmailChange(e.target.value.replace(/@.*$/, ""))}
-            disabled={isVerified || isVerificationSent}
+            onChange={(e) => {
+              const value = e.target.value;
+              // 주소를 고치면 이전 발송 안내는 더 이상 맞지 않는다
+              setNotice(
+                value.includes("@")
+                  ? "학교 메일 아이디만 입력해주세요. @tukorea.ac.kr은 자동으로 붙어요."
+                  : "",
+              );
+              onEmailChange(value.split("@")[0]);
+            }}
+            disabled={isVerified}
             aria-labelledby="email-verification-label"
             aria-describedby={
               displayError ? "email-verification-error" : undefined
@@ -109,7 +144,7 @@ export default function EmailVerificationField({
             placeholder="인증번호 입력"
             value={verificationCode}
             onChange={(e) => onCodeChange(e.target.value)}
-            disabled={!isVerificationSent || isVerified}
+            disabled={!isSent || isVerified}
             maxLength={6}
             aria-label="인증번호 입력"
             aria-describedby={
@@ -133,6 +168,21 @@ export default function EmailVerificationField({
           </button>
         </div>
       </div>
+      {!displayError && notice && (
+        <p aria-live="polite" className="text-caption text-gray-600 mt-1">
+          {notice}
+        </p>
+      )}
+      {isSent && !isVerified && (
+        <button
+          type="button"
+          onClick={() => send(true)}
+          disabled={cooldown > 0 || isLoading}
+          className="text-caption text-gray-600 underline underline-offset-2 disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+        >
+          {cooldown > 0 ? `${cooldown}초 후 재전송` : "인증번호 재전송"}
+        </button>
+      )}
       {displayError && (
         <p
           id="email-verification-error"

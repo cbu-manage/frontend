@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { type UserInfo } from "@/hooks/user";
 import { useValidateUser } from "@/hooks/user/useValidateUser";
 import { useVerifyEmail } from "@/hooks/mail";
-import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
 import { Button } from "@/components/ui/button";
 
@@ -33,13 +32,13 @@ export default function StepOne({
   const { validateUser } = useValidateUser();
   const { isSending, sendEmailToServer, verifyCodeWithServer } =
     useVerifyEmail();
-  const setUser = useUserStore((s) => s.setUser);
 
   const handleUserVerification = async () => {
     const result = await validateUser(studentNumber, nickName);
     if (result) {
+      // 아직 로그인이 아니다. 전역 스토어에 넣으면 헤더가 로그인 상태로 바뀌고
+      // 가입을 마치지 않고 나가도 개인정보가 localStorage에 남는다.
       setVerifiedUserInfo(result);
-      setUser(result);
     }
   };
 
@@ -67,9 +66,22 @@ export default function StepOne({
       return;
     }
     const result = await verifyCodeWithServer(fullEmail, verificationCode);
-    if (result.success && verifiedUserInfo) {
-      onVerified(verifiedUserInfo, fullEmail);
+    if (!result.success) {
+      // 서버가 "인증번호가 일치하지 않습니다" / "만료되었습니다"를 정확히 알려준다.
+      // 이걸 안 띄우면 틀린 번호를 넣어도 화면에 아무 변화가 없다.
+      alert(
+        result.responseMessage ||
+          "인증에 실패했습니다. 인증번호를 다시 확인해주세요.",
+      );
+      return;
     }
+    if (!verifiedUserInfo) {
+      alert(
+        "합격자 인증 정보가 없습니다. 학번·닉네임 인증부터 다시 진행해주세요.",
+      );
+      return;
+    }
+    onVerified(verifiedUserInfo, fullEmail);
   };
 
   return (

@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { applyApi } from "@/api";
-import { RECRUIT_GENERATION } from "./constants";
+import { useRecruitmentInfo } from "@/hooks/apply";
 
 export default function ApplyIntroPage() {
+  // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
+  const { generationLabel } = useRecruitmentInfo();
   const router = useRouter();
   const [studentId, setStudentId] = useState("");
   const [nickname, setNickname] = useState("");
@@ -61,10 +63,12 @@ export default function ApplyIntroPage() {
 
           <div className="flex flex-col items-center gap-3 w-full mt-2">
             <h2 className="text-h1 text-gray-900 text-center">
-              {RECRUIT_GENERATION} 씨부엉 신청하기
+              {generationLabel && `${generationLabel} `}씨부엉 신청하기
             </h2>
             <p className="text-body-sm font-medium text-gray-700 text-center">
-              씨부엉과 함께 성장할 30기를 기다리고 있어요!
+              씨부엉과 함께 성장할{" "}
+              {generationLabel ? `${generationLabel} 신입` : "새 부원"}을
+              기다리고 있어요!
             </p>
             <Link
               href="/apply/form"

@@ -9,13 +9,21 @@ import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { projectApi, groupApi } from "@/api";
+import GroupRejectedBanner from "@/components/group/GroupRejectedBanner";
 
 /** getMyApplications 응답에서 groupId에 해당하는 myStatus 추출 */
-function getMyStatusForGroup(raw: unknown, groupId: number): "PENDING" | "ACTIVE" | "REJECTED" | null {
+function getMyStatusForGroup(
+  raw: unknown,
+  groupId: number,
+): "PENDING" | "ACTIVE" | "REJECTED" | null {
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, unknown>;
   const data = obj.data ?? obj;
-  const list = Array.isArray(data) ? data : (data && typeof data === "object" && "content" in data) ? (data as { content?: unknown }).content ?? [] : [];
+  const list = Array.isArray(data)
+    ? data
+    : data && typeof data === "object" && "content" in data
+      ? ((data as { content?: unknown }).content ?? [])
+      : [];
   if (!Array.isArray(list)) return null;
   for (const item of list) {
     const i = item as Record<string, unknown>;
@@ -150,10 +158,40 @@ export default function ProjectDetailPage() {
     },
   });
 
+  // 반려 사유는 그룹 상세에만 담겨 오고, 이 안내는 팀장에게만 필요하다
+  const { data: groupRes } = useQuery({
+    queryKey: ["group", groupId],
+    queryFn: () => groupApi.getById(groupId as number),
+    enabled: !!groupId && isLeader,
+  });
+  const group = groupRes?.data?.data;
+  const isRejected = group?.groupStatus === "REJECTED";
+
+  /** 반려된 팀을 다시 심사 요청 — 모집을 마감하면 RESUBMITTED가 된다 */
+  const resubmitMutation = useMutation({
+    mutationFn: async () => {
+      if (!groupId) return;
+      await groupApi.updateRecruitment(groupId, {
+        groupRecruitmentStatus: "CLOSED",
+      });
+    },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["project", numericId] });
+      queryClient.invalidateQueries({ queryKey: ["group", groupId] });
+      alert("다시 신청했어요. 운영진 심사를 기다려주세요.");
+    },
+    onError: (err) => {
+      alert((err as Error).message || "다시 신청하지 못했어요.");
+    },
+  });
+
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, {
+        groupRecruitmentStatus: "CLOSED",
+      });
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
@@ -172,7 +210,9 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["groups", "my", "applications"],
+      });
       alert("프로젝트 신청이 완료되었습니다.");
     },
     onError: () => {
@@ -190,7 +230,9 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["groups", "my", "applications"],
+      });
       alert("프로젝트 신청이 취소되었습니다.");
     },
   });
@@ -246,7 +288,7 @@ export default function ProjectDetailPage() {
           <DetailTemplate
             backPath="/project"
             title={projectData.title ?? ""}
-            status={statusKey}
+            status={isRejected ? "rejected" : statusKey}
             author={authorDisplay}
             date={formatDate(projectData.createdAt)}
             views={projectData.viewCount ?? 0}
@@ -256,6 +298,16 @@ export default function ProjectDetailPage() {
             maxMembers={projectData?.maxMembers}
             deadline={projectData?.deadline}
             content={projectData.content ?? ""}
+            notice={
+              isRejected && group ? (
+                <GroupRejectedBanner
+                  group={group}
+                  onResubmit={() => resubmitMutation.mutate()}
+                  onEdit={() => router.push(`/project/write?id=${id}`)}
+                  isSubmitting={resubmitMutation.isPending}
+                />
+              ) : undefined
+            }
             onEdit={
               isLeader
                 ? () => {
@@ -295,7 +347,10 @@ export default function ProjectDetailPage() {
                     현재 인원 확인
                   </button>
                 </div>
-              ) : justApplied || myStatus === "PENDING" || myStatus === "ACTIVE" || projectData?.hasApplied ? (
+              ) : justApplied ||
+                myStatus === "PENDING" ||
+                myStatus === "ACTIVE" ||
+                projectData?.hasApplied ? (
                 <button
                   type="button"
                   onClick={() => {
