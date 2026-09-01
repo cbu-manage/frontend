@@ -17,10 +17,34 @@ export const publicEnv = {
   apiUrl,
 } as const;
 
+/**
+ * BFF는 PROXY_SECRET을 헤더에 실어 백엔드로 보낸다. 평문(http)으로 나가면 그대로 새므로
+ * https만 허용한다. 로컬 백엔드(localhost/127.0.0.1)는 네트워크를 타지 않아 예외로 둔다.
+ */
+function isSecureBackendUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol === "https:") return true;
+    return (
+      protocol === "http:" &&
+      (hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname === "[::1]")
+    );
+  } catch {
+    return false;
+  }
+}
+
 export const serverEnv = {
-  /** BFF가 프록시할 백엔드 주소(서버 전용). 미설정이면 빈 문자열. 끝 슬래시 제거. */
+  /**
+   * BFF가 프록시할 백엔드 주소(서버 전용). 미설정이거나 https가 아니면 빈 문자열.
+   * 끝 슬래시 제거.
+   */
   get backendUrl(): string {
-    return (process.env.BACKEND_URL ?? "").replace(/\/$/, "");
+    const url = (process.env.BACKEND_URL ?? "").replace(/\/$/, "");
+    if (!url) return "";
+    return isSecureBackendUrl(url) ? url : "";
   },
 
   /**

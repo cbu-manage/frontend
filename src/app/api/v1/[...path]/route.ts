@@ -20,7 +20,7 @@ function clientIpOf(req: NextRequest): string {
 async function proxy(req: NextRequest) {
   if (!BACKEND) {
     return NextResponse.json(
-      { error: "BACKEND_URL not configured" },
+      { error: "BACKEND_URL is not configured or is not an https URL" },
       { status: 502 },
     );
   }
