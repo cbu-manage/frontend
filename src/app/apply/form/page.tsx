@@ -302,10 +302,12 @@ export default function ApplyFormPage() {
 
   // 인증을 마치기 전이든 후든 입력한 값은 계속 보관한다.
   // 단 이어쓸지 정하기 전에는 저장하지 않는다 — 빈 폼이 기존 임시저장을 덮어쓴다.
+  // 기존 신청서에서 온 답변은 form.answers가 아니라 병합값(answers)에만 있다 —
+  // 질문 로딩이 끝난 뒤 병합값을 저장해야 새로고침해도 답변이 남는다
   useEffect(() => {
-    if (pendingDraft) return;
-    saveLocalDraft(form);
-  }, [form, pendingDraft]);
+    if (pendingDraft || isQuestionsLoading) return;
+    saveLocalDraft({ ...form, answers });
+  }, [answers, form, isQuestionsLoading, pendingDraft]);
 
   const handleRestoreDraft = () => {
     if (!pendingDraft) return;
