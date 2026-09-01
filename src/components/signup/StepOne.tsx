@@ -30,8 +30,12 @@ export default function StepOne({
   }, [cooldown]);
 
   const { validateUser } = useValidateUser();
-  const { isSending, sendEmailToServer, verifyCodeWithServer } =
-    useVerifyEmail();
+  const {
+    isSending,
+    sendEmailToServer,
+    verifyCodeWithServer,
+    codeExpiresLabel,
+  } = useVerifyEmail();
 
   const handleUserVerification = async () => {
     const result = await validateUser(studentNumber, nickName);
@@ -177,6 +181,15 @@ export default function StepOne({
               onChange={(e) => setVerificationCode(e.target.value)}
               required
             />
+            {codeExpiresLabel ? (
+              <p className="text-caption text-gray-500">
+                인증번호 유효시간 {codeExpiresLabel}
+              </p>
+            ) : (
+              <p className="text-caption text-notice">
+                인증번호가 만료됐어요. 다시 받아주세요.
+              </p>
+            )}
           </div>
           <div className="flex items-end">
             <Button

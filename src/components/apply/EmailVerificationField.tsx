@@ -30,8 +30,13 @@ export default function EmailVerificationField({
   /** 발송에 성공한 주소. 주소를 고치면 자동으로 발송 단계로 돌아간다 */
   const [sentTo, setSentTo] = useState("");
   const [cooldown, setCooldown] = useState(0);
-  const { sendEmailToServer, verifyCodeWithServer, isSending, isVerifying } =
-    useVerifyEmail();
+  const {
+    sendEmailToServer,
+    verifyCodeWithServer,
+    isSending,
+    isVerifying,
+    codeExpiresLabel,
+  } = useVerifyEmail();
 
   const isSent = !!sentTo && sentTo === email;
   const isLoading = isSending || isVerifying;
@@ -171,6 +176,17 @@ export default function EmailVerificationField({
       {!displayError && notice && (
         <p aria-live="polite" className="text-caption text-gray-600 mt-1">
           {notice}
+        </p>
+      )}
+      {isSent && !isVerified && (
+        <p
+          className={`text-caption mt-1 ${
+            codeExpiresLabel ? "text-gray-500" : "text-notice"
+          }`}
+        >
+          {codeExpiresLabel
+            ? `인증번호 유효시간 ${codeExpiresLabel}`
+            : "인증번호가 만료됐어요. 다시 받아주세요."}
         </p>
       )}
       {isSent && !isVerified && (

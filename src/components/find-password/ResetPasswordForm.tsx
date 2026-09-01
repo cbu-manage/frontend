@@ -32,8 +32,13 @@ export default function ResetPasswordForm({
     return () => clearInterval(id);
   }, [cooldown]);
 
-  const { isSending, isVerifying, sendEmailToServer, verifyCodeWithServer } =
-    useVerifyEmail();
+  const {
+    isSending,
+    isVerifying,
+    sendEmailToServer,
+    verifyCodeWithServer,
+    codeExpiresLabel,
+  } = useVerifyEmail();
 
   const isStudentNumberValid = /^\d{10}$/.test(studentNumber);
   const fullEmail = `${email}@tukorea.ac.kr`;
@@ -145,6 +150,15 @@ export default function ResetPasswordForm({
               success={isEmailVerified}
               required
             />
+            {isEmailVerified ? null : codeExpiresLabel ? (
+              <p className="text-caption text-gray-500">
+                인증번호 유효시간 {codeExpiresLabel}
+              </p>
+            ) : (
+              <p className="text-caption text-notice">
+                인증번호가 만료됐어요. 다시 받아주세요.
+              </p>
+            )}
           </div>
           <div className="flex items-end">
             <Button

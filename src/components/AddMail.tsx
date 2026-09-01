@@ -19,6 +19,7 @@ export default function AddMail({
     isSending,
     sendEmailToServer,
     verifyCodeWithServer,
+    codeExpiresLabel,
   } = useVerifyEmail();
   const mailUpdateMutation = useMailUpdate(onEmailUpdated);
   const isUpdating = mailUpdateMutation.isPending;
@@ -87,6 +88,15 @@ export default function AddMail({
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
+          {codeExpiresLabel ? (
+            <p className="text-caption text-gray-500">
+              인증번호 유효시간 {codeExpiresLabel}
+            </p>
+          ) : (
+            <p className="text-caption text-notice">
+              인증번호가 만료됐어요. 다시 받아주세요.
+            </p>
+          )}
           {isProcessingVerify && (
             <p className="text-xs text-gray-500 text-center">
               이메일 등록을 진행 중입니다. 잠시만 기다려 주세요.
