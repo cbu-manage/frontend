@@ -215,9 +215,13 @@ export default function ProjectDetailPage() {
       });
       alert("프로젝트 신청이 완료되었습니다.");
     },
-    onError: () => {
+    onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      alert("이미 들어간 프로젝트입니다.");
+      // 중복 신청 말고도 재신청 횟수 초과 등 사유가 여럿이라 서버 문구를 그대로 쓴다
+      alert(
+        (err as Error)?.message ||
+          "프로젝트 신청에 실패했습니다. 다시 시도해주세요.",
+      );
     },
   });
 
