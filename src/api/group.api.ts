@@ -11,6 +11,12 @@ import { api } from "./client";
 export type GroupStatus =
   "ACTIVE" | "PENDING" | "REJECTED" | "RESUBMITTED" | "INACTIVE";
 
+/** PATCH /groups/{groupId}/recruitment 요청 바디 */
+export type GroupRecruitmentRequest = {
+  /** OPEN = 모집 중, CLOSED = 모집 마감(반려된 팀은 마감 시 재심사 요청으로 넘어간다) */
+  groupRecruitmentStatus: "OPEN" | "CLOSED";
+};
+
 /** PATCH /groups/{groupId}/admin/status 요청 바디 (GroupReviewRequestDTO) */
 export type GroupReviewRequest = {
   action: "APPROVE" | "REJECT";
@@ -89,7 +95,7 @@ export const groupApi = {
   leave: (groupId: number) => api.delete(`/groups/${groupId}/members/me`),
 
   /** 그룹 모집 상태 변경 (팀장 전용) */
-  updateRecruitment: (groupId: number, data: unknown) =>
+  updateRecruitment: (groupId: number, data: GroupRecruitmentRequest) =>
     api.patch(`/groups/${groupId}/recruitment`, data),
 
   /**
