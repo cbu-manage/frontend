@@ -66,6 +66,7 @@ function applyServerMessage(err: AxiosError): AxiosError {
 
 /**
  * 401 → /login/refresh → 원요청 재시도. refresh 실패 시 로그아웃 + /login 이동.
+ * 403(권한 부족)은 갱신 대상이 아니다 — 바로 호출부로 돌려준다.
  */
 export function attachAuthInterceptor(instance: AxiosInstance) {
   instance.interceptors.response.use(
@@ -75,7 +76,9 @@ export function attachAuthInterceptor(instance: AxiosInstance) {
       const original = err.config as RetriableConfig | undefined;
       const url = original?.url ?? "";
 
-      const isAuthError = status === 401 || status === 403;
+      // 401=인증이 안 됨(토큰 없음·만료) → 갱신해볼 가치가 있다.
+      // 403=인증은 됐지만 권한 부족 → 갱신해도 결과가 같으므로 왕복하지 않고 바로 돌려준다.
+      const isAuthError = status === 401;
       if (
         !isAuthError ||
         !original ||

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { AxiosError } from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   questionApi,
@@ -10,6 +9,7 @@ import {
   type QuestionCreateBody,
 } from "@/api";
 import { useCan } from "@/hooks/auth";
+import { apiErrorMessage, isConcurrentModification } from "@/lib/errorCode";
 
 const QUESTIONS_QUERY_KEY = ["admin", "application-questions"] as const;
 
@@ -52,6 +52,13 @@ export default function ApplicationQuestionsSection({
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: QUESTIONS_QUERY_KEY });
 
+  const clearEdited = (questionUuid: string) =>
+    setEdited((prev) => {
+      const next = { ...prev };
+      delete next[questionUuid];
+      return next;
+    });
+
   const createMutation = useMutation({
     mutationFn: (body: QuestionCreateBody) =>
       questionApi.create(recruitmentUuid as string, body),
@@ -59,14 +66,12 @@ export default function ApplicationQuestionsSection({
       setDraft(null);
       invalidate();
     },
-    onError: (err) => {
-      const code = err instanceof AxiosError ? err.response?.status : undefined;
+    // 409가 두 종류라 상태코드가 아니라 에러 코드로 갈라야 한다
+    // (E-APP-0015 질문 키 중복 / E-COMMON-0010 동시 저장 충돌)
+    onError: (err) =>
       alert(
-        code === 409
-          ? "이미 사용 중인 질문 키(type)예요. 다른 값으로 입력해주세요."
-          : "질문 추가 중 오류가 발생했습니다. 다시 시도해주세요.",
-      );
-    },
+        apiErrorMessage(err, "질문 추가 중 오류가 발생했습니다. 다시 시도해주세요."),
+      ),
   });
 
   const updateMutation = useMutation({
@@ -79,23 +84,27 @@ export default function ApplicationQuestionsSection({
         description: vars.body.description ?? undefined,
         isRequired: vars.body.isRequired,
         sortOrder: vars.body.sortOrder,
+        version: vars.body.version,
       }),
     onSuccess: (_res, vars) => {
-      setEdited((prev) => {
-        const next = { ...prev };
-        delete next[vars.questionUuid];
-        return next;
-      });
+      clearEdited(vars.questionUuid);
       invalidate();
     },
-    onError: () => alert("질문 수정 중 오류가 발생했습니다."),
+    onError: (err, vars) => {
+      // 충돌이면 내 입력을 남겨두면 안 된다. 그대로 두면 다시 눌러도 계속 409만 난다.
+      if (isConcurrentModification(err)) {
+        clearEdited(vars.questionUuid);
+        invalidate();
+      }
+      alert(apiErrorMessage(err, "질문 수정 중 오류가 발생했습니다."));
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (questionUuid: string) =>
       questionApi.remove(recruitmentUuid as string, questionUuid),
     onSuccess: invalidate,
-    onError: () => alert("질문 삭제 중 오류가 발생했습니다."),
+    onError: (err) => alert(apiErrorMessage(err, "질문 삭제 중 오류가 발생했습니다.")),
   });
 
   if (!canEdit) return null;
@@ -139,6 +148,8 @@ export default function ApplicationQuestionsSection({
         description: m.description?.trim() ?? "",
         isRequired: m.isRequired,
         sortOrder: m.sortOrder,
+        // 편집을 시작할 때 화면이 들고 있던 값. 그 사이 남이 저장했으면 서버가 409로 막는다
+        version: q.version,
       },
     });
   };
