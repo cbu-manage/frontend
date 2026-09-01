@@ -17,6 +17,8 @@ const EMPTY_LINKS: OnboardingLinks = {
   frontendUrl: "",
   openChatUrl: "",
   discordUrl: "",
+  kakaoNotiUrl: "",
+  kakaoChatUrl: "",
 };
 
 const EMPTY_FEE: FeeInfo = {
@@ -63,8 +65,18 @@ const LINK_FIELDS: {
     placeholder: "https://tukcbu.com",
   },
   {
+    key: "kakaoNotiUrl",
+    label: "공지방",
+    placeholder: "https://open.kakao.com/o/...",
+  },
+  {
+    key: "kakaoChatUrl",
+    label: "수다방",
+    placeholder: "https://open.kakao.com/o/...",
+  },
+  {
     key: "openChatUrl",
-    label: "카카오 오픈채팅",
+    label: "회비 확인 및 문의 방",
     placeholder: "https://open.kakao.com/o/...",
   },
   {
@@ -304,7 +316,8 @@ export default function ClubScheduleSettingsSection() {
   const handleSave = () => {
     const errors: Partial<Record<keyof OnboardingLinks, string>> = {};
     for (const { key, label } of LINK_FIELDS) {
-      if (!isValidUrl(links[key])) {
+      // 아직 안 만든 채널은 비워둘 수 있게 한다. 값이 있을 때만 형식을 본다.
+      if (links[key].trim() && !isValidUrl(links[key])) {
         errors[key] =
           `${label} 링크를 http:// 또는 https:// 로 시작하는 주소로 입력해주세요.`;
       }
@@ -316,6 +329,8 @@ export default function ClubScheduleSettingsSection() {
       frontendUrl: links.frontendUrl.trim(),
       openChatUrl: links.openChatUrl.trim(),
       discordUrl: links.discordUrl.trim(),
+      kakaoNotiUrl: links.kakaoNotiUrl.trim(),
+      kakaoChatUrl: links.kakaoChatUrl.trim(),
     });
   };
 

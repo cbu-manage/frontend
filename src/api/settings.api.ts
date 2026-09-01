@@ -7,8 +7,13 @@ import { type ApiEnvelope } from "./auth.api";
 /** 합격/승인 안내 메일에 들어가는 온보딩 링크 */
 export type OnboardingLinks = {
   frontendUrl: string;
+  /** 회비 확인 및 문의 방 (서버 저장 키는 OPEN_CHAT_URL) */
   openChatUrl: string;
   discordUrl: string;
+  /** 카카오톡 공지방 */
+  kakaoNotiUrl: string;
+  /** 카카오톡 수다방 */
+  kakaoChatUrl: string;
 };
 
 /** 회비·입금 계좌 안내 (지원자 `/apply/fee` 노출용) */
@@ -35,6 +40,10 @@ export const settingsApi = {
       "/admin/settings/onboarding-links",
       data,
     ),
+
+  /** 온보딩 링크 공개 조회 — 합격자·신규 회원 안내 화면용 (비로그인 허용) */
+  getPublicOnboardingLinks: () =>
+    api.get<ApiEnvelope<OnboardingLinks>>("/onboarding-links"),
 
   /** 회비 안내 공개 조회 — 비로그인 지원자용. 미등록이면 404(E-FEE-0001) */
   getPublicFeeInfo: () => api.get<ApiEnvelope<FeeInfo>>("/fee-info"),
