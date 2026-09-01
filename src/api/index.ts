@@ -72,6 +72,8 @@ export type { CommentItem, CommentBody } from "./comment.api";
 // Group
 export {
   groupApi,
+  type GroupStatus,
+  type GroupReviewRequest,
   type MyGroupItem,
   type GroupMemberItem,
   type GroupDetailData,
@@ -141,6 +143,7 @@ export { imageApi } from "./image.api";
 // Apply
 export {
   applyApi,
+  type CurrentGeneration,
   type ApplicationRequest,
   type ApplicationMyRequest,
   type ApplicationMyResponse,

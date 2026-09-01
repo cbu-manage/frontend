@@ -10,6 +10,7 @@ import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
 import StaffAssignSection from "@/components/admin/StaffAssignSection";
 import ClubScheduleSettingsSection from "@/components/admin/ClubScheduleSettingsSection";
 import { useCan } from "@/hooks/auth/useCan";
+import { useMe } from "@/hooks/auth";
 import type { Capability } from "@/lib/permissions";
 
 // 메뉴마다 노출 기준 capability. role→capability 매핑은 src/lib/permissions.ts (서버가 최종 차단)
@@ -37,9 +38,16 @@ const ADMIN_MENU_ITEMS = [
 type AdminMenuValue = (typeof ADMIN_MENU_ITEMS)[number]["value"];
 
 export default function AdminPageClient() {
+  // 역할은 로그인 시점에 스토어에 박힌다. 지정·해제가 바로 반영되도록 진입할 때 다시 받아온다.
+  useMe();
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
+
+  // 회비 안내 폼이 "동아리 일정 설정" 탭 안에 있어 총무도 들어와야 한다.
+  // 탭 안의 블록은 각각 capability로 갈려 있어서 총무에게는 회비 블록만 보인다.
+  const canEditSystemSettings = useCan("system.settings");
+  const canEditFee = useCan("fee.settings");
 
   // 권한별 메뉴 노출 (ADMIN=전부, 운영진 서브롤=해당 capability만)
   const canMap: Record<AdminMenuValue, boolean> = {
@@ -48,7 +56,7 @@ export default function AdminPageClient() {
     reports: useCan("reportDocs.manage"),
     "new-members": useCan("applications.review"),
     staff: useCan("staff.assign"),
-    settings: useCan("system.settings"),
+    settings: canEditSystemSettings || canEditFee,
   };
   const visibleItems = ADMIN_MENU_ITEMS.filter((item) => canMap[item.value]);
 

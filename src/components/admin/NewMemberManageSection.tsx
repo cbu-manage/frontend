@@ -485,9 +485,28 @@ export default function NewMemberManageSection() {
   }
 
   // ── 목록 화면 ──────────────────────────────────────────────
+  /** 2026-09-01 → 2026.09.01 */
+  const dot = (iso: string | null) => (iso ? iso.replace(/-/g, ".") : null);
+  const periodText =
+    recruitment?.plannedStartDate && recruitment?.plannedEndDate
+      ? `${dot(recruitment.plannedStartDate)} ~ ${dot(recruitment.plannedEndDate)}`
+      : null;
+
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-h1 text-gray-900 mb-5">신청서 조회</h1>
+      <div className="mb-5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 className="text-h1 text-gray-900">신청서 조회</h1>
+        {/* 되돌릴 수 없는 마감 버튼이 같은 화면에 있어, 지금 어느 회차인지 늘 보이게 둔다 */}
+        {recruitment && (
+          <p className="text-sm text-gray-500">
+            <span className="font-semibold text-gray-900">
+              {recruitment.generation}기
+            </span>
+            {periodText && ` · ${periodText}`}
+            {` · 투표 인원 ${voterCount}명`}
+          </p>
+        )}
+      </div>
 
       <div className="mb-6 flex items-center gap-2.5 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
         <span className="shrink-0">⚑</span>
@@ -552,9 +571,11 @@ export default function NewMemberManageSection() {
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   투표 결과
                 </th>
-                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
-                  내 검토 여부
-                </th>
+                {canVote && (
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
+                    내 검토 여부
+                  </th>
+                )}
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   OT 참석
                 </th>
@@ -569,7 +590,10 @@ export default function NewMemberManageSection() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {applicants.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-gray-400">
+                  <td
+                    colSpan={canVote ? 10 : 9}
+                    className="py-12 text-center text-gray-400"
+                  >
                     해당 조건의 신청자가 없습니다.
                   </td>
                 </tr>
@@ -636,13 +660,15 @@ export default function NewMemberManageSection() {
                       <td className="px-3 py-3 text-center text-gray-900 tabular-nums">
                         {item.passCount} / {voterCount}
                       </td>
-                      <td className="px-3 py-3 text-center">
-                        <span
-                          className={`font-semibold ${item.myReviewed ? "text-success" : "text-danger"}`}
-                        >
-                          {item.myReviewed ? "Y" : "N"}
-                        </span>
-                      </td>
+                      {canVote && (
+                        <td className="px-3 py-3 text-center">
+                          <span
+                            className={`font-semibold ${item.myReviewed ? "text-success" : "text-danger"}`}
+                          >
+                            {item.myReviewed ? "Y" : "N"}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-3 py-3 text-center">
                         <span
                           className={`font-semibold ${item.canOt ? "text-success" : "text-danger"}`}

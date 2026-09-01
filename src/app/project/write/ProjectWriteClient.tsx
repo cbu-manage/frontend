@@ -6,6 +6,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { AxiosError } from "axios";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ko } from "date-fns/locale";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
 import { Calendar } from "@/components/ui/calendar";
@@ -60,6 +62,17 @@ function sanitizePastedText(text: string): string {
     .replace(/\r\n|\r/g, "\n"); // 줄바꿈 정규화
 }
 
+/** 팀 하나가 받을 수 있는 최대 인원 */
+const MAX_MEMBERS = 20;
+
+/**
+ * 로컬 날짜를 그대로 yyyy-MM-dd로. `date-fns`의 format과 같은 결과.
+ * toISOString()은 UTC로 바꾸므로 KST 자정이 전날 15:00이 되어 하루 앞당겨진다.
+ */
+function toLocalDateString(date: Date): string {
+  return format(date, "yyyy-MM-dd");
+}
+
 export default function ProjectWriteClient() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -70,7 +83,7 @@ export default function ProjectWriteClient() {
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
   const [recruitDeadline, setRecruitDeadline] = useState<Date | undefined>();
-  const [recruitCount, setRecruitCount] = useState(0);
+  const [recruitCount, setRecruitCount] = useState(1);
   const [content, setContent] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -90,7 +103,8 @@ export default function ProjectWriteClient() {
       : editData;
 
   useEffect(() => {
-    if (!isValidEditId || !editPayload || typeof editPayload !== "object") return;
+    if (!isValidEditId || !editPayload || typeof editPayload !== "object")
+      return;
     const d = editPayload as {
       title?: string;
       content?: string;
@@ -103,24 +117,21 @@ export default function ProjectWriteClient() {
       if (d.title) setTitle(d.title);
       if (d.content) setContent(d.content);
       if (d.recruitmentFields?.length) {
-        setCategories(
-          d.recruitmentFields.map((e) => ENUM_TO_LABEL[e] ?? e)
-        );
+        setCategories(d.recruitmentFields.map((e) => ENUM_TO_LABEL[e] ?? e));
       }
       if (typeof d.recruiting === "boolean")
         setRecruitStatus(d.recruiting ? "recruiting" : "completed");
-      if (d.deadline) setRecruitDeadline(new Date(d.deadline));
+      // new Date("2026-09-01")은 UTC 자정으로 읽혀 음수 시간대에서 하루 앞당겨진다.
+      // parseISO는 날짜 전용 문자열을 로컬 자정으로 읽는다.
+      if (d.deadline) setRecruitDeadline(parseISO(d.deadline));
       if (typeof d.maxMembers === "number") setRecruitCount(d.maxMembers);
     });
   }, [isValidEditId, editPayload]);
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const recruitmentFields = categories.map(
-        (c) => POSITION_TO_ENUM[c] ?? c
-      );
-      const deadline =
-        recruitDeadline?.toISOString().slice(0, 10) ?? new Date().toISOString().slice(0, 10);
+      const recruitmentFields = categories.map((c) => POSITION_TO_ENUM[c] ?? c);
+      const deadline = toLocalDateString(recruitDeadline ?? new Date());
       await projectApi.create({
         title,
         content,
@@ -144,18 +155,17 @@ export default function ProjectWriteClient() {
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!numericEditId) return;
-      const recruitmentFields = categories.map(
-        (c) => POSITION_TO_ENUM[c] ?? c
-      );
-      const deadline =
-        recruitDeadline?.toISOString().slice(0, 10) ?? undefined;
+      const recruitmentFields = categories.map((c) => POSITION_TO_ENUM[c] ?? c);
+      const deadline = recruitDeadline
+        ? toLocalDateString(recruitDeadline)
+        : undefined;
       await projectApi.update(numericEditId, {
         title,
         content,
         recruitmentFields,
         recruiting: recruitStatus === "recruiting",
         deadline,
-        maxMembers: Math.max(0, recruitCount),
+        maxMembers: Math.max(1, recruitCount),
       });
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
@@ -172,7 +182,15 @@ export default function ProjectWriteClient() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !content.trim() || categories.length === 0) return;
+    // 조용히 return하면 버튼이 고장난 것처럼 보인다 — 무엇이 빠졌는지 알려준다
+    const missing: string[] = [];
+    if (!title.trim()) missing.push("제목");
+    if (!content.trim()) missing.push("내용");
+    if (categories.length === 0) missing.push("모집 분야");
+    if (missing.length > 0) {
+      alert(`${missing.join(", ")}을(를) 입력해주세요.`);
+      return;
+    }
 
     if (recruitStatus === "completed") {
       const confirmed = window.confirm(
@@ -220,7 +238,7 @@ export default function ProjectWriteClient() {
                 onPaste={(e) => {
                   e.preventDefault();
                   const pasted = sanitizePastedText(
-                    e.clipboardData.getData("text/plain")
+                    e.clipboardData.getData("text/plain"),
                   );
                   const input = e.currentTarget;
                   const start = input.selectionStart ?? 0;
@@ -294,6 +312,9 @@ export default function ProjectWriteClient() {
                         <div className="mx-auto w-fit rounded-lg border bg-white shadow-lg p-0">
                           <Calendar
                             mode="single"
+                            locale={ko}
+                            // 지난 날짜를 고르면 서버가 400으로 막는다 — 아예 못 고르게 한다
+                            disabled={{ before: new Date() }}
                             defaultMonth={recruitDeadline ?? new Date()}
                             selected={recruitDeadline}
                             onSelect={(date) => {
@@ -320,7 +341,7 @@ export default function ProjectWriteClient() {
                     <button
                       type="button"
                       onClick={() =>
-                        setRecruitCount((prev) => Math.max(0, prev - 1))
+                        setRecruitCount((prev) => Math.max(1, prev - 1))
                       }
                       className="
                         w-10 h-10 rounded-full text-gray-700
@@ -337,7 +358,9 @@ export default function ProjectWriteClient() {
                     <button
                       type="button"
                       onClick={() =>
-                        setRecruitCount((prev) => Math.max(0, prev + 1))
+                        setRecruitCount((prev) =>
+                          Math.min(MAX_MEMBERS, prev + 1),
+                        )
                       }
                       className="
                         w-10 h-10 rounded-full text-gray-700
@@ -376,12 +399,14 @@ export default function ProjectWriteClient() {
               onPaste={(e) => {
                 e.preventDefault();
                 const pasted = sanitizePastedText(
-                  e.clipboardData.getData("text/plain")
+                  e.clipboardData.getData("text/plain"),
                 );
                 const textarea = e.currentTarget;
                 const start = textarea.selectionStart ?? 0;
                 const end = textarea.selectionEnd ?? 0;
-                setContent(content.slice(0, start) + pasted + content.slice(end));
+                setContent(
+                  content.slice(0, start) + pasted + content.slice(end),
+                );
               }}
               rows={22}
               className="

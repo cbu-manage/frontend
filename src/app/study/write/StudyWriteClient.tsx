@@ -32,6 +32,9 @@ function sanitizePastedText(text: string): string {
     .replace(/\r\n|\r/g, "\n"); // 줄바꿈 정규화
 }
 
+/** 팀 하나가 받을 수 있는 최대 인원 */
+const MAX_MEMBERS = 20;
+
 export default function StudyWriteClient() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("id");
@@ -93,8 +96,10 @@ export default function StudyWriteClient() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async () => {
-      if (!editId) return;
+    // 수정과 마감이 별도 API라 마감만 실패할 수 있다(예: 수락된 팀원이 없을 때).
+    // 그때 "저장 실패"로 알리면 이미 저장된 수정 내용과 화면이 어긋난다.
+    mutationFn: async (): Promise<{ closeFailedReason?: string }> => {
+      if (!editId) return {};
       const id = Number(editId);
       await studyApi.update(id, {
         title,
@@ -104,11 +109,21 @@ export default function StudyWriteClient() {
         maxMembers: Math.max(1, recruitCount),
       });
       if (recruitStatus === "completed") {
-        await studyApi.close(id);
+        try {
+          await studyApi.close(id);
+        } catch (err) {
+          return { closeFailedReason: getErrorMessage(err) };
+        }
       }
+      return {};
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result?.closeFailedReason) {
+        alert(
+          `수정 내용은 저장했어요.\n모집 마감은 되지 않았어요 — ${result.closeFailedReason}`,
+        );
+      }
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
     },
@@ -120,7 +135,15 @@ export default function StudyWriteClient() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !content.trim() || categories.length === 0) return;
+    // 조용히 return하면 버튼이 고장난 것처럼 보인다 — 무엇이 빠졌는지 알려준다
+    const missing: string[] = [];
+    if (!title.trim()) missing.push("제목");
+    if (!content.trim()) missing.push("내용");
+    if (categories.length === 0) missing.push("모집 분야");
+    if (missing.length > 0) {
+      alert(`${missing.join(", ")}을(를) 입력해주세요.`);
+      return;
+    }
     if (recruitCount < 1) return;
 
     if (recruitStatus === "completed") {
@@ -238,7 +261,7 @@ export default function StudyWriteClient() {
                   <button
                     type="button"
                     onClick={() =>
-                      setRecruitCount((prev) => Math.max(1, prev + 1))
+                      setRecruitCount((prev) => Math.min(MAX_MEMBERS, prev + 1))
                     }
                     className="
                       w-10 h-10 rounded-full text-gray-700
@@ -279,12 +302,14 @@ export default function StudyWriteClient() {
               onPaste={(e) => {
                 e.preventDefault();
                 const pasted = sanitizePastedText(
-                  e.clipboardData.getData("text/plain")
+                  e.clipboardData.getData("text/plain"),
                 );
                 const textarea = e.currentTarget;
                 const start = textarea.selectionStart ?? 0;
                 const end = textarea.selectionEnd ?? 0;
-                setContent(content.slice(0, start) + pasted + content.slice(end));
+                setContent(
+                  content.slice(0, start) + pasted + content.slice(end),
+                );
               }}
               rows={22}
               className="

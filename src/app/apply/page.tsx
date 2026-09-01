@@ -5,9 +5,32 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { applyApi } from "@/api";
-import { RECRUIT_GENERATION } from "./constants";
+import { useRecruitmentInfo } from "@/hooks/apply";
+
+/** yyyy-MM-dd. 자정 경계를 사용자의 오늘로 판정하려고 로컬 날짜를 쓴다 */
+function todayLocal(): string {
+  const now = new Date();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${m}-${d}`;
+}
 
 export default function ApplyIntroPage() {
+  // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
+  const { generationLabel, periodLabel, resultLabel, recruitment } =
+    useRecruitmentInfo();
+  const today = todayLocal();
+  const startsAt = recruitment?.plannedStartDate ?? null;
+  const endsAt = recruitment?.plannedEndDate ?? null;
+  const isBeforeStart = !!startsAt && today < startsAt;
+  const isAfterEnd = !!endsAt && today > endsAt;
+  // 진행 중인 모집이 없으면 서버가 404를 주므로 recruitment 자체가 null이 된다
+  const isOpen = !!recruitment && !isBeforeStart && !isAfterEnd;
+  const closedReason = !recruitment
+    ? "지금은 모집 기간이 아니에요"
+    : isBeforeStart
+      ? "아직 모집 시작 전이에요"
+      : "모집이 마감됐어요";
   const router = useRouter();
   const [studentId, setStudentId] = useState("");
   const [nickname, setNickname] = useState("");
@@ -61,17 +84,41 @@ export default function ApplyIntroPage() {
 
           <div className="flex flex-col items-center gap-3 w-full mt-2">
             <h2 className="text-h1 text-gray-900 text-center">
-              {RECRUIT_GENERATION} 씨부엉 신청하기
+              {generationLabel && `${generationLabel} `}씨부엉 신청하기
             </h2>
             <p className="text-body-sm font-medium text-gray-700 text-center">
-              씨부엉과 함께 성장할 30기를 기다리고 있어요!
+              씨부엉과 함께 성장할{" "}
+              {generationLabel ? `${generationLabel} 신입` : "새 부원"}을
+              기다리고 있어요!
             </p>
-            <Link
-              href="/apply/form"
-              className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-white text-brand font-semibold hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              신청서 작성
-            </Link>
+            {(periodLabel || resultLabel) && (
+              <dl className="mt-1 flex flex-col gap-1 text-body-sm text-gray-700">
+                {periodLabel && (
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium">모집 기간</dt>
+                    <dd>{periodLabel}</dd>
+                  </div>
+                )}
+                {resultLabel && (
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium">결과 발표</dt>
+                    <dd>{resultLabel}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            {isOpen ? (
+              <Link
+                href="/apply/form"
+                className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-white text-brand font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                신청서 작성
+              </Link>
+            ) : (
+              <div className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-gray-100 text-gray-500 font-semibold cursor-not-allowed">
+                {closedReason}
+              </div>
+            )}
           </div>
         </div>
 
@@ -91,6 +138,11 @@ export default function ApplyIntroPage() {
               입력한 내용을 수정하고 싶다면
               <br />
               입력해주세요!
+            </p>
+            {/* 서버가 지원서를 낼 때마다 새 인증번호를 요구한다. 미리 알려주지 않으면
+                답변만 복원된 화면에서 왜 또 인증하냐는 인상을 준다 */}
+            <p className="text-caption text-gray-400">
+              불러온 뒤 다시 제출하려면 이메일 인증을 한 번 더 받아야 해요.
             </p>
           </div>
 

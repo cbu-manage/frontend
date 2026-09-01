@@ -48,7 +48,12 @@ function handleAuthFailure(): void {
   if (typeof window === "undefined") return;
   if (window.location.pathname === LOGIN_REDIRECT_PATH) return;
   import("@/store/userStore").then(({ useUserStore }) => {
-    useUserStore.getState().clearUser();
+    const store = useUserStore.getState();
+    // 애초에 로그인한 적이 없으면 튕기지 않는다. 페이지의 RequireMember 안내가 뜨도록 두고,
+    // 세션이 끊긴 사용자만 로그인으로 보낸다. 리다이렉트가 먼저 걸리면 화면마다 안내가 갈렸다.
+    const wasLoggedIn = !!store.name;
+    store.clearUser();
+    if (!wasLoggedIn) return;
     window.location.href = LOGIN_REDIRECT_PATH;
   });
 }

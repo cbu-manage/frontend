@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, Check } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import FileUploadBox from "@/components/shared/FileUploadBox";
-import { useIsStaff } from "@/hooks/auth/useIsStaff";
+import { useCan } from "@/hooks/auth";
 
 type PostWriteSubmitData = {
   title: string;
@@ -66,7 +66,8 @@ export default function PostWriteForm({
   isSubmitting = false,
 }: PostWriteFormProps) {
   const router = useRouter();
-  const isStaff = useIsStaff();
+  // staffOnly 폼(소식·공지)은 news.manage 보유자만 — 서버 허용 역할과 맞춘다
+  const canManageNews = useCan("news.manage");
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [content, setContent] = useState(initialValues?.content ?? "");
   const [category, setCategory] = useState<string | null>(
@@ -119,7 +120,7 @@ export default function PostWriteForm({
     }
   };
 
-  if (staffOnly && !isStaff) {
+  if (staffOnly && !canManageNews) {
     return (
       <RequireMember>
         <main className="min-h-screen bg-white">

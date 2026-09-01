@@ -7,7 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
-import { useIsStaff } from "@/hooks/auth/useIsStaff";
+import { useCan } from "@/hooks/auth";
 import { useNewsList } from "@/hooks/news/useNewsList";
 import { formatDate } from "@/lib/date";
 import type { NewsCategory } from "@/api";
@@ -29,7 +29,8 @@ const CATEGORY_TO_LABEL: Record<string, string> = {
 };
 
 export default function NoticePage() {
-  const isStaff = useIsStaff();
+  // 소식·공지 작성은 회장·부회장·홍보·ADMIN만 (서버 허용 역할과 동일)
+  const canManageNews = useCan("news.manage");
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
   const [submittedKeyword, setSubmittedKeyword] = useState("");
@@ -83,7 +84,7 @@ export default function NoticePage() {
                 placeholder="제목 · 내용으로 검색해주세요."
                 className="w-full sm:w-80"
               />
-              {isStaff && (
+              {canManageNews && (
                 <Link
                   href="/notice/write"
                   className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import RequireMember from "@/components/auth/RequireMember";
 import StudyWriteClient from "./StudyWriteClient";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,9 @@ export default function StudyWritePage() {
         </main>
       }
     >
-      <StudyWriteClient />
+      <RequireMember>
+        <StudyWriteClient />
+      </RequireMember>
     </Suspense>
   );
 }

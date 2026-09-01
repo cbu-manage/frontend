@@ -122,6 +122,16 @@ export default function ApplicationQuestionsSection({
       alert("질문 본문을 입력해주세요.");
       return;
     }
+    // 같은 순서가 둘이면 지원자 화면의 문항 차례가 매번 달라질 수 있다
+    const orderTaken = (questions ?? []).some(
+      (other) =>
+        other.questionUuid !== q.questionUuid &&
+        merged(other).sortOrder === m.sortOrder,
+    );
+    if (orderTaken) {
+      alert(`노출 순서 ${m.sortOrder}번은 다른 질문이 쓰고 있어요.`);
+      return;
+    }
     updateMutation.mutate({
       questionUuid: q.questionUuid,
       body: {

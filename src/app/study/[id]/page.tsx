@@ -9,6 +9,8 @@ import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { studyApi, groupApi } from "@/api";
+import GroupRejectedBanner from "@/components/group/GroupRejectedBanner";
+import { useGroupRejection } from "@/hooks/group";
 
 const CATEGORIES = [
   { label: "전체", value: "전체" },
@@ -84,10 +86,18 @@ export default function StudyDetailPage() {
     },
   });
 
+  const { group, isRejected, resubmit, isResubmitting } = useGroupRejection({
+    groupId,
+    enabled: isAuthor,
+    detailQueryKey: ["study", numericId],
+  });
+
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, {
+        groupRecruitmentStatus: "CLOSED",
+      });
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
@@ -108,9 +118,13 @@ export default function StudyDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       alert("스터디 신청이 완료되었습니다.");
     },
-    onError: () => {
+    onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
-      alert("이미 들어간 스터디입니다.");
+      // 중복 신청 말고도 재신청 횟수 초과 등 사유가 여럿이라 서버 문구를 그대로 쓴다
+      alert(
+        (err as Error)?.message ||
+          "스터디 신청에 실패했습니다. 다시 시도해주세요.",
+      );
     },
   });
 
@@ -159,6 +173,20 @@ export default function StudyDetailPage() {
 
   const statusKey = study.recruiting ? "recruiting" : "completed";
 
+  const goEditPage = () => {
+    const payload = {
+      id: String(id),
+      title: study.title,
+      studyName: study.studyName,
+      categories: study.studyTags,
+      recruitStatus: study.recruiting ? "recruiting" : "completed",
+      recruitCount: study.maxMembers,
+      content: study.content,
+    };
+    sessionStorage.setItem("editPost_study", JSON.stringify(payload));
+    router.push(`/study/write?id=${id}`);
+  };
+
   return (
     <RequireMember>
       <main className="min-h-screen bg-white">
@@ -172,7 +200,7 @@ export default function StudyDetailPage() {
           <DetailTemplate
             backPath="/study"
             title={study.title}
-            status={statusKey}
+            status={isRejected ? "rejected" : statusKey}
             author={authorDisplay}
             date={formatDate(study.createdAt)}
             views={study.viewCount ?? 0}
@@ -181,6 +209,16 @@ export default function StudyDetailPage() {
             activeMemberCount={activeMemberCount}
             maxMembers={study.maxMembers}
             content={study.content}
+            notice={
+              isRejected && group ? (
+                <GroupRejectedBanner
+                  group={group}
+                  onResubmit={resubmit}
+                  onEdit={goEditPage}
+                  isSubmitting={isResubmitting}
+                />
+              ) : undefined
+            }
             onEdit={
               isAuthor
                 ? () => {
@@ -188,22 +226,7 @@ export default function StudyDetailPage() {
                       alert("모집 완료된 글은 수정할 수 없습니다.");
                       return;
                     }
-                    const payload = {
-                      id: String(id),
-                      title: study.title,
-                      studyName: study.studyName,
-                      categories: study.studyTags,
-                      recruitStatus: study.recruiting
-                        ? "recruiting"
-                        : "completed",
-                      recruitCount: study.maxMembers,
-                      content: study.content,
-                    };
-                    sessionStorage.setItem(
-                      "editPost_study",
-                      JSON.stringify(payload),
-                    );
-                    router.push(`/study/write?id=${id}`);
+                    goEditPage();
                   }
                 : undefined
             }
