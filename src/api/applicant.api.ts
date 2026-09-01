@@ -47,6 +47,8 @@ export type ApplicationQuestion = {
   description: string | null;
   isRequired: boolean;
   sortOrder: number;
+  /** 수정 저장 시 되돌려 보내면 그 사이 남이 고친 경우 409(E-COMMON-0010)로 막힌다 */
+  version?: number;
 };
 
 export type QuestionCreateBody = {
@@ -63,6 +65,8 @@ export type QuestionUpdateBody = {
   description?: string;
   isRequired?: boolean;
   sortOrder?: number;
+  /** 화면에 불러올 때 받은 값. 생략하면 충돌 검사 없이 덮어쓴다 */
+  version?: number;
 };
 
 /** 신청서 목록 한 줄 */
@@ -196,7 +200,7 @@ export const questionApi = {
       data,
     ),
 
-  /** 질문 수정 */
+  /** 질문 수정 — version을 같이 보내면 동시 저장 충돌 시 409(E-COMMON-0010) */
   update: (
     recruitmentUuid: string,
     questionUuid: string,
