@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FOREIGN_DOMAIN_NOTICE, parseSchoolEmailId } from "@/lib/email";
 import { useVerifyEmail } from "@/hooks/mail";
 import { useMailUpdate } from "@/hooks/mail";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ export default function AddMail({
 }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
   const [cooldown, setCooldown] = useState(0); // 초 단위
   const {
     isVerificationSent,
@@ -19,6 +21,7 @@ export default function AddMail({
     isSending,
     sendEmailToServer,
     verifyCodeWithServer,
+    codeExpiresLabel,
   } = useVerifyEmail();
   const mailUpdateMutation = useMailUpdate(onEmailUpdated);
   const isUpdating = mailUpdateMutation.isPending;
@@ -49,14 +52,20 @@ export default function AddMail({
             value={email}
             onChange={(e) => {
               // 항상 로컬 파트만 입력받고 도메인은 고정
-              const value = e.target.value.split("@")[0];
-              setEmail(value);
+              const { id, hasForeignDomain } = parseSchoolEmailId(
+                e.target.value,
+              );
+              setEmail(id);
+              setEmailNotice(hasForeignDomain ? FOREIGN_DOMAIN_NOTICE : "");
             }}
           />
           <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-700">
             @tukorea.ac.kr
           </span>
         </div>
+        {emailNotice && (
+          <p className="text-caption text-notice">{emailNotice}</p>
+        )}
         <Button
           type="button"
           variant="brand"
@@ -87,6 +96,15 @@ export default function AddMail({
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
+          {codeExpiresLabel ? (
+            <p className="text-caption text-gray-500">
+              인증번호 유효시간 {codeExpiresLabel}
+            </p>
+          ) : (
+            <p className="text-caption text-notice">
+              인증번호가 만료됐어요. 다시 받아주세요.
+            </p>
+          )}
           {isProcessingVerify && (
             <p className="text-xs text-gray-500 text-center">
               이메일 등록을 진행 중입니다. 잠시만 기다려 주세요.

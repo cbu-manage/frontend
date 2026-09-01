@@ -98,7 +98,8 @@ export const ROLE_CAPS: Record<Role, Capability[]> = {
   ],
   ROLE_EVENT_MANAGER: [...STAFF_REVIEW, "meetings.manage"], // 본인 등록 모임만 → 서버 판정
   ROLE_PROMOTION_MANAGER: [...STAFF_REVIEW, "news.manage"],
-  ROLE_SECRETARY: [...STAFF_REVIEW],
+  // 서버가 보고서 전체 조회·추출에 서기를 포함한다(Role.canViewAllReports, /report/*/export)
+  ROLE_SECRETARY: [...STAFF_REVIEW, "reportDocs.manage"],
   ROLE_USER: [],
 };
 

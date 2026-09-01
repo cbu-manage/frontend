@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FOREIGN_DOMAIN_NOTICE, parseSchoolEmailId } from "@/lib/email";
 import { type UserInfo } from "@/hooks/user";
 import { useValidateUser } from "@/hooks/user/useValidateUser";
 import { useVerifyEmail } from "@/hooks/mail";
-import { useUserStore } from "@/store/userStore";
 import InputBox from "../common/InputBox";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +15,7 @@ export default function StepOne({
   const [studentNumber, setStudentNumber] = useState("");
   const [nickName, setNickName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verifiedUserInfo, setVerifiedUserInfo] = useState<UserInfo | null>(
     null,
@@ -31,15 +32,19 @@ export default function StepOne({
   }, [cooldown]);
 
   const { validateUser } = useValidateUser();
-  const { isSending, sendEmailToServer, verifyCodeWithServer } =
-    useVerifyEmail();
-  const setUser = useUserStore((s) => s.setUser);
+  const {
+    isSending,
+    sendEmailToServer,
+    verifyCodeWithServer,
+    codeExpiresLabel,
+  } = useVerifyEmail();
 
   const handleUserVerification = async () => {
     const result = await validateUser(studentNumber, nickName);
     if (result) {
+      // 아직 로그인이 아니다. 전역 스토어에 넣으면 헤더가 로그인 상태로 바뀌고
+      // 가입을 마치지 않고 나가도 개인정보가 localStorage에 남는다.
       setVerifiedUserInfo(result);
-      setUser(result);
     }
   };
 
@@ -67,9 +72,22 @@ export default function StepOne({
       return;
     }
     const result = await verifyCodeWithServer(fullEmail, verificationCode);
-    if (result.success && verifiedUserInfo) {
-      onVerified(verifiedUserInfo, fullEmail);
+    if (!result.success) {
+      // 서버가 "인증번호가 일치하지 않습니다" / "만료되었습니다"를 정확히 알려준다.
+      // 이걸 안 띄우면 틀린 번호를 넣어도 화면에 아무 변화가 없다.
+      alert(
+        result.responseMessage ||
+          "인증에 실패했습니다. 인증번호를 다시 확인해주세요.",
+      );
+      return;
     }
+    if (!verifiedUserInfo) {
+      alert(
+        "합격자 인증 정보가 없습니다. 학번·닉네임 인증부터 다시 진행해주세요.",
+      );
+      return;
+    }
+    onVerified(verifiedUserInfo, fullEmail);
   };
 
   return (
@@ -125,7 +143,13 @@ export default function StepOne({
               type="text"
               placeholder="이메일 아이디"
               value={email}
-              onChange={(e) => setEmail(e.target.value.replace(/@.*$/, ""))}
+              onChange={(e) => {
+                const { id, hasForeignDomain } = parseSchoolEmailId(
+                  e.target.value,
+                );
+                setEmail(id);
+                setEmailNotice(hasForeignDomain ? FOREIGN_DOMAIN_NOTICE : "");
+              }}
               disabled={!verifiedUserInfo}
               className={`flex-1 px-4 py-[15px] text-base font-medium tracking-[-0.048px] leading-normal border-0 outline-none ring-0 shadow-none bg-transparent ${
                 !verifiedUserInfo
@@ -141,6 +165,9 @@ export default function StepOne({
               @tukorea.ac.kr
             </span>
           </div>
+          {emailNotice && (
+            <p className="mt-1.5 text-caption text-notice">{emailNotice}</p>
+          )}
         </div>
         <div className="flex items-end">
           <Button
@@ -165,6 +192,15 @@ export default function StepOne({
               onChange={(e) => setVerificationCode(e.target.value)}
               required
             />
+            {codeExpiresLabel ? (
+              <p className="text-caption text-gray-500">
+                인증번호 유효시간 {codeExpiresLabel}
+              </p>
+            ) : (
+              <p className="text-caption text-notice">
+                인증번호가 만료됐어요. 다시 받아주세요.
+              </p>
+            )}
           </div>
           <div className="flex items-end">
             <Button

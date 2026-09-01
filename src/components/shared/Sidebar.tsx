@@ -120,19 +120,22 @@ export default function Sidebar({
           aria-label={writeLabel}
           className="lg:hidden fixed bottom-5 right-5 z-30 inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-800 text-gray-0 shadow-lg active:opacity-80"
         >
-          <Image
-            src="/assets/pencil.svg"
-            alt=""
-            width={18}
-            height={18}
-          />
+          <Image src="/assets/pencil.svg" alt="" width={18} height={18} />
         </Link>
       )}
 
       {/* 데스크탑 (lg 이상): 기존 fixed 사이드바 */}
       <div className="hidden lg:block w-[calc(9.375vw+239px)] fixed left-0 top-[80px] h-20 bg-transparent" />
 
-      <aside className="hidden lg:block w-[calc(9.375vw+240px)] fixed left-0 top-[80px] h-[calc((100vh-80px)*0.75)] min-h-[36rem] rounded-r-3xl z-10">
+      {/* 아래 고정 버튼이 있을 때만 카드를 길게 잡는다.
+          메뉴가 한두 개인 역할에서는 36rem이 그대로 빈 공간으로 보인다 */}
+      <aside
+        className={`hidden lg:block w-[calc(9.375vw+240px)] fixed left-0 top-[80px] rounded-r-3xl z-10 ${
+          showWriteButton && writeLink
+            ? "h-[calc((100vh-80px)*0.75)] min-h-[36rem]"
+            : "max-h-[calc(100vh-100px)]"
+        }`}
+      >
         <div className="pl-[9.375vw] pr-12 pt-14 pb-8 flex flex-col h-full bg-white border border-gray-200 rounded-r-3xl">
           <nav className="space-y-2">
             {items.map((item) => (

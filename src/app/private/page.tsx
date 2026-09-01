@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 import AddMail from "@/components/AddMail";
+import RequireMember from "@/components/auth/RequireMember";
 
 export default function PrivateGuidePage() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function PrivateGuidePage() {
     if (!isEmailNull && emailUpdated) {
       if (isDefaultPassword) {
         const shouldChangePassword = window.confirm(
-          "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?"
+          "기본 비밀번호 사용이 감지되었습니다.\n계정 보호를 위해 비밀번호 변경을 권장합니다.\n변경 페이지로 이동하시겠습니까?",
         );
         router.push(shouldChangePassword ? "/user?tab=password" : "/");
       } else {
@@ -25,19 +26,20 @@ export default function PrivateGuidePage() {
   }, [isEmailNull, isDefaultPassword, emailUpdated, router]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl">
-        {isEmailNull ? (
-          <div className="flex justify-center">
-            <AddMail />
-          </div>
-        ) : (
-          <div className="text-center text-sm text-zinc-600">
-            이메일이 등록되어 있습니다. 변경이 불가능합니다.
-          </div>
-        )}
-      </div>
-    </main>
+    <RequireMember>
+      <main className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-4xl">
+          {isEmailNull ? (
+            <div className="flex justify-center">
+              <AddMail />
+            </div>
+          ) : (
+            <div className="text-center text-sm text-zinc-600">
+              이메일이 등록되어 있습니다. 변경이 불가능합니다.
+            </div>
+          )}
+        </div>
+      </main>
+    </RequireMember>
   );
 }
-

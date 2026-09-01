@@ -19,7 +19,22 @@ type GroupItem = {
   leaderName?: string;
 };
 
-type StatusFilter = "전체" | "INACTIVE" | "ACTIVE";
+type StatusFilter = "전체" | "PENDING" | "ACTIVE" | "REJECTED";
+
+/** 심사 대기로 묶어 보는 상태 — 신규 개설(PENDING)과 재심사 요청(RESUBMITTED) */
+const PENDING_STATUSES: string[] = ["PENDING", "RESUBMITTED"];
+
+/** 서버 상태값 → 화면 표기. 서버는 5종을 내려준다 */
+const STATUS_LABEL: Record<string, { text: string; className: string }> = {
+  PENDING: { text: "승인 대기 중", className: "bg-amber-100 text-amber-700" },
+  RESUBMITTED: {
+    text: "재심사 요청",
+    className: "bg-amber-100 text-amber-700",
+  },
+  ACTIVE: { text: "승인됨", className: "bg-blue-100 text-blue-700" },
+  REJECTED: { text: "반려됨", className: "bg-red-100 text-red-700" },
+  INACTIVE: { text: "비활동", className: "bg-gray-100 text-gray-600" },
+};
 
 function extractGroups(raw: unknown): GroupItem[] {
   if (!raw || typeof raw !== "object") return [];
@@ -63,41 +78,65 @@ export default function GroupManageSection() {
 
   const groups = useMemo(() => extractGroups(res?.data ?? null), [res]);
 
-  const closedGroups = useMemo(
-    () => groups.filter((g) => g.groupRecruitmentStatus === "CLOSED"),
+  // 심사 대상은 모집을 마감한 팀. 단 반려되면 서버가 모집을 다시 열어주므로,
+  // 상태로도 걸러 반려된 팀이 목록에서 사라지지 않게 한다.
+  const reviewable = useMemo(
+    () =>
+      groups.filter(
+        (g) =>
+          g.groupRecruitmentStatus === "CLOSED" || g.groupStatus === "REJECTED",
+      ),
     [groups],
   );
 
   const filtered = useMemo(() => {
-    if (statusFilter === "전체") return closedGroups;
-    return closedGroups.filter((g) => g.groupStatus === statusFilter);
-  }, [closedGroups, statusFilter]);
+    if (statusFilter === "전체") return reviewable;
+    if (statusFilter === "PENDING")
+      return reviewable.filter((g) => PENDING_STATUSES.includes(g.groupStatus));
+    return reviewable.filter((g) => g.groupStatus === statusFilter);
+  }, [reviewable, statusFilter]);
 
-  const approveMutation = useMutation({
-    mutationFn: async (groupId: number) => {
-      await groupApi.updateStatus(groupId, { groupStatus: "ACTIVE" });
-    },
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  const reviewMutation = useMutation({
+    mutationFn: ({
+      groupId,
+      action,
+      reason,
+    }: {
+      groupId: number;
+      action: "APPROVE" | "REJECT";
+      reason?: string;
+    }) => groupApi.updateStatus(groupId, { action, reason }),
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
+      setRejectingId(null);
+      setRejectReason("");
       queryClient.invalidateQueries({ queryKey: ["groups", "admin"] });
+    },
+    onError: (err) => {
+      window.alert((err as Error).message || "처리 중 오류가 발생했습니다.");
     },
   });
 
   const countByStatus = useMemo(() => {
-    const inactive = closedGroups.filter(
-      (g) => g.groupStatus === "INACTIVE",
+    const pending = reviewable.filter((g) =>
+      PENDING_STATUSES.includes(g.groupStatus),
     ).length;
-    const active = closedGroups.filter(
-      (g) => g.groupStatus === "ACTIVE",
+    const active = reviewable.filter((g) => g.groupStatus === "ACTIVE").length;
+    const rejected = reviewable.filter(
+      (g) => g.groupStatus === "REJECTED",
     ).length;
-    return { inactive, active, total: closedGroups.length };
-  }, [closedGroups]);
+    return { pending, active, rejected, total: reviewable.length };
+  }, [reviewable]);
 
   const statusFilters: { label: string; value: StatusFilter; count: number }[] =
     [
       { label: "전체", value: "전체", count: countByStatus.total },
-      { label: "승인 대기", value: "INACTIVE", count: countByStatus.inactive },
+      { label: "승인 대기", value: "PENDING", count: countByStatus.pending },
       { label: "승인됨", value: "ACTIVE", count: countByStatus.active },
+      { label: "반려됨", value: "REJECTED", count: countByStatus.rejected },
     ];
 
   return (
@@ -172,8 +211,12 @@ export default function GroupManageSection() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filtered.map((group) => {
-                const isInactive = group.groupStatus === "INACTIVE";
-                const isActive = group.groupStatus === "ACTIVE";
+                const isPending = PENDING_STATUSES.includes(group.groupStatus);
+                const statusLabel = STATUS_LABEL[group.groupStatus] ?? {
+                  text: group.groupStatus,
+                  className: "bg-gray-100 text-gray-600",
+                };
+                const isRejecting = rejectingId === group.groupId;
                 const leaderDisplay = group.leaderName
                   ? group.leaderGeneration
                     ? `${group.leaderGeneration}기 ${group.leaderName}`
@@ -196,37 +239,71 @@ export default function GroupManageSection() {
                     </td>
                     <td className="p-3 text-center">
                       <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                        모집 마감
+                        {group.groupRecruitmentStatus === "CLOSED"
+                          ? "모집 마감"
+                          : "모집 중"}
                       </span>
                     </td>
                     <td className="p-3 text-center text-gray-500">
                       {formatDate(group.createdAt)}
                     </td>
                     <td className="p-3 text-center">
-                      {isInactive && (
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
-                          승인 대기 중
-                        </span>
-                      )}
-                      {isActive && (
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
-                          승인됨
-                        </span>
-                      )}
-                      {!isInactive && !isActive && (
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
-                          {group.groupStatus}
-                        </span>
-                      )}
+                      <span
+                        className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${statusLabel.className}`}
+                      >
+                        {statusLabel.text}
+                      </span>
                     </td>
                     <td className="p-3 text-center">
-                      {isInactive ? (
+                      {!isPending ? (
+                        <span className="text-xs text-gray-400">-</span>
+                      ) : isRejecting ? (
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="text"
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            placeholder="반려 사유"
+                            aria-label="반려 사유"
+                            className="w-40 rounded-lg border border-gray-200 px-2 py-1.5 text-xs outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                          />
+                          <button
+                            type="button"
+                            disabled={
+                              !rejectReason.trim() || reviewMutation.isPending
+                            }
+                            onClick={() =>
+                              reviewMutation.mutate({
+                                groupId: group.groupId,
+                                action: "REJECT",
+                                reason: rejectReason.trim(),
+                              })
+                            }
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-900 text-white hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-500 transition-opacity"
+                          >
+                            반려
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRejectingId(null);
+                              setRejectReason("");
+                            }}
+                            className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      ) : (
                         <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
-                            disabled={approveMutation.isPending}
+                            disabled={reviewMutation.isPending}
                             onClick={() =>
-                              approveMutation.mutate(group.groupId)
+                              reviewMutation.mutate({
+                                groupId: group.groupId,
+                                action: "APPROVE",
+                              })
                             }
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
                           >
@@ -234,14 +311,16 @@ export default function GroupManageSection() {
                           </button>
                           <button
                             type="button"
-                            disabled
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
+                            disabled={reviewMutation.isPending}
+                            onClick={() => {
+                              setRejectingId(group.groupId);
+                              setRejectReason("");
+                            }}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                           >
                             거절
                           </button>
                         </div>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
                       )}
                     </td>
                   </tr>

@@ -36,7 +36,7 @@ function LoginClient() {
           className="space-y-6"
         >
           <InputBox
-            placeholder="아이디를 입력하세요"
+            placeholder="학번을 입력하세요 (10자리)"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             required

@@ -9,13 +9,22 @@ import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { projectApi, groupApi } from "@/api";
+import GroupRejectedBanner from "@/components/group/GroupRejectedBanner";
+import { useGroupRejection } from "@/hooks/group";
 
 /** getMyApplications 응답에서 groupId에 해당하는 myStatus 추출 */
-function getMyStatusForGroup(raw: unknown, groupId: number): "PENDING" | "ACTIVE" | "REJECTED" | null {
+function getMyStatusForGroup(
+  raw: unknown,
+  groupId: number,
+): "PENDING" | "ACTIVE" | "REJECTED" | null {
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, unknown>;
   const data = obj.data ?? obj;
-  const list = Array.isArray(data) ? data : (data && typeof data === "object" && "content" in data) ? (data as { content?: unknown }).content ?? [] : [];
+  const list = Array.isArray(data)
+    ? data
+    : data && typeof data === "object" && "content" in data
+      ? ((data as { content?: unknown }).content ?? [])
+      : [];
   if (!Array.isArray(list)) return null;
   for (const item of list) {
     const i = item as Record<string, unknown>;
@@ -150,10 +159,18 @@ export default function ProjectDetailPage() {
     },
   });
 
+  const { group, isRejected, resubmit, isResubmitting } = useGroupRejection({
+    groupId,
+    enabled: isLeader,
+    detailQueryKey: ["project", numericId],
+  });
+
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, {
+        groupRecruitmentStatus: "CLOSED",
+      });
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
@@ -172,12 +189,18 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["groups", "my", "applications"],
+      });
       alert("프로젝트 신청이 완료되었습니다.");
     },
-    onError: () => {
+    onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      alert("이미 들어간 프로젝트입니다.");
+      // 중복 신청 말고도 재신청 횟수 초과 등 사유가 여럿이라 서버 문구를 그대로 쓴다
+      alert(
+        (err as Error)?.message ||
+          "프로젝트 신청에 실패했습니다. 다시 시도해주세요.",
+      );
     },
   });
 
@@ -190,7 +213,9 @@ export default function ProjectDetailPage() {
     onSuccess: () => {
       setJustApplied(false);
       queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({ queryKey: ["groups", "my", "applications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["groups", "my", "applications"],
+      });
       alert("프로젝트 신청이 취소되었습니다.");
     },
   });
@@ -246,7 +271,7 @@ export default function ProjectDetailPage() {
           <DetailTemplate
             backPath="/project"
             title={projectData.title ?? ""}
-            status={statusKey}
+            status={isRejected ? "rejected" : statusKey}
             author={authorDisplay}
             date={formatDate(projectData.createdAt)}
             views={projectData.viewCount ?? 0}
@@ -256,6 +281,16 @@ export default function ProjectDetailPage() {
             maxMembers={projectData?.maxMembers}
             deadline={projectData?.deadline}
             content={projectData.content ?? ""}
+            notice={
+              isRejected && group ? (
+                <GroupRejectedBanner
+                  group={group}
+                  onResubmit={resubmit}
+                  onEdit={() => router.push(`/project/write?id=${id}`)}
+                  isSubmitting={isResubmitting}
+                />
+              ) : undefined
+            }
             onEdit={
               isLeader
                 ? () => {
@@ -295,7 +330,10 @@ export default function ProjectDetailPage() {
                     현재 인원 확인
                   </button>
                 </div>
-              ) : justApplied || myStatus === "PENDING" || myStatus === "ACTIVE" || projectData?.hasApplied ? (
+              ) : justApplied ||
+                myStatus === "PENDING" ||
+                myStatus === "ACTIVE" ||
+                projectData?.hasApplied ? (
                 <button
                   type="button"
                   onClick={() => {

@@ -1,5 +1,6 @@
 "use client";
 import { useState, Suspense } from "react";
+import { type UserInfo } from "@/api";
 import StepOne from "@/components/signup/StepOne";
 import StepTwo from "@/components/signup/StepTwo";
 import SignupCompleteModal from "@/components/signup/SignupCompleteModal";
@@ -7,6 +8,8 @@ import SignupCompleteModal from "@/components/signup/SignupCompleteModal";
 function JoinPageContent() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [verifiedEmail, setVerifiedEmail] = useState<string>("");
+  // 합격자 인증 결과는 가입이 끝날 때까지 이 화면에서만 들고 있는다
+  const [verifiedUser, setVerifiedUser] = useState<UserInfo | null>(null);
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -26,13 +29,15 @@ function JoinPageContent() {
         <div>
           {currentStep === 1 ? (
             <StepOne
-              onVerified={(_, email) => {
+              onVerified={(user, email) => {
+                setVerifiedUser(user);
                 setVerifiedEmail(email);
                 setCurrentStep(2);
               }}
             />
           ) : (
             <StepTwo
+              user={verifiedUser}
               email={verifiedEmail}
               onCompleted={() => setShowModal(true)}
             />

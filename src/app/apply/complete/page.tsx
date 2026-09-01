@@ -2,23 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-const CHANNELS = [
-  {
-    badges: ["카카오톡", "공지방"],
-    url: "https://invite.kakao.com/tc/6OyB8jADes",
-  },
-  {
-    badges: ["카카오톡", "수다방"],
-    url: "https://invite.kakao.com/tc/WfLi7TTAEp",
-  },
-  {
-    badges: ["디스코드"],
-    text: "초대 링크가 가입 시 입력하신 이메일로 발송되었습니다.",
-  },
-];
+import { useOnboardingLinks } from "@/hooks/apply";
 
 export default function ApplyCompletePage() {
+  const { links } = useOnboardingLinks();
+
+  // 운영진이 등록한 채널만 노출한다. 링크도 안내 문구도 없으면 카드 자체를 빼는 게 낫다.
+  const channels = [
+    { badges: ["카카오톡", "공지방"], url: links?.kakaoNotiUrl },
+    { badges: ["카카오톡", "수다방"], url: links?.kakaoChatUrl },
+    { badges: ["카카오톡", "회비 확인·문의"], url: links?.openChatUrl },
+    {
+      badges: ["디스코드"],
+      url: links?.discordUrl,
+      text: "초대 링크가 가입 시 입력하신 이메일로 발송되었습니다.",
+    },
+  ].filter((channel) => channel.url?.trim() || channel.text);
+
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16">
       <div className="w-full max-w-[420px] bg-white rounded-xl shadow-sm px-8 py-10 flex flex-col items-center gap-6">
@@ -35,12 +35,13 @@ export default function ApplyCompletePage() {
           <p className="text-body-sm text-gray-500">
             회비 납부 확인 후 운영진의 승인을 기다리는 중입니다.
             <br />
-            보통 1~3일 소요되며, 승인이 완료되면 이메일·카카오톡으로 안내드립니다.
+            보통 1~3일 소요되며, 승인이 완료되면 이메일·카카오톡으로
+            안내드립니다.
           </p>
         </div>
 
         <div className="w-full flex flex-col gap-3">
-          {CHANNELS.map((channel, idx) => (
+          {channels.map((channel, idx) => (
             <div
               key={idx}
               className="rounded-xl border border-gray-200 px-4 py-3.5 flex flex-col gap-2"
@@ -55,7 +56,7 @@ export default function ApplyCompletePage() {
                   </span>
                 ))}
               </div>
-              {channel.url ? (
+              {channel.url?.trim() ? (
                 <a
                   href={channel.url}
                   target="_blank"
