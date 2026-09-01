@@ -86,7 +86,10 @@ export default function StaffAssignSection() {
         const inner = obj?.data;
         if (Array.isArray(inner)) return inner as MemberInfo[];
         const paged = inner as { content?: MemberInfo[] } | undefined;
-        return paged?.content ?? [];
+        if (paged?.content) return paged.content;
+        // data 없이 최상위에 content가 오는 페이징 응답도 있다
+        const topLevel = obj as { content?: MemberInfo[] } | undefined;
+        return topLevel?.content ?? [];
       };
 
       // 서버가 size 파라미터를 무시하고 고정 크기(10명)로 반환 → length<size 종료 판정 불가.
