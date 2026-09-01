@@ -12,14 +12,20 @@ type SignUpParams = {
 };
 
 /**
- * 서버는 중복을 409 E-COMMON-0003 "중복 리소스"로만 알려준다.
- * 무엇이 중복인지 구분되지 않아(백엔드 확인 요청 중) 사용자가 할 수 있는 행동으로 안내한다.
+ * 서버가 무엇이 중복인지 도메인 코드로 구분해준다.
+ * E-COMMON-0003은 코드 분리 이전 응답이라 구분이 안 되므로 뭉뚱그린 안내를 유지한다.
  */
 function parseSignUpError(err: unknown): string {
   if (err instanceof AxiosError && err.response) {
     const { status, data } = err.response;
     const code = (data as { code?: string } | undefined)?.code;
 
+    if (code === "E-AUTH-0009") {
+      return "이미 사용 중인 이메일이에요.\n다른 학교 이메일을 입력해주세요.";
+    }
+    if (code === "E-AUTH-0010") {
+      return "이미 가입된 학번이에요.\n로그인하거나 관리자에게 문의해주세요.";
+    }
     if (code === "E-COMMON-0003" || status === 409) {
       return "이미 가입에 사용된 정보예요.\n다른 학교 이메일을 입력하거나 관리자에게 문의해주세요.";
     }

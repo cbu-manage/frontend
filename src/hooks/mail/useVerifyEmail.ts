@@ -65,8 +65,11 @@ export function useVerifyEmail() {
 
   return {
     emailError: sendMutation.isError,
+    // 도메인 제한·발송 한도는 서버가 사유를 한국어로 내려주므로 그대로 보여준다
     emailErrorMessage: sendMutation.error
-      ? "서버 요청에 실패했습니다. 다시 시도해주세요."
+      ? ((sendMutation.error as { response?: { data?: { message?: string } } })
+          ?.response?.data?.message ??
+        "서버 요청에 실패했습니다. 다시 시도해주세요.")
       : sendMutation.data?.data?.data?.responseMessage || "",
     verificationError: verifyMutation.isError,
     verificationErrorMessage: "",
