@@ -123,6 +123,9 @@ function clearLocalDraft() {
   }
 }
 
+/** 서술형 답변 글자수 상한. 서버에 제한이 없어 화면에서 잡는다 */
+const ANSWER_MAX_LENGTH = 1000;
+
 function validate(
   form: FormState,
   questions: ApplicationQuestion[],
@@ -153,8 +156,11 @@ function validate(
   // 어떤 질문이 필수인지는 서버에 등록된 질문(isRequired)이 정한다
   const answerErrors: Record<string, string> = {};
   questions.forEach((q) => {
-    if (q.isRequired && !(answers[q.type] ?? "").trim()) {
+    const answer = answers[q.type] ?? "";
+    if (q.isRequired && !answer.trim()) {
       answerErrors[q.type] = "필수 답변이에요. 내용을 입력해주세요.";
+    } else if (answer.length > ANSWER_MAX_LENGTH) {
+      answerErrors[q.type] = `${ANSWER_MAX_LENGTH}자 이내로 작성해주세요.`;
     }
   });
   if (Object.keys(answerErrors).length > 0) errors.answers = answerErrors;
@@ -510,15 +516,23 @@ export default function ApplyFormPage() {
                       value={answers[q.type] ?? ""}
                       onChange={(e) => setAnswer(q.type)(e.target.value)}
                       rows={5}
+                      maxLength={ANSWER_MAX_LENGTH}
                       className={`w-full rounded-xl px-4 py-4 text-base font-medium tracking-[-0.048px] leading-normal border text-gray-900 placeholder:text-gray-600 outline-none transition-all duration-150 resize-none ${
                         errors.answers?.[q.type]
                           ? "border-notice bg-gray-0"
                           : "border-gray-200 bg-gray-0 focus:border-brand focus:ring-1 focus:ring-brand"
                       }`}
                     />
-                    {errors.answers?.[q.type] && (
-                      <FieldError message={errors.answers[q.type]} />
-                    )}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        {errors.answers?.[q.type] && (
+                          <FieldError message={errors.answers[q.type]} />
+                        )}
+                      </div>
+                      <span className="shrink-0 text-caption text-gray-500 tabular-nums">
+                        {(answers[q.type] ?? "").length} / {ANSWER_MAX_LENGTH}
+                      </span>
+                    </div>
                   </div>
                 ))
               )}
