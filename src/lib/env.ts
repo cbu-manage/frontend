@@ -22,4 +22,12 @@ export const serverEnv = {
   get backendUrl(): string {
     return (process.env.BACKEND_URL ?? "").replace(/\/$/, "");
   },
+
+  /**
+   * 백엔드와 나눠 갖는 비밀값(서버 전용). BFF가 넘기는 클라이언트 IP를
+   * 백엔드가 신뢰할지 판단하는 데 쓴다. 미설정이면 IP를 넘기지 않는다.
+   */
+  get proxySecret(): string {
+    return process.env.PROXY_SECRET ?? "";
+  },
 } as const;
