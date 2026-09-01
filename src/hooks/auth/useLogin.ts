@@ -123,10 +123,6 @@ export function useLogin(redirectUrl?: string) {
         setErrorMessage("아이디와 비밀번호를 입력하세요.");
         return;
       }
-      if (!/^cbu\d+$/.test(params.studentId)) {
-        alert("아이디를 다시 확인해주세요!");
-        return;
-      }
       mutation.mutate(params);
     },
     [mutation],
