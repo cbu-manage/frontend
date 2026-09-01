@@ -19,8 +19,11 @@
 
 - `baseURL`: `NEXT_PUBLIC_API_URL`이 없으면 **`/api/v1`로 폴백**(BFF 경유).
 - `withCredentials: true` — 쿠키 자동 포함(세션).
-- **인터셉터**: 401/403 → `/login/refresh` → 원요청 재시도. refresh 실패 시 `clearUser()` + `/login` 이동.
-- ✅ **401/403을 컴포넌트에서 직접 처리하지 말 것** — 인터셉터가 담당.
+- **인터셉터**: **401**(인증 안 됨) → `/login/refresh` → 원요청 재시도. refresh 실패 시 `clearUser()` + `/login` 이동.
+- **403**(권한 부족)은 갱신해도 결과가 같으므로 재시도하지 않고 그대로 호출부로 돌려준다.
+- ✅ **401을 컴포넌트에서 직접 처리하지 말 것** — 인터셉터가 담당. 403은 화면에서 안내한다.
+- 서버는 실패 시 `{ code, message }`를 준다. 같은 상태코드라도 원인이 다를 수 있으니
+  **상태코드가 아니라 `code`로 분기**한다 → `src/lib/errorCode.ts`의 `apiErrorMessage()` 사용.
 
 ## 2. `*.api.ts` 패턴
 
