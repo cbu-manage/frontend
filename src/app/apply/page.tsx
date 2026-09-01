@@ -7,9 +7,30 @@ import { useRouter } from "next/navigation";
 import { applyApi } from "@/api";
 import { useRecruitmentInfo } from "@/hooks/apply";
 
+/** yyyy-MM-dd. 자정 경계를 사용자의 오늘로 판정하려고 로컬 날짜를 쓴다 */
+function todayLocal(): string {
+  const now = new Date();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${m}-${d}`;
+}
+
 export default function ApplyIntroPage() {
   // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
-  const { generationLabel } = useRecruitmentInfo();
+  const { generationLabel, periodLabel, resultLabel, recruitment } =
+    useRecruitmentInfo();
+  const today = todayLocal();
+  const startsAt = recruitment?.plannedStartDate ?? null;
+  const endsAt = recruitment?.plannedEndDate ?? null;
+  const isBeforeStart = !!startsAt && today < startsAt;
+  const isAfterEnd = !!endsAt && today > endsAt;
+  // 진행 중인 모집이 없으면 서버가 404를 주므로 recruitment 자체가 null이 된다
+  const isOpen = !!recruitment && !isBeforeStart && !isAfterEnd;
+  const closedReason = !recruitment
+    ? "지금은 모집 기간이 아니에요"
+    : isBeforeStart
+      ? "아직 모집 시작 전이에요"
+      : "모집이 마감됐어요";
   const router = useRouter();
   const [studentId, setStudentId] = useState("");
   const [nickname, setNickname] = useState("");
@@ -70,12 +91,34 @@ export default function ApplyIntroPage() {
               {generationLabel ? `${generationLabel} 신입` : "새 부원"}을
               기다리고 있어요!
             </p>
-            <Link
-              href="/apply/form"
-              className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-white text-brand font-semibold hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              신청서 작성
-            </Link>
+            {(periodLabel || resultLabel) && (
+              <dl className="mt-1 flex flex-col gap-1 text-body-sm text-gray-700">
+                {periodLabel && (
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium">모집 기간</dt>
+                    <dd>{periodLabel}</dd>
+                  </div>
+                )}
+                {resultLabel && (
+                  <div className="flex gap-2">
+                    <dt className="shrink-0 font-medium">결과 발표</dt>
+                    <dd>{resultLabel}</dd>
+                  </div>
+                )}
+              </dl>
+            )}
+            {isOpen ? (
+              <Link
+                href="/apply/form"
+                className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-white text-brand font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+              >
+                신청서 작성
+              </Link>
+            ) : (
+              <div className="mt-3 w-full max-w-xs flex items-center justify-center h-12 rounded-full bg-gray-100 text-gray-500 font-semibold cursor-not-allowed">
+                {closedReason}
+              </div>
+            )}
           </div>
         </div>
 

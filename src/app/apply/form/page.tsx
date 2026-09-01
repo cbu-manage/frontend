@@ -129,7 +129,11 @@ function validate(
   answers: Record<string, string>,
 ): FormErrors {
   const errors: FormErrors = {};
-  if (!form.isEmailVerified) errors.email = "이메일 인증을 완료해주세요.";
+  // 인증 전에는 나머지 칸이 잠겨 있다. 잠긴 칸의 에러까지 함께 띄우면 무엇을 하라는 건지 알기 어렵다
+  if (!form.isEmailVerified) {
+    errors.email = "이메일 인증을 완료해주세요.";
+    return errors;
+  }
   if (!form.name.trim()) errors.name = "이름을 입력해주세요.";
   if (!form.nickname.trim()) errors.nickname = "닉네임을 입력해주세요.";
   if (!form.studentId) {

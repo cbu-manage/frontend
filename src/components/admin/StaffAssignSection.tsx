@@ -60,10 +60,11 @@ export default function StaffAssignSection() {
   const canAssign = useCan("staff.assign");
   // 회장·부회장 칸은 ADMIN(owner)에게만 노출
   const canAssignLeader = useCan("staff.assignLeader");
-  const roleDefs = useMemo(
-    () => (canAssignLeader ? [...LEADER_DEFS, ...STAFF_DEFS] : STAFF_DEFS),
-    [canAssignLeader],
-  );
+  // 회장·부회장 카드는 누구에게나 보여준다. 회장 본인이 자기 자리를 확인할 수 없으면
+  // 화면이 "운영진 명단"으로서 성립하지 않는다. 지정·해제 버튼만 ADMIN에게 준다.
+  const roleDefs = useMemo(() => [...LEADER_DEFS, ...STAFF_DEFS], []);
+  const isLeaderRole = (role: string) =>
+    LEADER_DEFS.some((def) => def.role === role);
 
   const [addTarget, setAddTarget] = useState<RoleDef | null>(null);
   const [query, setQuery] = useState("");
@@ -211,6 +212,7 @@ export default function StaffAssignSection() {
       <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-2">
         {roleDefs.map((def) => {
           const roleMembers = membersByRole[def.role] ?? [];
+          const canEditRole = isLeaderRole(def.role) ? canAssignLeader : true;
           return (
             <div
               key={def.role}
@@ -220,14 +222,16 @@ export default function StaffAssignSection() {
                 <span className="text-sm font-bold text-white">
                   {def.label}
                 </span>
-                <button
-                  type="button"
-                  aria-label={`${def.label} 운영진 추가`}
-                  onClick={() => setAddTarget(def)}
-                  className="flex size-6 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
-                >
-                  <Plus size={14} />
-                </button>
+                {canEditRole && (
+                  <button
+                    type="button"
+                    aria-label={`${def.label} 운영진 추가`}
+                    onClick={() => setAddTarget(def)}
+                    className="flex size-6 items-center justify-center rounded-full bg-white/30 text-white transition-colors hover:bg-white/40"
+                  >
+                    <Plus size={14} />
+                  </button>
+                )}
               </div>
               <ul className="divide-y divide-gray-100 px-4 py-1">
                 {roleMembers.length === 0 ? (
@@ -243,15 +247,17 @@ export default function StaffAssignSection() {
                       <span className="text-sm text-gray-900">
                         {m.generation}기 {m.name}
                       </span>
-                      <button
-                        type="button"
-                        aria-label={`${m.name} 해제`}
-                        onClick={() => handleRemove(m)}
-                        disabled={updateMutation.isPending}
-                        className="text-gray-400 transition-colors hover:text-danger disabled:opacity-40"
-                      >
-                        <X size={18} />
-                      </button>
+                      {canEditRole && (
+                        <button
+                          type="button"
+                          aria-label={`${m.name} 해제`}
+                          onClick={() => handleRemove(m)}
+                          disabled={updateMutation.isPending}
+                          className="text-gray-400 transition-colors hover:text-danger disabled:opacity-40"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
                     </li>
                   ))
                 )}

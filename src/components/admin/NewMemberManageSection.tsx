@@ -571,9 +571,11 @@ export default function NewMemberManageSection() {
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   투표 결과
                 </th>
-                <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
-                  내 검토 여부
-                </th>
+                {canVote && (
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
+                    내 검토 여부
+                  </th>
+                )}
                 <th className="px-3 py-3 text-center text-xs font-medium text-gray-500">
                   OT 참석
                 </th>
@@ -588,7 +590,10 @@ export default function NewMemberManageSection() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {applicants.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-gray-400">
+                  <td
+                    colSpan={canVote ? 10 : 9}
+                    className="py-12 text-center text-gray-400"
+                  >
                     해당 조건의 신청자가 없습니다.
                   </td>
                 </tr>
@@ -655,13 +660,15 @@ export default function NewMemberManageSection() {
                       <td className="px-3 py-3 text-center text-gray-900 tabular-nums">
                         {item.passCount} / {voterCount}
                       </td>
-                      <td className="px-3 py-3 text-center">
-                        <span
-                          className={`font-semibold ${item.myReviewed ? "text-success" : "text-danger"}`}
-                        >
-                          {item.myReviewed ? "Y" : "N"}
-                        </span>
-                      </td>
+                      {canVote && (
+                        <td className="px-3 py-3 text-center">
+                          <span
+                            className={`font-semibold ${item.myReviewed ? "text-success" : "text-danger"}`}
+                          >
+                            {item.myReviewed ? "Y" : "N"}
+                          </span>
+                        </td>
+                      )}
                       <td className="px-3 py-3 text-center">
                         <span
                           className={`font-semibold ${item.canOt ? "text-success" : "text-danger"}`}
