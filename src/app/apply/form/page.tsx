@@ -509,11 +509,16 @@ export default function ApplyFormPage() {
               ) : (
                 sortedQuestions.map((q) => (
                   <div key={q.questionUuid} className="space-y-1.5">
-                    <p className="text-body-sm font-medium text-gray-900">
+                    <p
+                      id={`question-${q.questionUuid}`}
+                      className="text-body-sm font-medium text-gray-900"
+                    >
                       {q.question}
                       {q.isRequired && <span className="text-notice"> *</span>}
                     </p>
                     <textarea
+                      aria-labelledby={`question-${q.questionUuid}`}
+                      aria-required={q.isRequired}
                       placeholder={q.description || "답변을 작성해주세요."}
                       value={answers[q.type] ?? ""}
                       onChange={(e) => setAnswer(q.type)(e.target.value)}
