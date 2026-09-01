@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FOREIGN_DOMAIN_NOTICE, parseSchoolEmailId } from "@/lib/email";
 import { type UserInfo } from "@/hooks/user";
 import { useValidateUser } from "@/hooks/user/useValidateUser";
 import { useVerifyEmail } from "@/hooks/mail";
@@ -14,6 +15,7 @@ export default function StepOne({
   const [studentNumber, setStudentNumber] = useState("");
   const [nickName, setNickName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [verifiedUserInfo, setVerifiedUserInfo] = useState<UserInfo | null>(
     null,
@@ -141,7 +143,13 @@ export default function StepOne({
               type="text"
               placeholder="이메일 아이디"
               value={email}
-              onChange={(e) => setEmail(e.target.value.replace(/@.*$/, ""))}
+              onChange={(e) => {
+                const { id, hasForeignDomain } = parseSchoolEmailId(
+                  e.target.value,
+                );
+                setEmail(id);
+                setEmailNotice(hasForeignDomain ? FOREIGN_DOMAIN_NOTICE : "");
+              }}
               disabled={!verifiedUserInfo}
               className={`flex-1 px-4 py-[15px] text-base font-medium tracking-[-0.048px] leading-normal border-0 outline-none ring-0 shadow-none bg-transparent ${
                 !verifiedUserInfo
@@ -157,6 +165,9 @@ export default function StepOne({
               @tukorea.ac.kr
             </span>
           </div>
+          {emailNotice && (
+            <p className="mt-1.5 text-caption text-notice">{emailNotice}</p>
+          )}
         </div>
         <div className="flex items-end">
           <Button

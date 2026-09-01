@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FOREIGN_DOMAIN_NOTICE, parseSchoolEmailId } from "@/lib/email";
 import { useVerifyEmail } from "@/hooks/mail";
 
 export interface EmailVerificationFieldProps {
@@ -121,14 +122,12 @@ export default function EmailVerificationField({
             placeholder="이메일 아이디"
             value={email}
             onChange={(e) => {
-              const value = e.target.value;
-              // 주소를 고치면 이전 발송 안내는 더 이상 맞지 않는다
-              setNotice(
-                value.includes("@")
-                  ? "학교 메일 아이디만 입력해주세요. @tukorea.ac.kr은 자동으로 붙어요."
-                  : "",
+              const { id, hasForeignDomain } = parseSchoolEmailId(
+                e.target.value,
               );
-              onEmailChange(value.split("@")[0]);
+              // 주소를 고치면 이전 발송 안내는 더 이상 맞지 않는다
+              setNotice(hasForeignDomain ? FOREIGN_DOMAIN_NOTICE : "");
+              onEmailChange(id);
             }}
             disabled={isVerified}
             aria-labelledby="email-verification-label"

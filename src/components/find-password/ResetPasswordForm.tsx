@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { FOREIGN_DOMAIN_NOTICE, parseSchoolEmailId } from "@/lib/email";
 import { useVerifyEmail } from "@/hooks/mail";
 import InputBox from "../common/InputBox";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export default function ResetPasswordForm({
 }) {
   const [studentNumber, setStudentNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [emailNotice, setEmailNotice] = useState("");
   const [authCode, setAuthCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -107,13 +109,22 @@ export default function ResetPasswordForm({
               type="text"
               placeholder="이메일 아이디"
               value={email}
-              onChange={(e) => setEmail(e.target.value.replace(/@.*$/, ""))}
+              onChange={(e) => {
+                const { id, hasForeignDomain } = parseSchoolEmailId(
+                  e.target.value,
+                );
+                setEmail(id);
+                setEmailNotice(hasForeignDomain ? FOREIGN_DOMAIN_NOTICE : "");
+              }}
               className="flex-1 px-4 py-[15px] text-base font-medium tracking-[-0.048px] leading-normal border-0 outline-none ring-0 shadow-none bg-transparent text-gray-900 placeholder:text-gray-600"
             />
             <span className="pr-4 text-base font-medium shrink-0 select-none text-gray-500">
               @tukorea.ac.kr
             </span>
           </div>
+          {emailNotice && (
+            <p className="mt-1.5 text-caption text-notice">{emailNotice}</p>
+          )}
         </div>
         <div className="flex items-end">
           <Button
