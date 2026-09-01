@@ -139,6 +139,11 @@ export default function ApplyIntroPage() {
               <br />
               입력해주세요!
             </p>
+            {/* 서버가 지원서를 낼 때마다 새 인증번호를 요구한다. 미리 알려주지 않으면
+                답변만 복원된 화면에서 왜 또 인증하냐는 인상을 준다 */}
+            <p className="text-caption text-gray-400">
+              불러온 뒤 다시 제출하려면 이메일 인증을 한 번 더 받아야 해요.
+            </p>
           </div>
 
           <div className="w-full space-y-3 mt-2">

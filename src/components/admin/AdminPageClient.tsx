@@ -44,6 +44,11 @@ export default function AdminPageClient() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
 
+  // 회비 안내 폼이 "동아리 일정 설정" 탭 안에 있어 총무도 들어와야 한다.
+  // 탭 안의 블록은 각각 capability로 갈려 있어서 총무에게는 회비 블록만 보인다.
+  const canEditSystemSettings = useCan("system.settings");
+  const canEditFee = useCan("fee.settings");
+
   // 권한별 메뉴 노출 (ADMIN=전부, 운영진 서브롤=해당 capability만)
   const canMap: Record<AdminMenuValue, boolean> = {
     members: useCan("members.read"),
@@ -51,7 +56,7 @@ export default function AdminPageClient() {
     reports: useCan("reportDocs.manage"),
     "new-members": useCan("applications.review"),
     staff: useCan("staff.assign"),
-    settings: useCan("system.settings"),
+    settings: canEditSystemSettings || canEditFee,
   };
   const visibleItems = ADMIN_MENU_ITEMS.filter((item) => canMap[item.value]);
 
