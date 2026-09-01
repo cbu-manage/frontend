@@ -31,6 +31,11 @@ function parseLoginError(err: unknown): string {
     const msg = (data as { message?: string } | undefined)?.message;
     if (msg) return msg;
   }
+  // 형식 검증처럼 우리가 직접 던진 오류는 그대로 보여준다.
+  // axios가 만든 영문 메시지(Network Error 등)는 새지 않도록 제외한다.
+  if (!(err instanceof AxiosError) && err instanceof Error && err.message) {
+    return err.message;
+  }
   return "로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
 }
 
@@ -48,7 +53,12 @@ export function useLogin(redirectUrl?: string) {
 
   const mutation = useMutation({
     mutationFn: async ({ studentId, password }: LoginParams) => {
-      const studentNumber = Number(String(studentId).replace(/^cbu/, ""));
+      // 회원가입 화면과 형식을 맞춘다. cbu 접두사는 붙여도 되고 안 붙여도 된다
+      const digits = String(studentId).trim().replace(/^cbu/i, "");
+      if (!/^\d{10}$/.test(digits)) {
+        throw new Error("학번은 10자리 숫자로 입력해주세요. (예: 2026000000)");
+      }
+      const studentNumber = Number(digits);
       const res = await authApi.login({ studentNumber, password });
       return { data: res.data.data, studentNumber, password };
     },
