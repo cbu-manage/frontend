@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { AxiosError } from "axios";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ko } from "date-fns/locale";
 import MultiSelect from "@/components/common/MultiSelect";
 import Toggle from "@/components/common/Toggle";
@@ -121,7 +121,9 @@ export default function ProjectWriteClient() {
       }
       if (typeof d.recruiting === "boolean")
         setRecruitStatus(d.recruiting ? "recruiting" : "completed");
-      if (d.deadline) setRecruitDeadline(new Date(d.deadline));
+      // new Date("2026-09-01")은 UTC 자정으로 읽혀 음수 시간대에서 하루 앞당겨진다.
+      // parseISO는 날짜 전용 문자열을 로컬 자정으로 읽는다.
+      if (d.deadline) setRecruitDeadline(parseISO(d.deadline));
       if (typeof d.maxMembers === "number") setRecruitCount(d.maxMembers);
     });
   }, [isValidEditId, editPayload]);
