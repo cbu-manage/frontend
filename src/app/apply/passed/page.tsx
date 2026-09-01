@@ -1,12 +1,21 @@
 "use client";
 
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useFeeInfo, useRecruitmentInfo } from "@/hooks/apply";
+import { useSearchParams } from "next/navigation";
+import {
+  useApplicationResult,
+  useFeeInfo,
+  useRecruitmentInfo,
+} from "@/hooks/apply";
 
-export default function ApplyPassedPage() {
+function ApplyPassedClient() {
   // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
   const { generationLabel } = useRecruitmentInfo();
+  // 합격 안내 메일 링크가 지원서 UUID를 달고 온다. 없으면 본인 정보 없이 안내만 보여준다
+  const applicationUuid = useSearchParams().get("a");
+  const { result } = useApplicationResult(applicationUuid);
   // 회비가 아직 등록되지 않았으면 금액을 지어내지 않고 안내만 한다
   const { feeInfo } = useFeeInfo();
   const feeDesc = feeInfo
@@ -33,27 +42,34 @@ export default function ApplyPassedPage() {
         <div className="text-center space-y-2">
           <h1 className="text-h1 text-gray-900">합격을 축하합니다!</h1>
           <p className="text-body-sm text-gray-500">
-            씨부엉 {generationLabel && `${generationLabel} `}신규 부원으로
-            선발되셨습니다.
+            씨부엉{" "}
+            {result
+              ? `${result.generation}기 `
+              : generationLabel && `${generationLabel} `}
+            신규 부원으로 선발되셨습니다.
             <br />
             운영진 모두가 환영합니다!
           </p>
         </div>
 
-        <div className="w-full rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2.5">
-          <div className="flex items-center gap-3">
-            <span className="text-body-sm text-gray-500 w-16 shrink-0">
-              학번
-            </span>
-            <span className="text-body-sm text-gray-900">2026XXXXXX</span>
+        {result && (
+          <div className="w-full rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2.5">
+            <div className="flex items-center gap-3">
+              <span className="text-body-sm text-gray-500 w-16 shrink-0">
+                학번
+              </span>
+              <span className="text-body-sm text-gray-900">
+                {result.maskedStudentNumber}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-body-sm text-gray-500 w-16 shrink-0">
+                이름
+              </span>
+              <span className="text-body-sm text-gray-900">{result.name}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-body-sm text-gray-500 w-16 shrink-0">
-              이름
-            </span>
-            <span className="text-body-sm text-gray-900">지원자명</span>
-          </div>
-        </div>
+        )}
 
         <div className="w-full flex flex-col gap-3">
           <h2 className="text-h3 text-gray-900">Next</h2>
@@ -80,5 +96,13 @@ export default function ApplyPassedPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+export default function ApplyPassedPage() {
+  return (
+    <Suspense fallback={null}>
+      <ApplyPassedClient />
+    </Suspense>
   );
 }
