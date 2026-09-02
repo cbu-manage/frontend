@@ -10,11 +10,14 @@ import { Calendar } from "@/components/ui/calendar";
 import FileUploadBox from "@/components/shared/FileUploadBox";
 import { groupApi, reportApi, type MyGroupItem } from "@/api";
 import { useUserStore } from "@/store/userStore";
+import RequireMember from "@/components/auth/RequireMember";
 
 export default function ReportUploadPage() {
   return (
     <Suspense fallback={null}>
-      <ReportUploadContent />
+      <RequireMember>
+        <ReportUploadContent />
+      </RequireMember>
     </Suspense>
   );
 }
@@ -33,7 +36,10 @@ function ReportUploadContent() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setDropdownOpen(false);
       }
     };
@@ -47,7 +53,10 @@ function ReportUploadContent() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+      if (
+        calendarRef.current &&
+        !calendarRef.current.contains(e.target as Node)
+      ) {
         setCalendarOpen(false);
       }
     };
@@ -110,7 +119,9 @@ function ReportUploadContent() {
 
   const toggleMember = (userId: number) => {
     setSelectedMemberIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
     );
   };
 
@@ -180,15 +191,18 @@ function ReportUploadContent() {
     }
   };
 
-  const selectedGroupName = groups.find((g) => g.groupId === groupId)?.groupName;
+  const selectedGroupName = groups.find(
+    (g) => g.groupId === groupId,
+  )?.groupName;
 
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-6 py-10">
-
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 border-0 no-underline">{isEdit ? "보고서 수정" : "새 보고서 업로드"}</h1>
+          <h1 className="text-2xl font-bold text-gray-900 border-0 no-underline">
+            {isEdit ? "보고서 수정" : "새 보고서 업로드"}
+          </h1>
           <div className="flex gap-2">
             <button
               type="button"
@@ -209,11 +223,12 @@ function ReportUploadContent() {
         </div>
 
         <div className="space-y-6">
-
           {/* 제목 + 스터디/프로젝트 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">보고서 제목</label>
+              <label className="text-sm font-medium text-gray-700">
+                보고서 제목
+              </label>
               <input
                 type="text"
                 value={title}
@@ -237,25 +252,37 @@ function ReportUploadContent() {
                     {selectedGroupName ?? "선택 가능 (본인이 속한 스터디)"}
                   </span>
                   {!isEdit && (
-                    <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      size={15}
+                      className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                    />
                   )}
                 </button>
                 {dropdownOpen && !isEdit && (
                   <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
                     {groups.length === 0 ? (
-                      <li className="px-3 py-2 text-sm text-gray-400">가입한 스터디/프로젝트가 없습니다</li>
+                      <li className="px-3 py-2 text-sm text-gray-400">
+                        가입한 스터디/프로젝트가 없습니다
+                      </li>
                     ) : (
                       groups.map((g) => (
                         <li key={g.groupId}>
                           <button
                             type="button"
-                            onClick={() => { handleGroupChange(g.groupId); setDropdownOpen(false); }}
+                            onClick={() => {
+                              handleGroupChange(g.groupId);
+                              setDropdownOpen(false);
+                            }}
                             className={`w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 transition-colors ${
-                              groupId === g.groupId ? "bg-report-soft" : "hover:bg-gray-50"
+                              groupId === g.groupId
+                                ? "bg-report-soft"
+                                : "hover:bg-gray-50"
                             }`}
                           >
                             {g.groupName}
-                            {groupId === g.groupId && <Check size={13} className="text-gray-700" />}
+                            {groupId === g.groupId && (
+                              <Check size={13} className="text-gray-700" />
+                            )}
                           </button>
                         </li>
                       ))
@@ -269,15 +296,21 @@ function ReportUploadContent() {
           {/* 시작일 + 작성자 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5" ref={calendarRef}>
-              <label className="text-sm font-medium text-gray-700">시작일</label>
+              <label className="text-sm font-medium text-gray-700">
+                시작일
+              </label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setCalendarOpen((v) => !v)}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-report-ring bg-white"
                 >
-                  <span className={startDate ? "text-gray-700" : "text-gray-400"}>
-                    {startDate ? format(startDate, "yyyy년 M월 d일", { locale: ko }) : "날짜를 선택하세요"}
+                  <span
+                    className={startDate ? "text-gray-700" : "text-gray-400"}
+                  >
+                    {startDate
+                      ? format(startDate, "yyyy년 M월 d일", { locale: ko })
+                      : "날짜를 선택하세요"}
                   </span>
                   <CalendarIcon size={15} className="text-gray-400" />
                 </button>
@@ -286,14 +319,19 @@ function ReportUploadContent() {
                     <Calendar
                       mode="single"
                       selected={startDate}
-                      onSelect={(date) => { setStartDate(date); setCalendarOpen(false); }}
+                      onSelect={(date) => {
+                        setStartDate(date);
+                        setCalendarOpen(false);
+                      }}
                     />
                   </div>
                 )}
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">작성자 (자동)</label>
+              <label className="text-sm font-medium text-gray-700">
+                작성자 (자동)
+              </label>
               <input
                 type="text"
                 value={userName}
@@ -306,7 +344,9 @@ function ReportUploadContent() {
 
           {/* 활동 장소 (유형은 서버가 그룹 기준으로 자동 판단 → 입력 UI 불필요) */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-gray-700">활동 장소</label>
+            <label className="text-sm font-medium text-gray-700">
+              활동 장소
+            </label>
             <input
               type="text"
               value={location}
@@ -318,18 +358,30 @@ function ReportUploadContent() {
 
           {/* 파일 업로드 (사진 1장 — 제출 시 S3 업로드 후 URL 전송) */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">파일 업로드</label>
+            <label className="text-sm font-medium text-gray-700">
+              파일 업로드
+            </label>
 
             {isEdit && reportImage && photoFiles.length === 0 && (
-              <p className="text-xs text-gray-400">기존 사진이 첨부되어 있습니다. 새로 올리면 교체됩니다.</p>
+              <p className="text-xs text-gray-400">
+                기존 사진이 첨부되어 있습니다. 새로 올리면 교체됩니다.
+              </p>
             )}
 
             {/* 사진 1장만 — 이미지 전용, 새로 고르면 교체 */}
-            <FileUploadBox files={photoFiles} onChange={setPhotoFiles} imageOnly accept="image/*" />
+            <FileUploadBox
+              files={photoFiles}
+              onChange={setPhotoFiles}
+              imageOnly
+              accept="image/*"
+            />
 
             <div className="flex items-center gap-3">
               <span className="text-sm text-gray-700">파싱 미리보기</span>
-              <button type="button" className="px-3 py-1.5 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <button
+                type="button"
+                className="px-3 py-1.5 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
                 자동 추출
               </button>
             </div>
@@ -338,7 +390,9 @@ function ReportUploadContent() {
           {/* 활동 내용 + 참여자 명단 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">활동 내용</label>
+              <label className="text-sm font-medium text-gray-700">
+                활동 내용
+              </label>
               <textarea
                 value={activity}
                 onChange={(e) => setActivity(e.target.value)}
@@ -348,18 +402,27 @@ function ReportUploadContent() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">참여자 명단</label>
+              <label className="text-sm font-medium text-gray-700">
+                참여자 명단
+              </label>
               <div className="w-full border border-gray-200 rounded-lg px-3 py-2 min-h-[120px]">
                 {groupId == null ? (
-                  <p className="text-sm text-gray-400">스터디/프로젝트를 먼저 선택하세요</p>
+                  <p className="text-sm text-gray-400">
+                    스터디/프로젝트를 먼저 선택하세요
+                  </p>
                 ) : members.length === 0 ? (
-                  <p className="text-sm text-gray-400">참여 가능한 멤버가 없습니다</p>
+                  <p className="text-sm text-gray-400">
+                    참여 가능한 멤버가 없습니다
+                  </p>
                 ) : (
                   <div className="flex flex-wrap gap-x-4 gap-y-2">
                     {members.map((m) => {
                       const checked = selectedMemberIds.includes(m.userId);
                       return (
-                        <label key={m.userId} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                        <label
+                          key={m.userId}
+                          className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none"
+                        >
                           <input
                             type="checkbox"
                             checked={checked}
@@ -368,10 +431,18 @@ function ReportUploadContent() {
                           />
                           <span
                             className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-gray-400 ${
-                              checked ? "bg-gray-800 border-gray-800" : "bg-white border-gray-300"
+                              checked
+                                ? "bg-gray-800 border-gray-800"
+                                : "bg-white border-gray-300"
                             }`}
                           >
-                            {checked && <Check size={10} className="text-white" strokeWidth={3} />}
+                            {checked && (
+                              <Check
+                                size={10}
+                                className="text-white"
+                                strokeWidth={3}
+                              />
+                            )}
                           </span>
                           {m.userGeneration}기 {m.userName}
                         </label>
@@ -386,7 +457,9 @@ function ReportUploadContent() {
           {/* 스터디 후 느낀 점 + 다음 주 계획 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">스터디 후 느낀 점</label>
+              <label className="text-sm font-medium text-gray-700">
+                스터디 후 느낀 점
+              </label>
               <textarea
                 value={reflection}
                 onChange={(e) => setReflection(e.target.value)}
@@ -396,7 +469,9 @@ function ReportUploadContent() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-700">다음 주 계획</label>
+              <label className="text-sm font-medium text-gray-700">
+                다음 주 계획
+              </label>
               <textarea
                 value={nextPlan}
                 onChange={(e) => setNextPlan(e.target.value)}
@@ -406,7 +481,6 @@ function ReportUploadContent() {
               />
             </div>
           </div>
-
         </div>
       </div>
     </main>
