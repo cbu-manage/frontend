@@ -147,6 +147,7 @@ export {
   type ApplicationRequest,
   type ApplicationMyRequest,
   type ApplicationMyResponse,
+  type ApplicationResult,
 } from "./apply.api";
 
 // News (공지·뉴스레터)
