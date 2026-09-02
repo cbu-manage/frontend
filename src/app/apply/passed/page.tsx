@@ -15,7 +15,7 @@ function ApplyPassedClient() {
   const { generationLabel } = useRecruitmentInfo();
   // 합격 안내 메일 링크가 지원서 UUID를 달고 온다. 없으면 본인 정보 없이 안내만 보여준다
   const applicationUuid = useSearchParams().get("a");
-  const { result } = useApplicationResult(applicationUuid);
+  const { result, isLoading } = useApplicationResult(applicationUuid);
   // 회비가 아직 등록되지 않았으면 금액을 지어내지 않고 안내만 한다
   const { feeInfo } = useFeeInfo();
   const feeDesc = feeInfo
@@ -27,6 +27,38 @@ function ApplyPassedClient() {
     { step: 2, label: "회비 납부", desc: feeDesc },
     { step: 3, label: "관리자 승인", desc: "홈페이지 활동 시작" },
   ];
+
+  // 조회 중에는 아무것도 단정하지 않는다(축하/실패 문구가 깜빡이지 않도록).
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <p className="text-body-sm text-gray-500">불러오는 중...</p>
+      </main>
+    );
+  }
+
+  // 본인 확인(합격 지원서 조회)이 안 되면 축하 화면을 보여주지 않는다.
+  // 안내 메일 링크(?a=UUID)로 들어온 합격자만 결과를 받는다.
+  if (!result) {
+    return (
+      <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-[420px] bg-white rounded-xl shadow-sm px-8 py-10 flex flex-col items-center gap-4 text-center">
+          <h1 className="text-h1 text-gray-900">본인 확인이 필요해요</h1>
+          <p className="text-body-sm text-gray-500">
+            합격 안내 메일에 담긴 링크로 들어와 주세요.
+            <br />
+            링크가 올바른지 다시 확인해 주세요.
+          </p>
+          <Link
+            href="/"
+            className="mt-4 inline-flex items-center justify-center rounded-xl bg-brand px-6 py-3 text-sm font-medium text-white hover:opacity-90 transition-opacity"
+          >
+            홈으로
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-16">

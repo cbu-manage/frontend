@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { applyApi } from "@/api";
+import { applyApi, type ApplicationResult } from "@/api";
 
 /**
  * 합격 안내 메일 링크(`?a=<지원서 UUID>`)로 들어온 사람의 본인 확인 정보.
@@ -15,7 +15,11 @@ export function useApplicationResult(applicationUuid: string | null) {
     enabled: !!applicationUuid,
     queryFn: async () => {
       try {
-        return (await applyApi.getResult(applicationUuid as string)).data.data;
+        // 이 엔드포인트만 서버가 봉투({code,message,data}) 없이 raw DTO로 응답한다.
+        // 봉투면 .data.data, raw면 .data 자체를 쓴다.
+        const body = (await applyApi.getResult(applicationUuid as string))
+          .data as unknown as ApplicationResult & { data?: ApplicationResult };
+        return body?.data ?? body ?? null;
       } catch {
         return null;
       }
