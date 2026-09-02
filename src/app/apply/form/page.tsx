@@ -38,6 +38,8 @@ type FormState = {
   answers: Record<string, string>;
   devLinks: string;
   howFound: string;
+  /** 유입경로가 "기타"일 때 직접 입력하는 상세. 서버 refLinkEtc로 전송 */
+  howFoundEtc: string;
   otAttendance: string;
   welcomePartyAttendance: string;
   privacyAgreed: boolean;
@@ -70,6 +72,7 @@ const INITIAL_FORM: FormState = {
   answers: {},
   devLinks: "",
   howFound: "에브리타임",
+  howFoundEtc: "",
   otAttendance: "가능",
   welcomePartyAttendance: "가능",
   privacyAgreed: false,
@@ -271,6 +274,7 @@ export default function ApplyFormPage() {
         .filter(Boolean),
       devLinks: draft.portfolioUrl ?? "",
       howFound: REF_SOURCE_MAP_REVERSE[draft.refSource] ?? "기타",
+      howFoundEtc: draft.refLinkEtc ?? "",
       // 라디오 선택지가 "가능"/"불가능"이라 값이 맞아야 선택 상태로 복원된다
       otAttendance: draft.canOt ? "가능" : "불가능",
       welcomePartyAttendance: draft.canWelcome ? "가능" : "불가능",
@@ -374,6 +378,7 @@ export default function ApplyFormPage() {
         answers,
         portfolioUrl: form.devLinks,
         refSource: REF_SOURCE_MAP[form.howFound] ?? "ETC",
+        refLinkEtc: form.howFound === "기타" ? form.howFoundEtc.trim() : "",
         canOt: form.otAttendance === "가능",
         canWelcome: form.welcomePartyAttendance === "가능",
         privacyPolicy: form.privacyAgreed,
@@ -555,6 +560,8 @@ export default function ApplyFormPage() {
               <HowFoundRadioGroup
                 value={form.howFound}
                 onChange={setField("howFound")}
+                etcValue={form.howFoundEtc}
+                onEtcChange={setField("howFoundEtc")}
               />
 
               <AttendanceRadioGroup

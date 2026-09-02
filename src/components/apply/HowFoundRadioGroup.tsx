@@ -10,11 +10,16 @@ const HOW_FOUND_OPTIONS = [
 interface HowFoundRadioGroupProps {
   value: string;
   onChange: (value: string) => void;
+  /** "기타" 선택 시 직접 입력하는 상세 값 */
+  etcValue?: string;
+  onEtcChange?: (value: string) => void;
 }
 
 export default function HowFoundRadioGroup({
   value,
   onChange,
+  etcValue = "",
+  onEtcChange,
 }: HowFoundRadioGroupProps) {
   return (
     <div className="space-y-1.5">
@@ -48,6 +53,15 @@ export default function HowFoundRadioGroup({
           </label>
         ))}
       </div>
+      {value === "기타" && onEtcChange && (
+        <input
+          type="text"
+          value={etcValue}
+          onChange={(e) => onEtcChange(e.target.value)}
+          placeholder="어떻게 알게 되셨는지 알려주세요"
+          className="mt-2 w-full border border-gray-200 rounded-lg px-3 py-2 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand"
+        />
+      )}
     </div>
   );
 }

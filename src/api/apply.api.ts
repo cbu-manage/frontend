@@ -43,6 +43,7 @@ export type ApplicationRequest = {
   answers: Record<string, string>;
   portfolioUrl: string;
   refSource: string;
+  refLinkEtc: string;
   canOt: boolean;
   canWelcome: boolean;
   privacyPolicy: boolean;
