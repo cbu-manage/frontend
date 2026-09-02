@@ -1,5 +1,7 @@
 "use client";
 
+import InputBox from "@/components/common/InputBox";
+
 const HOW_FOUND_OPTIONS = [
   "에브리타임",
   "인스타그램",
@@ -54,13 +56,15 @@ export default function HowFoundRadioGroup({
         ))}
       </div>
       {value === "기타" && onEtcChange && (
-        <input
-          type="text"
-          value={etcValue}
-          onChange={(e) => onEtcChange(e.target.value)}
-          placeholder="어떻게 알게 되셨는지 알려주세요"
-          className="mt-2 w-full border border-gray-200 rounded-lg px-3 py-2 text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand"
-        />
+        <div className="mt-2">
+          <InputBox
+            variant="outline"
+            aria-label="기타 유입 경로 상세"
+            value={etcValue}
+            onChange={(e) => onEtcChange(e.target.value)}
+            placeholder="어떻게 알게 되셨는지 알려주세요"
+          />
+        </div>
       )}
     </div>
   );

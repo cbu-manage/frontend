@@ -16,10 +16,13 @@ export function useApplicationResult(applicationUuid: string | null) {
     queryFn: async () => {
       try {
         // 이 엔드포인트만 서버가 봉투({code,message,data}) 없이 raw DTO로 응답한다.
-        // 봉투면 .data.data, raw면 .data 자체를 쓴다.
+        // 봉투면 data 필드(없거나 null이면 null), raw DTO면 그 자체를 쓴다.
         const body = (await applyApi.getResult(applicationUuid as string))
-          .data as unknown as ApplicationResult & { data?: ApplicationResult };
-        return body?.data ?? body ?? null;
+          .data as unknown;
+        if (body && typeof body === "object" && "data" in body) {
+          return (body as { data?: ApplicationResult | null }).data ?? null;
+        }
+        return (body as ApplicationResult) ?? null;
       } catch {
         return null;
       }
