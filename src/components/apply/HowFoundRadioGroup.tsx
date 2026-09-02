@@ -1,5 +1,7 @@
 "use client";
 
+import InputBox from "@/components/common/InputBox";
+
 const HOW_FOUND_OPTIONS = [
   "에브리타임",
   "인스타그램",
@@ -10,11 +12,16 @@ const HOW_FOUND_OPTIONS = [
 interface HowFoundRadioGroupProps {
   value: string;
   onChange: (value: string) => void;
+  /** "기타" 선택 시 직접 입력하는 상세 값 */
+  etcValue?: string;
+  onEtcChange?: (value: string) => void;
 }
 
 export default function HowFoundRadioGroup({
   value,
   onChange,
+  etcValue = "",
+  onEtcChange,
 }: HowFoundRadioGroupProps) {
   return (
     <div className="space-y-1.5">
@@ -48,6 +55,17 @@ export default function HowFoundRadioGroup({
           </label>
         ))}
       </div>
+      {value === "기타" && onEtcChange && (
+        <div className="mt-2">
+          <InputBox
+            variant="outline"
+            aria-label="기타 유입 경로 상세"
+            value={etcValue}
+            onChange={(e) => onEtcChange(e.target.value)}
+            placeholder="어떻게 알게 되셨는지 알려주세요"
+          />
+        </div>
+      )}
     </div>
   );
 }

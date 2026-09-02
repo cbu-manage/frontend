@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import PostWriteForm from "@/components/board/PostWriteForm";
 import { useNewsCreate, useNewsUpdate } from "@/hooks/news/useNewsMutation";
 import { newsApi, type NewsletterType } from "@/api";
+import RequireStaff from "@/components/auth/RequireStaff";
 
 const TYPE_MAP: Record<string, NewsletterType> = {
   주간: "WEEKLY",
@@ -134,7 +135,9 @@ export default function NewsWritePage() {
         </main>
       }
     >
-      <NewsWriteClient />
+      <RequireStaff>
+        <NewsWriteClient />
+      </RequireStaff>
     </Suspense>
   );
 }

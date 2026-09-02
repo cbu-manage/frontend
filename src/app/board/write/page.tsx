@@ -5,11 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import PostWriteForm from "@/components/board/PostWriteForm";
 import { useFreeboardDetail } from "@/hooks/board";
 import { freeboardApi } from "@/api";
+import RequireMember from "@/components/auth/RequireMember";
 
 function BoardWriteClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const editId = searchParams.get("edit") ? Number(searchParams.get("edit")) : null;
+  const editId = searchParams.get("edit")
+    ? Number(searchParams.get("edit"))
+    : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { postQuery } = useFreeboardDetail(editId ?? 0);
@@ -45,7 +48,9 @@ function BoardWriteClient() {
   if (editId && postQuery.isLoading) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+          불러오는 중...
+        </div>
       </main>
     );
   }
@@ -53,7 +58,9 @@ function BoardWriteClient() {
   if (editId && !postQuery.isLoading && !editPost) {
     return (
       <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">게시글을 찾을 수 없습니다.</div>
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+          게시글을 찾을 수 없습니다.
+        </div>
       </main>
     );
   }
@@ -67,7 +74,15 @@ function BoardWriteClient() {
       showAnonymous
       backPath={editId ? `/board/${editId}` : "/board"}
       contentPlaceholder="자유롭게 이야기를 나눠보세요."
-      initialValues={editPost ? { title: editPost.title ?? "", content: editPost.content ?? "", isAnonymous: editPost.isAnonymous ?? true } : undefined}
+      initialValues={
+        editPost
+          ? {
+              title: editPost.title ?? "",
+              content: editPost.content ?? "",
+              isAnonymous: editPost.isAnonymous ?? true,
+            }
+          : undefined
+      }
       onSubmit={handleSubmit}
       isSubmitting={isSubmitting}
     />
@@ -76,12 +91,18 @@ function BoardWriteClient() {
 
 export default function BoardWritePage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-white">
-        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
-      </main>
-    }>
-      <BoardWriteClient />
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
+        </main>
+      }
+    >
+      <RequireMember>
+        <BoardWriteClient />
+      </RequireMember>
     </Suspense>
   );
 }

@@ -201,6 +201,14 @@ export default function ClubScheduleSettingsSection() {
       return;
     }
     if (
+      recruitForm.plannedEndDate &&
+      recruitForm.announcementDate &&
+      recruitForm.announcementDate < recruitForm.plannedEndDate
+    ) {
+      alert("합격 발표일은 모집 종료일 이후여야 해요.");
+      return;
+    }
+    if (
       recruitForm.generation !== recruitment.generation &&
       !window.confirm(
         `기수를 ${recruitment.generation}기 → ${recruitForm.generation}기로 바꿉니다.\n\n` +
