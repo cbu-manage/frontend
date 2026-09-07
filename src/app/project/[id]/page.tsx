@@ -210,12 +210,16 @@ export default function ProjectDetailPage() {
       await groupApi.leave(groupId);
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
-    onSuccess: () => {
+    // 무효화를 await 해야 isPending 이 refetch 까지 유지된다. 먼저 풀리면
+    // 취소 버튼이 낡은 신청 상태로 다시 눌린다
+    onSuccess: async () => {
       setJustApplied(false);
-      queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({
-        queryKey: ["groups", "my", "applications"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["project", numericId] }),
+        queryClient.invalidateQueries({
+          queryKey: ["groups", "my", "applications"],
+        }),
+      ]);
       alert("프로젝트 신청이 취소되었습니다.");
     },
   });
