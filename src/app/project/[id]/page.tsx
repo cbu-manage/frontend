@@ -210,12 +210,16 @@ export default function ProjectDetailPage() {
       await groupApi.leave(groupId);
     },
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
-    onSuccess: () => {
+    // 무효화를 await 해야 isPending 이 refetch 까지 유지된다. 먼저 풀리면
+    // 취소 버튼이 낡은 신청 상태로 다시 눌린다
+    onSuccess: async () => {
       setJustApplied(false);
-      queryClient.invalidateQueries({ queryKey: ["project", numericId] });
-      queryClient.invalidateQueries({
-        queryKey: ["groups", "my", "applications"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["project", numericId] }),
+        queryClient.invalidateQueries({
+          queryKey: ["groups", "my", "applications"],
+        }),
+      ]);
       alert("프로젝트 신청이 취소되었습니다.");
     },
   });
@@ -336,15 +340,16 @@ export default function ProjectDetailPage() {
                 projectData?.hasApplied ? (
                 <button
                   type="button"
+                  disabled={cancelApplyMutation.isPending}
                   onClick={() => {
-                    if (!groupId) return;
+                    if (!groupId || cancelApplyMutation.isPending) return;
                     if (window.confirm("이 프로젝트 신청을 취소할까요?")) {
                       cancelApplyMutation.mutate();
                     }
                   }}
-                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white"
                 >
-                  신청 취소
+                  {cancelApplyMutation.isPending ? "취소 중..." : "신청 취소"}
                 </button>
               ) : !projectData?.recruiting ? (
                 <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-500 text-base font-semibold cursor-not-allowed">
@@ -353,15 +358,18 @@ export default function ProjectDetailPage() {
               ) : (
                 <button
                   type="button"
+                  /* 광클·더블클릭으로 신청이 두 번 나가면 서버에 중복 행이 생겨
+                     이후 이 프로젝트 상세가 영구히 열리지 않는다. 요청 중에는 눌리지 않게 막는다 */
+                  disabled={applyMutation.isPending}
                   onClick={() => {
-                    if (!groupId) return;
+                    if (!groupId || applyMutation.isPending) return;
                     if (window.confirm("이 프로젝트에 신청하시겠습니까?")) {
                       applyMutation.mutate();
                     }
                   }}
-                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white"
                 >
-                  신청하기
+                  {applyMutation.isPending ? "신청 중..." : "신청하기"}
                 </button>
               )
             }
