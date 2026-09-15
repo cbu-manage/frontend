@@ -2,12 +2,14 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
-import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
+import { ChevronLeft, Clock, Eye, MessageCircle, Pin } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
 import { useNewsDetail } from "@/hooks/news/useNewsDetail";
+import { useNewsPin } from "@/hooks/news/useNewsMutation";
+import { useCan } from "@/hooks/auth";
 import { useUserStore } from "@/store/userStore";
 import { formatDate } from "@/lib/date";
 import type { MappedComment } from "@/hooks/board";
@@ -22,7 +24,10 @@ function countComments(items: MappedComment[]): number {
   return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
 }
 
-function findCommentById(list: MappedComment[], id: number): MappedComment | null {
+function findCommentById(
+  list: MappedComment[],
+  id: number,
+): MappedComment | null {
   for (const c of list) {
     if (c.id === id) return c;
     const found = findCommentById(c.replies, id);
@@ -39,6 +44,9 @@ export default function NoticeDetailPage() {
 
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
+  // 고정은 작성자가 아니라 소식 관리 권한(회장·부회장·홍보·ADMIN) 기준 — 서버 허용 역할과 동일
+  const canManageNews = useCan("news.manage");
+  const pinNews = useNewsPin();
 
   const {
     postQuery,
@@ -67,6 +75,15 @@ export default function NoticeDetailPage() {
     }
   };
 
+  const handleTogglePin = async () => {
+    if (!post || pinNews.isPending) return;
+    try {
+      await pinNews.mutateAsync({ id: newsId, pinned: !post.pinned });
+    } catch {
+      window.alert("고정 상태를 바꾸지 못했습니다. 다시 시도해주세요.");
+    }
+  };
+
   const handleDelete = async () => {
     if (!window.confirm("이 글을 삭제할까요?")) return;
     try {
@@ -90,10 +107,16 @@ export default function NoticeDetailPage() {
 
   const handleCommentEdit = async (commentId: number) => {
     const target = findCommentById(comments, commentId);
-    const newContent = window.prompt("수정할 내용을 입력하세요.", target?.content ?? "");
+    const newContent = window.prompt(
+      "수정할 내용을 입력하세요.",
+      target?.content ?? "",
+    );
     if (newContent == null || !newContent.trim()) return;
     try {
-      await updateComment.mutateAsync({ commentId, content: newContent.trim() });
+      await updateComment.mutateAsync({
+        commentId,
+        content: newContent.trim(),
+      });
     } catch {
       window.alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
     }
@@ -103,7 +126,9 @@ export default function NoticeDetailPage() {
     return (
       <RequireMember>
         <main className="min-h-screen bg-white">
-          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
         </main>
       </RequireMember>
     );
@@ -140,17 +165,48 @@ export default function NoticeDetailPage() {
               >
                 <ChevronLeft size={16} /> 목록으로
               </button>
-              <KebabMenu
-                onEdit={isAuthor ? () => router.push(`/notice/write?edit=${newsId}`) : undefined}
-                onDelete={isAuthor ? handleDelete : undefined}
-              />
+              <div className="flex items-center gap-2">
+                {canManageNews && (
+                  <button
+                    type="button"
+                    onClick={handleTogglePin}
+                    disabled={pinNews.isPending}
+                    aria-pressed={post.pinned}
+                    className={`inline-flex items-center gap-1 rounded-full border px-5 py-2.5 text-sm transition-colors disabled:opacity-50 ${
+                      post.pinned
+                        ? "border-gray-900 bg-gray-900 text-white hover:bg-gray-700"
+                        : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Pin
+                      size={16}
+                      className={post.pinned ? "fill-white" : ""}
+                    />
+                    {pinNews.isPending
+                      ? "변경 중..."
+                      : post.pinned
+                        ? "고정 해제"
+                        : "상단 고정"}
+                  </button>
+                )}
+                <KebabMenu
+                  onEdit={
+                    isAuthor
+                      ? () => router.push(`/notice/write?edit=${newsId}`)
+                      : undefined
+                  }
+                  onDelete={isAuthor ? handleDelete : undefined}
+                />
+              </div>
             </div>
 
             {/* 카테고리 / 제목 / 메타 */}
             <span className="inline-block rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-white">
               [{CATEGORY_LABEL[post.category] ?? post.category}]
             </span>
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">{post.title}</h1>
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">
+              {post.title}
+            </h1>
             <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Clock size={14} /> {formatDate(post.createdAt)}
@@ -170,9 +226,13 @@ export default function NoticeDetailPage() {
 
             {/* 댓글 목록 */}
             {commentsQuery.isLoading ? (
-              <div className="py-10 text-center text-sm text-gray-400">댓글을 불러오는 중...</div>
+              <div className="py-10 text-center text-sm text-gray-400">
+                댓글을 불러오는 중...
+              </div>
             ) : commentsQuery.isError ? (
-              <div className="py-10 text-center text-sm text-gray-500">댓글을 불러오지 못했습니다.</div>
+              <div className="py-10 text-center text-sm text-gray-500">
+                댓글을 불러오지 못했습니다.
+              </div>
             ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (
@@ -205,7 +265,9 @@ export default function NoticeDetailPage() {
                 className="w-full resize-none text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
               />
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-gray-400">{comment.length} / 1,000</span>
+                <span className="text-xs text-gray-400">
+                  {comment.length} / 1,000
+                </span>
                 <button
                   type="button"
                   onClick={handleCommentSubmit}
