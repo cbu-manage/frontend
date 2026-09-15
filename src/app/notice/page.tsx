@@ -137,7 +137,7 @@ export default function NoticePage() {
                     {notice.pinned && (
                       <Pin
                         size={13}
-                        className="shrink-0 text-brand fill-brand"
+                        className="shrink-0 text-gray-900 fill-gray-900"
                       />
                     )}
                     <span className="truncate">{notice.title}</span>
