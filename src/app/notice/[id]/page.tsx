@@ -221,14 +221,16 @@ export default function NoticeDetailPage() {
             </div>
 
             {/* 본문 */}
-            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900 border-b border-gray-200">
-              {post.content}
+            {/* 본문 + 첨부 — 첨부는 글의 일부라 같은 블록 안에 둔다(선이 겹치지 않게) */}
+            <div className="py-10 border-b border-gray-200">
+              <div className="whitespace-pre-wrap text-base leading-relaxed text-gray-900">
+                {post.content}
+              </div>
+              <AttachmentList
+                newsId={newsId}
+                attachments={post.attachments ?? []}
+              />
             </div>
-
-            <AttachmentList
-              newsId={newsId}
-              attachments={post.attachments ?? []}
-            />
 
             {/* 댓글 목록 */}
             {commentsQuery.isLoading ? (

@@ -58,8 +58,8 @@ export default function AttachmentList({
   };
 
   return (
-    <div className="py-6 border-b border-gray-200">
-      <p className="mb-3 flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+    <div className="mt-8">
+      <p className="mb-2 flex items-center gap-1.5 text-body-sm text-gray-500">
         <Paperclip size={14} /> 첨부파일 {attachments.length}
       </p>
       <ul className="flex flex-col gap-2">
