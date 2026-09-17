@@ -12,6 +12,8 @@ type PostWriteSubmitData = {
   content: string;
   category: string | null;
   isAnonymous: boolean;
+  /** 첨부 박스에서 고른 파일. 업로드는 호출부가 게시글 id 를 받은 뒤 한다 */
+  files: File[];
 };
 
 type PostWriteFormProps = {
@@ -25,6 +27,11 @@ type PostWriteFormProps = {
   categories: string[];
   /** 익명 작성 체크박스 노출 (자유게시판만) */
   showAnonymous?: boolean;
+  /** 첨부 박스 노출. 첨부를 저장할 API 가 없는 게시판은 false 로 숨긴다(고르면 조용히 버려지던 것 방지) */
+  showAttachments?: boolean;
+  /** 첨부 허용 형식(input accept). 게시판별 서버 허용 목록에 맞춘다 */
+  attachmentAccept?: string;
+  attachmentHint?: string;
   /** 운영진만 작성 가능 (공지·뉴스레터). 일반 회원은 권한 없음 안내 */
   staffOnly?: boolean;
   /** 취소/게시 후 이동 경로 (목록) */
@@ -56,6 +63,9 @@ export default function PostWriteForm({
   subtitle,
   categories,
   showAnonymous = false,
+  showAttachments = true,
+  attachmentAccept,
+  attachmentHint,
   staffOnly = false,
   backPath,
   contentPlaceholder = "내용을 입력해 주세요.",
@@ -114,7 +124,13 @@ export default function PostWriteForm({
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) return;
     if (onSubmit) {
-      await onSubmit({ title, content, category, isAnonymous: anonymous });
+      await onSubmit({
+        title,
+        content,
+        category,
+        isAnonymous: anonymous,
+        files,
+      });
     } else {
       router.push(backPath);
     }
@@ -226,14 +242,21 @@ export default function PostWriteForm({
             </div>
           </div>
 
-          {/* 파일 첨부 */}
-          <div className="mt-4 rounded-2xl border border-gray-200 p-5">
-            <p className="mb-3 text-sm font-medium text-gray-700">
-              파일 첨부{showAnonymous ? " (선택)" : ""}
-            </p>
-            {/* TODO(API): 게시 시 첨부파일 업로드 연동 (현재 files 상태만 보유) */}
-            <FileUploadBox files={files} onChange={setFiles} multiple />
-          </div>
+          {/* 파일 첨부 — 게시 후 호출부가 files 를 첨부 API 로 올린다 */}
+          {showAttachments && (
+            <div className="mt-4 rounded-2xl border border-gray-200 p-5">
+              <p className="mb-3 text-sm font-medium text-gray-700">
+                파일 첨부 (선택)
+              </p>
+              <FileUploadBox
+                files={files}
+                onChange={setFiles}
+                multiple
+                accept={attachmentAccept}
+                hint={attachmentHint}
+              />
+            </div>
+          )}
 
           {/* 익명 작성 (자유게시판) — 파일첨부와 버튼 사이 별도 행 */}
           {showAnonymous && (

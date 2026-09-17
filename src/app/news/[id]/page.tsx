@@ -7,6 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
+import AttachmentList from "@/components/detail/AttachmentList";
 import { useNewsDetail } from "@/hooks/news/useNewsDetail";
 import { useUserStore } from "@/store/userStore";
 import { formatDate } from "@/lib/date";
@@ -16,7 +17,10 @@ function countComments(items: MappedComment[]): number {
   return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
 }
 
-function findCommentById(list: MappedComment[], id: number): MappedComment | null {
+function findCommentById(
+  list: MappedComment[],
+  id: number,
+): MappedComment | null {
   for (const c of list) {
     if (c.id === id) return c;
     const found = findCommentById(c.replies, id);
@@ -84,10 +88,16 @@ export default function NewsDetailPage() {
 
   const handleCommentEdit = async (commentId: number) => {
     const target = findCommentById(comments, commentId);
-    const newContent = window.prompt("수정할 내용을 입력하세요.", target?.content ?? "");
+    const newContent = window.prompt(
+      "수정할 내용을 입력하세요.",
+      target?.content ?? "",
+    );
     if (newContent == null || !newContent.trim()) return;
     try {
-      await updateComment.mutateAsync({ commentId, content: newContent.trim() });
+      await updateComment.mutateAsync({
+        commentId,
+        content: newContent.trim(),
+      });
     } catch {
       window.alert("댓글 수정에 실패했습니다. 다시 시도해주세요.");
     }
@@ -97,7 +107,9 @@ export default function NewsDetailPage() {
     return (
       <RequireMember>
         <main className="min-h-screen bg-white">
-          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">불러오는 중...</div>
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
         </main>
       </RequireMember>
     );
@@ -135,13 +147,19 @@ export default function NewsDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <KebabMenu
-                onEdit={isAuthor ? () => router.push(`/news/write?edit=${newsId}`) : undefined}
+                onEdit={
+                  isAuthor
+                    ? () => router.push(`/news/write?edit=${newsId}`)
+                    : undefined
+                }
                 onDelete={isAuthor ? handleDelete : undefined}
               />
             </div>
 
             {/* 제목 / 메타 */}
-            <h1 className="mt-4 text-2xl font-bold text-gray-900">{post.title}</h1>
+            <h1 className="mt-4 text-2xl font-bold text-gray-900">
+              {post.title}
+            </h1>
             <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Clock size={14} /> {formatDate(post.createdAt)}
@@ -159,11 +177,20 @@ export default function NewsDetailPage() {
               {post.content}
             </div>
 
+            <AttachmentList
+              newsId={newsId}
+              attachments={post.attachments ?? []}
+            />
+
             {/* 댓글 목록 */}
             {commentsQuery.isLoading ? (
-              <div className="py-10 text-center text-sm text-gray-400">댓글을 불러오는 중...</div>
+              <div className="py-10 text-center text-sm text-gray-400">
+                댓글을 불러오는 중...
+              </div>
             ) : commentsQuery.isError ? (
-              <div className="py-10 text-center text-sm text-gray-500">댓글을 불러오지 못했습니다.</div>
+              <div className="py-10 text-center text-sm text-gray-500">
+                댓글을 불러오지 못했습니다.
+              </div>
             ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (
@@ -196,7 +223,9 @@ export default function NewsDetailPage() {
                 className="w-full resize-none text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
               />
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-xs text-gray-400">{comment.length} / 1,000</span>
+                <span className="text-xs text-gray-400">
+                  {comment.length} / 1,000
+                </span>
                 <button
                   type="button"
                   onClick={handleCommentSubmit}
