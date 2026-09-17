@@ -5,6 +5,7 @@ import {
   suggestionApi,
   commentApi,
   type SuggestionComment,
+  type SuggestionPost,
   type SuggestionStatus,
 } from "@/api";
 import { formatDate } from "@/lib/date";
@@ -45,19 +46,37 @@ function buildTree(flat: SuggestionComment[]): MappedSuggestionComment[] {
   return roots;
 }
 
-export function useSuggestionDetail(postId: number) {
-  const queryClient = useQueryClient();
-  const commentsKey = [...SUGGESTIONS_QUERY_KEY, "comments", postId];
-  const postKey = [...SUGGESTIONS_QUERY_KEY, "detail", postId];
+const LIST_KEY = [...SUGGESTIONS_QUERY_KEY, "list"];
+const SUMMARY_KEY = [...SUGGESTIONS_QUERY_KEY, "summary"];
+const detailKey = (postId: number) => [
+  ...SUGGESTIONS_QUERY_KEY,
+  "detail",
+  postId,
+];
+const commentsKeyOf = (postId: number) => [
+  ...SUGGESTIONS_QUERY_KEY,
+  "comments",
+  postId,
+];
 
-  const postQuery = useQuery({
-    queryKey: postKey,
+/** 글 한 건만. 글쓰기(수정) 페이지처럼 댓글·뮤테이션이 필요 없는 곳에서 쓴다 */
+export function useSuggestionPost(postId: number) {
+  return useQuery({
+    queryKey: detailKey(postId),
     queryFn: async () => {
       const res = await suggestionApi.getById(postId);
       return res.data.data ?? null;
     },
     enabled: !!postId,
   });
+}
+
+export function useSuggestionDetail(postId: number) {
+  const queryClient = useQueryClient();
+  const commentsKey = commentsKeyOf(postId);
+  const postKey = detailKey(postId);
+
+  const postQuery = useSuggestionPost(postId);
 
   const commentsQuery = useQuery({
     queryKey: commentsKey,
@@ -97,25 +116,50 @@ export function useSuggestionDetail(postId: number) {
     onSuccess: invalidateComments,
   });
 
+  /** 목록·요약만 다시 받는다. 상세를 다시 부르면 조회수가 오르고, 삭제 뒤엔 404 가 난다 */
+  const invalidateListAndSummary = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: LIST_KEY }),
+      queryClient.invalidateQueries({ queryKey: SUMMARY_KEY }),
+    ]);
+
   const deletePost = useMutation({
     mutationFn: () => suggestionApi.delete(postId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY }),
+    onSuccess: async () => {
+      queryClient.removeQueries({ queryKey: postKey });
+      queryClient.removeQueries({ queryKey: commentsKey });
+      await invalidateListAndSummary();
+    },
   });
 
-  /** 운영진 전용. 상세·목록·요약 전부 갱신 */
+  /** 운영진 전용. 상세는 캐시를 직접 고쳐 재조회(조회수 증가)를 피한다 */
   const updateStatus = useMutation({
     mutationFn: (status: SuggestionStatus) =>
       suggestionApi.updateStatus(postId, status),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY }),
+    onSuccess: async (_res, status) => {
+      queryClient.setQueryData<SuggestionPost | null>(postKey, (old) =>
+        old
+          ? {
+              ...old,
+              status,
+              resolvedAt:
+                status === "RESOLVED" ? new Date().toISOString() : null,
+            }
+          : old,
+      );
+      await invalidateListAndSummary();
+    },
   });
 
-  /** ADMIN 전용. 목록 정렬이 바뀌므로 루트 무효화 */
+  /** ADMIN 전용. 목록 정렬이 바뀌므로 목록 무효화, 상세는 캐시 직접 수정 */
   const updatePinned = useMutation({
     mutationFn: (pinned: boolean) => suggestionApi.updatePinned(postId, pinned),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY }),
+    onSuccess: async (_res, pinned) => {
+      queryClient.setQueryData<SuggestionPost | null>(postKey, (old) =>
+        old ? { ...old, isPinned: pinned } : old,
+      );
+      await invalidateListAndSummary();
+    },
   });
 
   const flagPost = useMutation({

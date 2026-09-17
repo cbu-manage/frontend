@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   suggestionApi,
   type SuggestionListItem,
-  type SuggestionStatus,
   type SuggestionType,
 } from "@/api";
 
@@ -16,30 +15,20 @@ export const SUGGESTIONS_QUERY_KEY = ["suggestions"] as const;
 export function useSuggestionList({
   page,
   type,
-  status,
   size = SUGGESTION_PAGE_SIZE,
 }: {
   /** 1부터 */
   page: number;
   type?: SuggestionType;
-  status?: SuggestionStatus;
   size?: number;
 }) {
   return useQuery({
-    queryKey: [
-      ...SUGGESTIONS_QUERY_KEY,
-      "list",
-      page,
-      type ?? "ALL",
-      status ?? "ALL",
-      size,
-    ],
+    queryKey: [...SUGGESTIONS_QUERY_KEY, "list", page, type ?? "ALL", size],
     queryFn: async () => {
       const res = await suggestionApi.getList({
         page: page - 1,
         size,
         type,
-        status,
       });
       const data = res.data.data;
       const items: SuggestionListItem[] = data?.content ?? [];

@@ -73,6 +73,23 @@ export default function SuggestionDetailPage() {
     }
   };
 
+  const handleReply = async (parentId: number, content: string) => {
+    try {
+      await replyComment.mutateAsync({ commentId: parentId, content });
+    } catch {
+      window.alert("답글 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  // 자유게시판과 같게 confirm 없이 바로 지운다. 실패만 알린다
+  const handleDeleteComment = async (commentId: number) => {
+    try {
+      await deleteComment.mutateAsync(commentId);
+    } catch {
+      window.alert("댓글 삭제에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
   const handleDelete = async () => {
     if (!window.confirm("이 건의를 삭제할까요?")) return;
     try {
@@ -266,6 +283,10 @@ export default function SuggestionDetailPage() {
               <div className="py-10 text-center text-sm text-gray-400">
                 댓글을 불러오는 중...
               </div>
+            ) : commentsQuery.isError ? (
+              <div className="py-10 text-center text-sm text-red-500">
+                댓글을 불러오지 못했습니다.
+              </div>
             ) : comments.length === 0 ? (
               <CommentEmpty />
             ) : (
@@ -275,10 +296,8 @@ export default function SuggestionDetailPage() {
                     key={c.id}
                     {...c}
                     currentUserId={currentUserId}
-                    onReplySubmit={(parentId, content) =>
-                      replyComment.mutate({ commentId: parentId, content })
-                    }
-                    onDeleteComment={(id) => deleteComment.mutate(id)}
+                    onReplySubmit={handleReply}
+                    onDeleteComment={handleDeleteComment}
                     onReportComment={handleCommentFlag}
                   />
                 ))}

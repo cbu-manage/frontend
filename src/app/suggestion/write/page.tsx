@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import PostWriteForm from "@/components/board/PostWriteForm";
 import RequireMember from "@/components/auth/RequireMember";
 import { SUGGESTION_TYPE_OPTIONS } from "@/components/suggestion/SuggestionBadges";
-import { useSuggestionDetail, SUGGESTIONS_QUERY_KEY } from "@/hooks/suggestion";
+import { useSuggestionPost, SUGGESTIONS_QUERY_KEY } from "@/hooks/suggestion";
 import { suggestionApi, type SuggestionType } from "@/api";
 
 const TYPE_LABELS = SUGGESTION_TYPE_OPTIONS.map((o) => o.label);
@@ -27,7 +27,7 @@ function SuggestionWriteClient() {
     : null;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { postQuery } = useSuggestionDetail(editId ?? 0);
+  const postQuery = useSuggestionPost(editId ?? 0);
   const editPost = editId ? postQuery.data : null;
 
   const handleSubmit = async ({
