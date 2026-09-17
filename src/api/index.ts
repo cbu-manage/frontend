@@ -184,3 +184,14 @@ export {
   type FreeBoardListResponse,
   type FreeBoardPost,
 } from "./freeboard.api";
+
+// Flag (신고 관리)
+export {
+  flagApi,
+  type FlagPage,
+  type FlagListParams,
+  type FlagPostPreview,
+  type FlagPostInfo,
+  type FlagCommentPreview,
+  type FlagCommentInfo,
+} from "./flag.api";
