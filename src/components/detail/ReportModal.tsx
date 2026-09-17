@@ -32,7 +32,13 @@ export type ReportModalProps = {
  * 서버 content 는 `"{사유}"` 또는 `"{사유} / {상세}"` 한 줄로 합쳐 보낸다(BE 스키마 변경 없음).
  * window.prompt 를 대체한다(게시글·댓글 공용).
  */
-export default function ReportModal({
+export default function ReportModal(props: ReportModalProps) {
+  // 닫히면 폼을 언마운트해 입력이 비워진다. 열린 채 실패하면(호출부가 onClose 를 안 부름) 입력이 남는다.
+  if (!props.open) return null;
+  return <ReportModalBody {...props} />;
+}
+
+function ReportModalBody({
   open,
   onClose,
   target,
@@ -46,23 +52,12 @@ export default function ReportModal({
   const canSubmit =
     !!reason && (!isOther || detail.trim().length > 0) && !isPending;
 
-  const reset = () => {
-    setReason(null);
-    setDetail("");
-  };
-
-  const handleClose = () => {
-    reset();
-    onClose();
-  };
-
   const handleSubmit = async () => {
     if (!reason) return;
     const trimmed = detail.trim();
     const content = trimmed ? `${reason} / ${trimmed}` : reason;
+    // 성공 여부는 호출부가 판단한다. 성공이면 호출부가 닫고, 닫히면 이 폼이 언마운트돼 입력이 비워진다.
     await onSubmit(content);
-    // 성공 시 호출부가 onClose 로 닫는다. 닫힐 때 입력을 비운다.
-    reset();
   };
 
   const label = target === "post" ? "게시글" : "댓글";
@@ -70,7 +65,7 @@ export default function ReportModal({
   return (
     <Modal
       open={open}
-      onClose={handleClose}
+      onClose={onClose}
       title={`${label} 신고`}
       className="w-full max-w-md"
       footer={
