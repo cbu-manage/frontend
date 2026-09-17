@@ -47,7 +47,8 @@ export type Capability =
   | "meetings.manage" // 모임 생성/수정/마감/삭제
   | "meetings.attendanceAdmin" // 관리자용 참석명단 조회/엑셀 (⚠️ ADMIN 전용)
   | "posts.moderate" // 일반 포스트·댓글 관리성 삭제(작성자 아니어도)
-  | "suggestions.manage"; // 건의방 해결/미해결 전환 (운영진 전부)
+  | "suggestions.manage" // 건의방 해결/미해결 전환 (운영진 전부)
+  | "suggestions.pin"; // 건의방 상단 고정 — ADMIN(루트) 전용
 
 // 모든 운영진 공통: 신청서 심사 조회 + 투표 + 지원서 질문 편집
 const STAFF_REVIEW: Capability[] = [
@@ -82,6 +83,7 @@ export const ROLE_CAPS: Record<Role, Capability[]> = {
     ...PRESIDENT_CAPS.filter((c) => c !== "applications.vote"),
     "meetings.attendanceAdmin",
     "staff.assignLeader", // 회장·부회장 지정은 ADMIN(owner)만
+    "suggestions.pin",
   ],
   ROLE_PRESIDENT: PRESIDENT_CAPS,
   ROLE_VICE_PRESIDENT: PRESIDENT_CAPS, // 회장과 동일 (참석명단/엑셀만 ADMIN 전용)

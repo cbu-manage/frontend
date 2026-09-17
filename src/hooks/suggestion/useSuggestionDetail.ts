@@ -111,6 +111,13 @@ export function useSuggestionDetail(postId: number) {
       queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY }),
   });
 
+  /** ADMIN 전용. 목록 정렬이 바뀌므로 루트 무효화 */
+  const updatePinned = useMutation({
+    mutationFn: (pinned: boolean) => suggestionApi.updatePinned(postId, pinned),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: SUGGESTIONS_QUERY_KEY }),
+  });
+
   const flagPost = useMutation({
     mutationFn: (content: string) => suggestionApi.flag(postId, content),
   });
@@ -133,6 +140,7 @@ export function useSuggestionDetail(postId: number) {
     deleteComment,
     deletePost,
     updateStatus,
+    updatePinned,
     flagPost,
     flagComment,
   };

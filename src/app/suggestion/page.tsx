@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
+import { Pencil, Pin } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
@@ -63,7 +63,7 @@ export default function SuggestionPage() {
             )}
           </div>
 
-          {/* 종류 탭 + 글 작성 */}
+          {/* 종류 탭 + 글 작성 (같은 행) */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <Tabs
               items={TYPE_TABS}
@@ -73,8 +73,6 @@ export default function SuggestionPage() {
                 setCurrentPage(1);
               }}
             />
-          </div>
-          <div className="flex w-full items-center justify-end mb-4">
             <Link
               href="/suggestion/write"
               className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
@@ -109,12 +107,21 @@ export default function SuggestionPage() {
                 <Link
                   key={post.postId}
                   href={`/suggestion/${post.postId}`}
-                  className="flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50"
+                  className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50 ${
+                    post.isPinned ? "bg-brand/5" : ""
+                  }`}
                 >
                   <span className="w-20 flex justify-center shrink-0">
                     <SuggestionTypeBadge type={post.type} />
                   </span>
                   <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                    {post.isPinned && (
+                      <Pin
+                        size={14}
+                        className="shrink-0 text-gray-900 fill-gray-900"
+                        aria-label="상단 고정"
+                      />
+                    )}
                     <SuggestionStatusBadge status={post.status} />
                     <span className="truncate">{post.title}</span>
                     {(post.commentCount ?? 0) > 0 && (

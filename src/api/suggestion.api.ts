@@ -18,6 +18,8 @@ export type SuggestionListItem = {
   title: string;
   type: SuggestionType;
   status: SuggestionStatus;
+  /** 상단 고정 — 목록은 고정 글이 먼저 온다. 구 서버는 미제공 */
+  isPinned?: boolean;
   createdAt: string;
   viewCount?: number;
   commentCount?: number;
@@ -79,6 +81,10 @@ export const suggestionApi = {
   /** 운영진 전용 — 해결/미해결 전환 */
   updateStatus: (postId: number, status: SuggestionStatus) =>
     api.patch<ApiEnvelope<null>>(`/suggestion/${postId}/status`, { status }),
+
+  /** ADMIN(루트) 전용 — 상단 고정/해제 */
+  updatePinned: (postId: number, pinned: boolean) =>
+    api.patch<ApiEnvelope<null>>(`/suggestion/${postId}/pin`, { pinned }),
 
   /** 작성자 또는 관리자. 소프트 삭제 */
   delete: (postId: number) =>

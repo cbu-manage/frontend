@@ -9,6 +9,8 @@ import {
   MessageCircle,
   CheckCircle2,
   RotateCcw,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
@@ -38,6 +40,7 @@ export default function SuggestionDetailPage() {
   const userId = useUserStore((s) => s.userId);
   const currentUserId = userId ? Number(userId) : null;
   const canManage = useCan("suggestions.manage");
+  const canPin = useCan("suggestions.pin");
 
   const {
     postQuery,
@@ -47,6 +50,7 @@ export default function SuggestionDetailPage() {
     deleteComment,
     deletePost,
     updateStatus,
+    updatePinned,
     flagPost,
     flagComment,
   } = useSuggestionDetail(postId);
@@ -91,6 +95,15 @@ export default function SuggestionDetailPage() {
       await updateStatus.mutateAsync(next);
     } catch {
       window.alert("상태 변경에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const handleTogglePin = async () => {
+    if (!post) return;
+    try {
+      await updatePinned.mutateAsync(!post.isPinned);
+    } catch {
+      window.alert("고정 변경에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -156,6 +169,29 @@ export default function SuggestionDetailPage() {
                 <ChevronLeft size={16} /> 목록으로
               </button>
               <div className="flex items-center gap-2">
+                {canPin && (
+                  <button
+                    type="button"
+                    onClick={handleTogglePin}
+                    disabled={updatePinned.isPending}
+                    aria-pressed={!!post.isPinned}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 ${
+                      post.isPinned
+                        ? "border-gray-900 bg-gray-900 text-white hover:bg-gray-800"
+                        : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    {post.isPinned ? (
+                      <>
+                        <PinOff size={16} /> 고정 해제
+                      </>
+                    ) : (
+                      <>
+                        <Pin size={16} /> 상단 고정
+                      </>
+                    )}
+                  </button>
+                )}
                 {canManage && (
                   <button
                     type="button"
@@ -194,6 +230,11 @@ export default function SuggestionDetailPage() {
             <div className="flex items-center gap-2">
               <SuggestionTypeBadge type={post.type} />
               <SuggestionStatusBadge status={post.status} />
+              {post.isPinned && (
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900">
+                  <Pin size={12} className="fill-gray-900" /> 상단 고정
+                </span>
+              )}
               {post.status === "RESOLVED" && post.resolvedAt && (
                 <span className="text-xs text-gray-400">
                   {formatDate(post.resolvedAt)} 해결
