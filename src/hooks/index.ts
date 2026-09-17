@@ -8,3 +8,4 @@ export * from "./board";
 export * from "./news";
 export * from "./meeting";
 export * from "./flag";
+export * from "./suggestion";
