@@ -11,11 +11,10 @@ import {
   SuggestionTypeBadge,
 } from "@/components/suggestion/SuggestionBadges";
 import { useSuggestionList, useSuggestionSummary } from "@/hooks/suggestion";
-import type { SuggestionStatus, SuggestionType } from "@/api";
+import type { SuggestionType } from "@/api";
 import { formatDate } from "@/lib/date";
 
 type TypeTab = "ALL" | SuggestionType;
-type StatusFilter = "ALL" | SuggestionStatus;
 
 const TYPE_TABS: { label: string; value: TypeTab }[] = [
   { label: "전체", value: "ALL" },
@@ -23,21 +22,13 @@ const TYPE_TABS: { label: string; value: TypeTab }[] = [
   { label: "건의", value: "SUGGESTION" },
 ];
 
-const STATUS_FILTERS: { label: string; value: StatusFilter }[] = [
-  { label: "전체", value: "ALL" },
-  { label: "미해결", value: "OPEN" },
-  { label: "해결", value: "RESOLVED" },
-];
-
 export default function SuggestionPage() {
   const [typeTab, setTypeTab] = useState<TypeTab>("ALL");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, isError } = useSuggestionList({
     page: currentPage,
     type: typeTab === "ALL" ? undefined : typeTab,
-    status: statusFilter === "ALL" ? undefined : statusFilter,
   });
   const summary = useSuggestionSummary();
 
@@ -72,7 +63,7 @@ export default function SuggestionPage() {
             )}
           </div>
 
-          {/* 종류 탭 + 상태 필터 + 글 작성 */}
+          {/* 종류 탭 + 글 작성 */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <Tabs
               items={TYPE_TABS}
@@ -82,25 +73,6 @@ export default function SuggestionPage() {
                 setCurrentPage(1);
               }}
             />
-            <div className="flex items-center gap-4">
-              {STATUS_FILTERS.map((s) => (
-                <button
-                  key={s.value}
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter(s.value);
-                    setCurrentPage(1);
-                  }}
-                  className={`text-sm transition-colors ${
-                    statusFilter === s.value
-                      ? "text-gray-900 font-semibold"
-                      : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
           </div>
           <div className="flex w-full items-center justify-end mb-4">
             <Link
@@ -116,7 +88,6 @@ export default function SuggestionPage() {
             <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
               <span className="w-20 text-center shrink-0">종류</span>
               <span className="flex-1 text-center">제목</span>
-              <span className="w-20 text-center shrink-0">상태</span>
               <span className="w-28 text-center shrink-0">작성일</span>
               <span className="w-20 text-center shrink-0">조회</span>
             </div>
@@ -144,15 +115,13 @@ export default function SuggestionPage() {
                     <SuggestionTypeBadge type={post.type} />
                   </span>
                   <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                    <SuggestionStatusBadge status={post.status} />
                     <span className="truncate">{post.title}</span>
                     {(post.commentCount ?? 0) > 0 && (
                       <span className="shrink-0 text-brand text-xs">
                         [{post.commentCount}]
                       </span>
                     )}
-                  </span>
-                  <span className="w-20 flex justify-center shrink-0">
-                    <SuggestionStatusBadge status={post.status} />
                   </span>
                   <span className="w-28 text-center shrink-0 text-sm text-gray-900">
                     {post.createdAt ? formatDate(post.createdAt) : ""}
