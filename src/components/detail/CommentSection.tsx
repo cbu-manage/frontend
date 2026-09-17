@@ -90,6 +90,8 @@ interface ReplyData {
   date: string;
   replies?: ReplyData[];
   deleted?: boolean;
+  /** 서버가 계산한 본인 여부. 익명 게시판처럼 userId 가 안 오는 곳에서 준다 */
+  isMine?: boolean;
 }
 
 interface CommentItemProps {
@@ -108,6 +110,8 @@ interface CommentItemProps {
   disabled?: boolean;
   deleted?: boolean;
   currentUserId?: number | null;
+  /** 주면 userId 비교 대신 이 값을 쓴다 (익명 게시판) */
+  isMine?: boolean;
 }
 
 /**
@@ -129,6 +133,7 @@ export const CommentItem = ({
   disabled = false,
   deleted = false,
   currentUserId,
+  isMine: isMineProp,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
@@ -141,14 +146,16 @@ export const CommentItem = ({
   const [editError, setEditError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = currentUserId != null;
-  const isMine = isLoggedIn && userId != null && currentUserId === userId;
+  const isMine =
+    isMineProp ?? (isLoggedIn && userId != null && currentUserId === userId);
   const showReply = !deleted && isLoggedIn && depth < 4;
 
   // 핸들러가 있을 때만 메뉴 항목 노출 (no-op 버튼 방지)
   const canEdit = isMine && !!onEditComment;
   const canDelete = isMine && !!onDeleteComment;
   const canReport = !isMine && !!onReportComment;
-  const showMenu = !deleted && isLoggedIn && (canEdit || canDelete || canReport);
+  const showMenu =
+    !deleted && isLoggedIn && (canEdit || canDelete || canReport);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -197,7 +204,10 @@ export const CommentItem = ({
                           }}
                           className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
                         >
-                          <Pencil size={18} className="shrink-0 text-gray-500" />
+                          <Pencil
+                            size={18}
+                            className="shrink-0 text-gray-500"
+                          />
                           수정
                         </button>
                       )}
