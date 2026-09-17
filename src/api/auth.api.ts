@@ -57,6 +57,9 @@ export const authApi = {
 
   logout: () => api.delete("/login"),
 
+  /** 회원 탈퇴 — 서버가 소프트 삭제(deletedAt·WITHDRAWN) 후 인증 쿠키를 지운다 */
+  deleteAccount: () => api.delete<ApiEnvelope<null>>("/login/account"),
+
   refresh: () => api.post("/login/refresh"),
 
   me: () => api.get<MeResponse>("/login/me"),
