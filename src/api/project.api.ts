@@ -13,6 +13,19 @@ export type ProjectListParams = {
   recruiting?: boolean;
 };
 
+/** 모집 분야 enum (BE ProjectFieldType) */
+export type ProjectFieldType =
+  "BACKEND" | "FRONTEND" | "DEV" | "PLANNING" | "DESIGN" | "ETC";
+
+/** 분야별 목록 파라미터 — GET /post/project/filter */
+export type ProjectFilterParams = {
+  page: number;
+  size: number;
+  fields: ProjectFieldType;
+  /** true: 모집 중만 */
+  recruiting?: boolean;
+};
+
 /** 프로젝트 목록 아이템 (API 응답 content 요소) */
 export type ProjectListItem = {
   postId: number;
@@ -104,7 +117,12 @@ export const projectApi = {
   delete: (postId: number) => api.delete(`/post/project/${postId}`),
 
   // 모집 마감(close) API 없음 — 스웨거엔 스터디 close만 존재. 프로젝트 마감은 update(recruiting: false) 사용 (구버전 경로 제거, #225)
-  // 분야별 필터(/post/project/filter, params: fields·recruiting)는 미사용이라 미구현 — 필요 시 스웨거 기준으로 추가
+  /**
+   * 분야별 목록 — 모집 분야에 fields 가 하나라도 포함된 프로젝트. 서버 정렬은 id desc.
+   * 목록 화면에서 분야를 고르면 getList 대신 이걸 부른다(페이지 안에서만 걸러내던 것을 서버 필터로).
+   */
+  filterByField: (params: ProjectFilterParams) =>
+    api.get(`/post/project/filter`, { params }),
 
   /** 내가 작성한 프로젝트 게시글 목록 조회 — /me는 recruiting 파라미터 미지원 */
   getMyList: (params?: Omit<ProjectListParams, "recruiting">) =>
