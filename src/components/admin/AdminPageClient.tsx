@@ -6,6 +6,7 @@ import Sidebar from "@/components/shared/Sidebar";
 import MemberManageSection from "@/components/admin/MemberManageSection";
 import GroupManageSection from "@/components/admin/GroupManageSection";
 import ReportManageSection from "@/components/manage/ReportManageSection";
+import FlagManageSection from "@/components/admin/FlagManageSection";
 import NewMemberManageSection from "@/components/admin/NewMemberManageSection";
 import StaffAssignSection from "@/components/admin/StaffAssignSection";
 import ClubScheduleSettingsSection from "@/components/admin/ClubScheduleSettingsSection";
@@ -18,6 +19,7 @@ const ADMIN_MENU_ITEMS = [
   { label: "회원 관리", value: "members", capability: "members.read" },
   { label: "그룹 관리", value: "groups", capability: "groups.manage" },
   { label: "보고서 관리", value: "reports", capability: "reportDocs.manage" },
+  { label: "신고 관리", value: "flags", capability: "flag.manage" },
   {
     label: "신청서 조회",
     value: "new-members",
@@ -54,6 +56,7 @@ export default function AdminPageClient() {
     members: useCan("members.read"),
     groups: useCan("groups.manage"),
     reports: useCan("reportDocs.manage"),
+    flags: useCan("flag.manage"),
     "new-members": useCan("applications.review"),
     staff: useCan("staff.assign"),
     settings: canEditSystemSettings || canEditFee,
@@ -65,6 +68,7 @@ export default function AdminPageClient() {
       tabParam === "members" ||
       tabParam === "groups" ||
       tabParam === "reports" ||
+      tabParam === "flags" ||
       tabParam === "new-members" ||
       tabParam === "staff" ||
       tabParam === "settings"
@@ -104,6 +108,7 @@ export default function AdminPageClient() {
           {effectiveMenu === "members" && <MemberManageSection />}
           {effectiveMenu === "groups" && <GroupManageSection />}
           {effectiveMenu === "reports" && <ReportManageSection />}
+          {effectiveMenu === "flags" && <FlagManageSection />}
           {effectiveMenu === "new-members" && <NewMemberManageSection />}
           {effectiveMenu === "staff" && <StaffAssignSection />}
           {effectiveMenu === "settings" && <ClubScheduleSettingsSection />}

@@ -7,6 +7,7 @@ import RequireMember from "@/components/auth/RequireMember";
 import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
+import ReportModal from "@/components/detail/ReportModal";
 import { useIsAuthor } from "@/hooks/auth";
 import { useFreeboardDetail } from "@/hooks/board";
 import { freeboardAuthorLabel } from "@/api";
@@ -62,18 +63,31 @@ export default function BoardDetailPage() {
     router.push("/board");
   };
 
-  const handleFlag = async () => {
-    const reason = window.prompt("신고 사유를 입력해주세요.");
-    if (!reason?.trim()) return;
-    await flagPost.mutateAsync(reason.trim());
-    window.alert("신고가 접수되었습니다.");
-  };
+  // 신고 대상: 게시글 자체 또는 댓글 하나. 모달 하나를 둘이 같이 쓴다.
+  const [reportTarget, setReportTarget] = useState<
+    { type: "post" } | { type: "comment"; commentId: number } | null
+  >(null);
 
-  const handleCommentFlag = async (commentId: number) => {
-    const reason = window.prompt("댓글 신고 사유를 입력해주세요.");
-    if (!reason?.trim()) return;
-    await flagComment.mutateAsync({ commentId, content: reason.trim() });
-    window.alert("신고가 접수되었습니다.");
+  const handleFlag = () => setReportTarget({ type: "post" });
+  const handleCommentFlag = (commentId: number) =>
+    setReportTarget({ type: "comment", commentId });
+
+  const handleReportSubmit = async (content: string) => {
+    if (!reportTarget) return;
+    try {
+      if (reportTarget.type === "post") {
+        await flagPost.mutateAsync(content);
+      } else {
+        await flagComment.mutateAsync({
+          commentId: reportTarget.commentId,
+          content,
+        });
+      }
+      setReportTarget(null);
+      window.alert("신고가 접수되었습니다.");
+    } catch {
+      window.alert("신고 접수에 실패했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (postQuery.isLoading) {
@@ -243,6 +257,14 @@ export default function BoardDetailPage() {
             </div>
           </div>
         </div>
+
+        <ReportModal
+          open={reportTarget !== null}
+          onClose={() => setReportTarget(null)}
+          target={reportTarget?.type ?? "post"}
+          onSubmit={handleReportSubmit}
+          isPending={flagPost.isPending || flagComment.isPending}
+        />
       </main>
     </RequireMember>
   );
