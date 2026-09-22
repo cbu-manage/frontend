@@ -2,117 +2,162 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { Pin, Pencil } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
-import { useUserStore } from "@/store/userStore";
 import Pagination from "@/components/shared/Pagination";
+import Tabs from "@/components/common/Tabs";
+import SearchBar from "@/components/common/SearchBar";
+import { useCan } from "@/hooks/auth";
+import { useNewsList } from "@/hooks/news/useNewsList";
+import { formatDate } from "@/lib/date";
+import type { NewsCategory } from "@/api";
 
-const CATEGORY_TABS = ["전체", "공지", "이벤트", "뉴스레터", "IT소식"] as const;
+const CATEGORY_TABS = ["전체", "공지", "이벤트", "IT소식"] as const;
 type CategoryTab = (typeof CATEGORY_TABS)[number];
 
-// TODO: API 연동 후 교체
-const MOCK_NOTICES = [
-  { id: 1, category: "공지", title: "2026학년도 16기 정기 모집 안내 — 신규 부원 환영합니다", author: "15기 김민주", date: "2026.04.18", views: 248 },
-  { id: 2, category: "이벤트", title: "씨부엉 해커톤 2026 개최 · 팀 구성 / 상품 · 멘토 안내", author: "14기 이서연", date: "2026.04.15", views: 172 },
-  { id: 3, category: "뉴스레터", title: "4월 3주차 뉴스레터", author: "14기 박도윤", date: "2026.04.12", views: 89 },
-  { id: 4, category: "공지", title: "4월 정기 모임 일정 변경 (4/21 → 4/23)", author: "15기 최준호", date: "2026.04.10", views: 156 },
-  { id: 5, category: "이벤트", title: "알고리즘 챌린지 4월 배점 및 경품 수령 안내", author: "15기 정하인", date: "2026.04.08", views: 103 },
-  { id: 6, category: "IT소식", title: "Claude Max 이용 한도 상향", author: "14기 윤지우", date: "2026.04.05", views: 84 },
-  { id: 7, category: "공지", title: "동아리방 이용 규칙 업데이트", author: "15기 김민주", date: "2026.04.02", views: 212 },
-  { id: 8, category: "뉴스레터", title: "3월 월간 회고 · 뉴스레터 준비 이야기", author: "14기 이서연", date: "2026.03.31", views: 98 },
-];
+const TAB_TO_CATEGORY: Record<CategoryTab, NewsCategory[]> = {
+  전체: ["NOTICE", "EVENT", "IT_NEWS"],
+  공지: ["NOTICE"],
+  이벤트: ["EVENT"],
+  IT소식: ["IT_NEWS"],
+};
+
+const CATEGORY_TO_LABEL: Record<string, string> = {
+  NOTICE: "공지",
+  EVENT: "이벤트",
+  IT_NEWS: "IT소식",
+};
 
 export default function NoticePage() {
-  const isAdmin = useUserStore((s) => s.isAdmin);
+  // 소식·공지 작성은 회장·부회장·홍보·ADMIN만 (서버 허용 역할과 동일)
+  const canManageNews = useCan("news.manage");
   const [activeTab, setActiveTab] = useState<CategoryTab>("전체");
   const [search, setSearch] = useState("");
+  const [submittedKeyword, setSubmittedKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  const filtered = MOCK_NOTICES.filter((n) => {
-    const matchTab = activeTab === "전체" || n.category === activeTab;
-    const matchSearch = n.title.includes(search) || n.author.includes(search);
-    return matchTab && matchSearch;
+  const runSearch = () => {
+    setSubmittedKeyword(search.trim());
+    setCurrentPage(1);
+  };
+
+  const { data, isLoading, isError } = useNewsList({
+    category: TAB_TO_CATEGORY[activeTab],
+    keyword: submittedKeyword || undefined,
+    page: currentPage,
+    size: 11,
   });
+
+  const items = data?.content ?? [];
+  const totalPages = data?.page?.totalPages
+    ? Array.from({ length: data.page.totalPages }, (_, i) => i + 1)
+    : [1];
 
   return (
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16 pb-6 flex items-start justify-between">
-            <div>
-              <h1 className="text-h1 text-gray-900 mb-2">씨부엉 소식</h1>
-              <p className="text-base text-gray-700">동아리 공지와 새 소식을 확인하세요</p>
-            </div>
-            {isAdmin && (
-              <Link
-                href="/notice/write"
-                className="px-5 py-2.5 bg-gray-900 text-white rounded-lg font-medium text-sm hover:bg-gray-700 transition-colors"
-              >
-                + 글쓰기
-              </Link>
-            )}
+          <div className="pt-6 lg:pt-16 pb-6">
+            <h1 className="text-h1 text-gray-900 mb-2">씨부엉 소식</h1>
+            <p className="text-base text-gray-700">
+              동아리 공지와 새 소식을 확인하세요
+            </p>
           </div>
 
-          {/* 탭 + 검색 */}
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex items-center gap-1">
-              {CATEGORY_TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={
-                    activeTab === tab
-                      ? "px-3 py-1 rounded-full text-sm font-medium bg-gray-800 text-white transition-colors"
-                      : "px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 transition-colors"
-                  }
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 w-56">
-              <Search size={14} className="text-gray-400 shrink-0" />
-              <input
-                type="text"
+          {/* 탭 + 검색 + 글 작성 */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <Tabs
+              items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
+              value={activeTab}
+              onValueChange={(v) => {
+                setActiveTab(v as CategoryTab);
+                setCurrentPage(1);
+              }}
+            />
+            <div className="flex w-full items-center gap-3 sm:w-auto">
+              <SearchBar
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="제목 · 작성자로 검색"
-                className="flex-1 text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") runSearch();
+                }}
+                placeholder="제목 · 내용으로 검색해주세요."
+                className="w-full sm:w-80"
               />
+              {canManageNews && (
+                <Link
+                  href="/notice/write"
+                  className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+                >
+                  <Pencil size={16} /> 글 작성하기
+                </Link>
+              )}
             </div>
           </div>
 
           {/* 테이블 */}
-          <div className="border-t border-gray-200">
-            <div className="flex items-center gap-4 px-2 py-2.5 border-b border-gray-100 text-xs text-gray-400">
-              <span className="w-24 shrink-0">카테고리</span>
-              <span className="flex-1">제목</span>
-              <span className="w-20 text-right shrink-0">작성자</span>
-              <span className="w-24 text-right shrink-0">작성일</span>
-              <span className="w-10 text-right shrink-0">조회</span>
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
+              <span className="w-28 text-center shrink-0">카테고리</span>
+              <span className="flex-1 text-center">제목</span>
+              <span className="w-28 text-center shrink-0">작성일</span>
+              <span className="w-20 text-center shrink-0">조회</span>
             </div>
-            {filtered.map((notice) => (
-              <Link
-                key={notice.id}
-                href={`/notice/${notice.id}`}
-                className="flex items-center gap-4 px-2 py-3.5 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <span className="w-24 shrink-0 text-sm text-gray-500">[{notice.category}]</span>
-                <span className="flex-1 text-sm text-gray-900 truncate">{notice.title}</span>
-                <span className="w-20 text-right shrink-0 text-sm text-gray-500">{notice.author}</span>
-                <span className="w-24 text-right shrink-0 text-sm text-gray-400">{notice.date}</span>
-                <span className="w-10 text-right shrink-0 text-sm text-gray-400">{notice.views}</span>
-              </Link>
-            ))}
-            {filtered.length === 0 && (
-              <div className="py-16 text-center text-sm text-gray-400">검색 결과가 없습니다.</div>
+            {isLoading && (
+              <div className="py-16 text-center text-sm text-gray-500">
+                불러오는 중…
+              </div>
             )}
+            {!isLoading && isError && (
+              <div className="py-16 text-center text-sm text-gray-500">
+                목록을 불러오지 못했습니다.
+              </div>
+            )}
+            {!isLoading && !isError && items.length === 0 && (
+              <div className="py-16 text-center text-sm text-gray-900">
+                검색 결과가 없습니다.
+              </div>
+            )}
+            {!isLoading &&
+              !isError &&
+              items.map((notice) => (
+                <Link
+                  key={notice.newsId}
+                  href={`/notice/${notice.newsId}`}
+                  className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors ${
+                    notice.pinned
+                      ? "bg-brand/5 hover:bg-brand/10"
+                      : "hover:bg-gray-50"
+                  }`}
+                >
+                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                    [{CATEGORY_TO_LABEL[notice.category] ?? notice.category}]
+                  </span>
+                  <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                    {notice.pinned && (
+                      <Pin
+                        size={13}
+                        className="shrink-0 text-gray-900 fill-gray-900"
+                      />
+                    )}
+                    <span className="truncate">{notice.title}</span>
+                  </span>
+                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                    {formatDate(notice.createdAt)}
+                  </span>
+                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">
+                    {notice.viewCount}
+                  </span>
+                </Link>
+              ))}
           </div>
 
           <div className="mt-8">
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         </div>
       </main>

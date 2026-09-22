@@ -4,6 +4,26 @@
  */
 import { api } from "./client";
 
+/**
+ * 그룹 승인 상태. 서버가 내려주는 값 그대로.
+ * PENDING·RESUBMITTED = 운영진 심사 대기, ACTIVE = 승인, REJECTED = 반려
+ */
+export type GroupStatus =
+  "ACTIVE" | "PENDING" | "REJECTED" | "RESUBMITTED" | "INACTIVE";
+
+/** PATCH /groups/{groupId}/recruitment 요청 바디 */
+export type GroupRecruitmentRequest = {
+  /** OPEN = 모집 중, CLOSED = 모집 마감(반려된 팀은 마감 시 재심사 요청으로 넘어간다) */
+  groupRecruitmentStatus: "OPEN" | "CLOSED";
+};
+
+/** PATCH /groups/{groupId}/admin/status 요청 바디 (GroupReviewRequestDTO) */
+export type GroupReviewRequest = {
+  action: "APPROVE" | "REJECT";
+  /** 반려 사유 */
+  reason?: string;
+};
+
 /** GET /groups/my 응답의 그룹 멤버 */
 export type GroupMemberItem = {
   groupMemberId: number;
@@ -34,24 +54,55 @@ export type MyGroupItem = {
   members?: GroupMemberItem[];
 };
 
+/** GET /groups/{groupId} 그룹 상세의 멤버 한 명 */
+export type GroupMemberDetail = {
+  groupMemberId: number;
+  userId: number;
+  userGeneration: number;
+  userName: string;
+  grade: string;
+  major: string;
+  groupMemberRole: string;
+  groupMemberStatus: string;
+};
+
+/** GET /groups/{groupId} 그룹 상세 응답 data */
+export type GroupDetailData = {
+  groupId: number;
+  groupName: string;
+  groupStatus: string;
+  /** 운영진이 개설을 반려한 사유. 반려 상태가 아니면 null */
+  rejectReason?: string | null;
+  groupRecruitmentStatus: string;
+  activeMemberCount: number;
+  maxMembers: number;
+  minMembers: number;
+  members: GroupMemberDetail[];
+};
+
 export const groupApi = {
   /** 그룹 상세 정보 조회 */
-  getById: (groupId: number) => api.get(`/groups/${groupId}`),
+  getById: (groupId: number) =>
+    api.get<{ code: string; message: string; data: GroupDetailData }>(
+      `/groups/${groupId}`,
+    ),
 
   /** 그룹 가입 요청 */
   join: (groupId: number, data?: unknown) =>
     api.post(`/groups/${groupId}/members`, data),
 
   /** 그룹 가입 취소 */
-  leave: (groupId: number) =>
-    api.delete(`/groups/${groupId}/members/me`),
+  leave: (groupId: number) => api.delete(`/groups/${groupId}/members/me`),
 
   /** 그룹 모집 상태 변경 (팀장 전용) */
-  updateRecruitment: (groupId: number, data: unknown) =>
+  updateRecruitment: (groupId: number, data: GroupRecruitmentRequest) =>
     api.patch(`/groups/${groupId}/recruitment`, data),
 
-  /** 그룹 상태 변경 (관리자 전용) */
-  updateStatus: (groupId: number, data: unknown) =>
+  /**
+   * 그룹 승인/반려 (관리자 전용).
+   * 서버는 `action`으로 판정한다 — 다른 필드를 보내면 무시하고 기본 반려로 처리하므로 주의.
+   */
+  updateStatus: (groupId: number, data: GroupReviewRequest) =>
     api.patch(`/groups/${groupId}/admin/status`, data),
 
   /** 신청 인원 상태 전체 보기 (팀장 전용) */
@@ -69,7 +120,7 @@ export const groupApi = {
   /** 자신이 가입한 그룹 조회 */
   getMyGroups: () =>
     api.get<{ code: string; message: string; data: MyGroupItem[] }>(
-      "/groups/my"
+      "/groups/my",
     ),
 
   /**
@@ -85,7 +136,7 @@ export const groupApi = {
   }) =>
     api.get<{ code: string; message: string; data: unknown }>(
       "/groups/my/applications",
-      { params }
+      { params },
     ),
 
   /**
@@ -94,9 +145,6 @@ export const groupApi = {
    * @param size 한 페이지당 개수
    * @param groupStatus ACTIVE | PENDING | REJECTED | RESUBMITTED | INACTIVE (미입력 시 전체)
    */
-  getAll: (params: {
-    page: number;
-    size: number;
-    groupStatus?: "ACTIVE" | "PENDING" | "REJECTED" | "RESUBMITTED" | "INACTIVE";
-  }) => api.get("/groups/admin", { params }),
+  getAll: (params: { page: number; size: number; groupStatus?: GroupStatus }) =>
+    api.get("/groups/admin", { params }),
 };

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRecruitmentInfo } from "@/hooks/apply";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -11,6 +13,8 @@ const poppins = Poppins({
 });
 
 export default function Home() {
+  // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
+  const { generationLabel } = useRecruitmentInfo();
   const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">(
     "기획",
   );
@@ -289,10 +293,8 @@ export default function Home() {
               본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인
               회원관리를 위한 웹사이트입니다.
             </p>
-            <a
-              href="https://forms.gle/mjibpj7qBiKRrChm8"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/apply"
               className="
                 mt-4 inline-flex h-10 px-5 py-2
                 items-center justify-center gap-3
@@ -303,8 +305,8 @@ export default function Home() {
                 transition-colors transition-shadow
               "
             >
-              28기 씨부엉 신청하기
-            </a>
+              {generationLabel && `${generationLabel} `}씨부엉 신청하기
+            </Link>
           </div>
 
           {/* SCROLL DOWN - 메인 페이지 & 맨 위일 때만 표시 */}

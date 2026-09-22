@@ -19,6 +19,7 @@ export function useValidateUser() {
         nickName,
       });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       alert("인증 완료 되었습니다! \n이어서 회원가입을 해주세요!");
     },

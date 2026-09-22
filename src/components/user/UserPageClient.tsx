@@ -10,7 +10,7 @@ import ChangePasswordSection from "@/components/user/ChangePasswordSection";
 import MyPostsSection from "@/components/user/MyPostsSection";
 import MyApplicationsSection from "@/components/user/MyApplicationsSection";
 import InputBox from "@/components/common/InputBox";
-import { useMe } from "@/hooks/auth";
+import { useMe, useWithdraw } from "@/hooks/auth";
 
 const USER_MENU_ITEMS = [
   { label: "내 정보", value: "profile" },
@@ -37,6 +37,17 @@ export default function UserPageClient() {
 
   const user = useUserStore();
   const { data: me } = useMe();
+  const withdraw = useWithdraw();
+
+  const handleWithdraw = () => {
+    if (
+      !window.confirm(
+        "정말 탈퇴할까요?\n탈퇴하면 바로 로그아웃되고 이 계정으로는 다시 로그인할 수 없어요.",
+      )
+    )
+      return;
+    withdraw.mutate();
+  };
 
   const profile = {
     name: me?.name ?? user.name,
@@ -135,9 +146,11 @@ export default function UserPageClient() {
                 <div className="flex justify-end mt-8 pt-6 border-t border-gray-100">
                   <button
                     type="button"
-                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                    onClick={handleWithdraw}
+                    disabled={withdraw.isPending}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
                   >
-                    탈퇴하기
+                    {withdraw.isPending ? "처리 중..." : "탈퇴하기"}
                   </button>
                 </div>
               </div>

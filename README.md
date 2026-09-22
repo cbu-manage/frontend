@@ -47,4 +47,4 @@ If not set, the app will default to `/api/v1`.
 
 ## 스타일 가이드
 
-타이포·스페이싱 토큰, 반응형 규칙, 새 컴포넌트 작성 규칙은 [STYLE_GUIDE.md](./STYLE_GUIDE.md) 참조.
+타이포·스페이싱 토큰, 반응형 규칙, 새 컴포넌트 작성 규칙은 [docs/styling.md](./docs/styling.md) 참조. (전체 가이드 인덱스: [CLAUDE.md](./CLAUDE.md))

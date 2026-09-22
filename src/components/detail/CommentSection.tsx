@@ -7,6 +7,7 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
+  Flag,
 } from "lucide-react";
 
 interface CommentInputProps {
@@ -89,6 +90,8 @@ interface ReplyData {
   date: string;
   replies?: ReplyData[];
   deleted?: boolean;
+  /** 서버가 계산한 본인 여부. 익명 게시판처럼 userId 가 안 오는 곳에서 준다 */
+  isMine?: boolean;
 }
 
 interface CommentItemProps {
@@ -101,11 +104,14 @@ interface CommentItemProps {
   depth?: number;
   replies?: ReplyData[];
   onReplySubmit?: (parentId: number, content: string) => void;
-  onEditComment?: (id: number) => void;
+  onEditComment?: (id: number, content: string) => void | Promise<void>;
   onDeleteComment?: (id: number) => void;
+  onReportComment?: (id: number) => void;
   disabled?: boolean;
   deleted?: boolean;
   currentUserId?: number | null;
+  /** 주면 userId 비교 대신 이 값을 쓴다 (익명 게시판) */
+  isMine?: boolean;
 }
 
 /**
@@ -123,19 +129,33 @@ export const CommentItem = ({
   onReplySubmit,
   onEditComment,
   onDeleteComment,
+  onReportComment,
   disabled = false,
   deleted = false,
   currentUserId,
+  isMine: isMineProp,
 }: CommentItemProps) => {
   const isReply = depth > 0;
   const marginLeft = `${depth * 48}px`;
   const [replyOpen, setReplyOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [replyValue, setReplyValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(content);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const isLoggedIn = currentUserId != null;
-  const isMine = isLoggedIn && userId != null && currentUserId === userId;
+  const isMine =
+    isMineProp ?? (isLoggedIn && userId != null && currentUserId === userId);
   const showReply = !deleted && isLoggedIn && depth < 4;
+
+  // 핸들러가 있을 때만 메뉴 항목 노출 (no-op 버튼 방지)
+  const canEdit = isMine && !!onEditComment;
+  const canDelete = isMine && !!onDeleteComment;
+  const canReport = !isMine && !!onReportComment;
+  const showMenu =
+    !deleted && isLoggedIn && (canEdit || canDelete || canReport);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -156,52 +176,133 @@ export const CommentItem = ({
         className={`group border-b border-gray-200 pb-6 ${isReply ? "pt-6" : "mt-10"}`}
       >
         <div className="flex justify-between items-start mb-2">
-          <span className="font-bold text-gray-900 text-base">{author}</span>
-          {isMine && (
+          <span className="font-bold text-gray-900 text-[15px]">{author}</span>
+          {showMenu && (
             <div className="relative shrink-0" ref={menuRef}>
               <button
                 type="button"
                 onClick={() => setMenuOpen((prev) => !prev)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="더보기"
                 className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
               >
                 <MoreHorizontal size={20} />
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-full mt-1 min-w-[160px] py-1 bg-white rounded-xl border border-gray-200 shadow-lg z-50">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onEditComment?.(id);
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    <Pencil size={18} className="shrink-0 text-gray-500" />
-                    수정
-                  </button>
-                  <div className="border-t border-gray-100 my-1" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onDeleteComment?.(id);
-                      setMenuOpen(false);
-                    }}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 size={18} className="shrink-0" />
-                    삭제
-                  </button>
+                  {isMine ? (
+                    <>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditValue(content);
+                            setEditError(null);
+                            setIsEditing(true);
+                            setMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          <Pencil
+                            size={18}
+                            className="shrink-0 text-gray-500"
+                          />
+                          수정
+                        </button>
+                      )}
+                      {canEdit && canDelete && (
+                        <div className="border-t border-gray-100 my-1" />
+                      )}
+                      {canDelete && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onDeleteComment?.(id);
+                            setMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 size={18} className="shrink-0" />
+                          삭제
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onReportComment?.(id);
+                        setMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <Flag size={18} className="shrink-0" />
+                      신고
+                    </button>
+                  )}
                 </div>
               )}
             </div>
           )}
         </div>
 
-        <p className="text-gray-800 text-base font-medium mb-4 leading-relaxed">
-          {content}
-        </p>
+        {isEditing ? (
+          <div className="mb-4 flex flex-col gap-2">
+            <textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              autoFocus
+              rows={3}
+              aria-label="댓글 수정"
+              className="w-full resize-none rounded-[12px] border-2 border-gray-300 p-3 text-gray-900 text-[15px] font-medium leading-relaxed outline-none focus:border-gray-400"
+            />
+            {editError && (
+              <p className="text-sm font-medium text-danger">{editError}</p>
+            )}
+            <div className="self-end flex gap-2">
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => {
+                  setIsEditing(false);
+                  setEditValue(content);
+                  setEditError(null);
+                }}
+                className="px-4 py-1.5 rounded-full border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                disabled={disabled || isSaving || !editValue.trim()}
+                onClick={async () => {
+                  const v = editValue.trim();
+                  if (!v || !onEditComment || isSaving) return;
+                  setIsSaving(true);
+                  setEditError(null);
+                  try {
+                    await onEditComment(id, v);
+                    setIsEditing(false);
+                  } catch {
+                    setEditError("댓글 수정에 실패했어요. 다시 시도해 주세요.");
+                  } finally {
+                    setIsSaving(false);
+                  }
+                }}
+                className="px-4 py-1.5 rounded-full bg-[#3E434A] text-white text-sm font-semibold hover:bg-gray-700 transition-colors disabled:opacity-60"
+              >
+                {isSaving ? "저장 중..." : "저장"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-900 text-[15px] font-medium mb-4 leading-relaxed">
+            {content}
+          </p>
+        )}
 
-        <div className="flex items-center gap-4 text-gray-400 text-sm font-medium">
+        <div className="flex items-center gap-4 text-gray-600 text-[15px] font-medium">
           <div className="flex items-center gap-1.5">
             <Clock size={14} />
             <span>{date}</span>
@@ -245,6 +346,7 @@ export const CommentItem = ({
               onReplySubmit={onReplySubmit}
               onEditComment={onEditComment}
               onDeleteComment={onDeleteComment}
+              onReportComment={onReportComment}
               disabled={disabled}
               currentUserId={currentUserId}
             />

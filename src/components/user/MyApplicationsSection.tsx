@@ -58,8 +58,7 @@ function extractApplications(raw: unknown): ApplicationItem[] {
       catNum === CATEGORY_PROJECT ? "PROJECT" : "STUDY";
     const myStatus = (i.myStatus ?? i.status ?? "PENDING") as MyStatus;
     const authorName = (i.leaderName ?? i.authorName ?? i.userName) as
-      | string
-      | undefined;
+      string | undefined;
     const authorGeneration = (i.leaderGeneration ??
       i.authorGeneration ??
       i.generation) as number | undefined;
@@ -84,10 +83,28 @@ const PAGE_SIZE = 10;
 
 /** 탭 → API category 파라미터 (1=스터디, 2=프로젝트, undefined=전체) */
 const TAB_TO_CATEGORY: Record<BoardTab, 1 | 2 | undefined> = {
-  "전체보기": undefined,
+  전체보기: undefined,
   "스터디 모집": 1,
   "프로젝트 모집": 2,
 };
+
+/**
+ * Spring Page 응답의 총 건수.
+ * 서버는 { content, page: { totalElements } } 형태로 주므로 page 안을 먼저 본다.
+ * (구버전 형태인 최상위 totalElements도 폴백으로 읽는다)
+ */
+function readTotalElements(data: unknown): number | null {
+  if (!data || typeof data !== "object") return null;
+  const obj = data as Record<string, unknown>;
+  const page = obj.page;
+  if (page && typeof page === "object" && "totalElements" in page) {
+    return (page as { totalElements?: number }).totalElements ?? null;
+  }
+  if ("totalElements" in obj) {
+    return (obj as { totalElements?: number }).totalElements ?? null;
+  }
+  return null;
+}
 
 function getTotalFromResponse(res: unknown): number {
   if (!res || typeof res !== "object") return 0;
@@ -96,9 +113,7 @@ function getTotalFromResponse(res: unknown): number {
     body && typeof body === "object" && "data" in body
       ? (body as { data?: unknown }).data
       : body;
-  if (inner && typeof inner === "object" && "totalElements" in inner)
-    return (inner as { totalElements?: number }).totalElements ?? 0;
-  return 0;
+  return readTotalElements(inner) ?? 0;
 }
 
 export default function MyApplicationsSection() {
@@ -127,11 +142,10 @@ export default function MyApplicationsSection() {
         ? (raw as { data?: unknown }).data
         : raw;
     const list = extractApplications(data);
-    const total =
-      data && typeof data === "object" && "totalElements" in data
-        ? (data as { totalElements?: number }).totalElements ?? list.length
-        : list.length;
-    return { applications: list, totalElements: total };
+    return {
+      applications: list,
+      totalElements: readTotalElements(data) ?? list.length,
+    };
   }, [applicationsRes]);
 
   const totalPages = Math.max(1, Math.ceil(totalElements / PAGE_SIZE));
@@ -165,9 +179,7 @@ export default function MyApplicationsSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-2 md:px-4">
-      <h1 className="text-h1 text-gray-900 mb-6">
-        나의 신청 목록
-      </h1>
+      <h1 className="text-h1 text-gray-900 mb-6">나의 신청 목록</h1>
 
       <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
         {tabItems.map((tab) => (

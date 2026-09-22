@@ -10,7 +10,8 @@ import { PersonIcon } from "@/components/icons/PersonIcon";
 
 interface DetailTemplateProps {
   title: string;
-  status: "recruiting" | "completed" | "solved" | "unsolved";
+  /** rejected는 팀장에게만 쓴다 — 다른 사람에게는 서버 모집 상태 그대로 보인다 */
+  status: "recruiting" | "completed" | "solved" | "unsolved" | "rejected";
   author: string;
   date: string;
   views: number;
@@ -32,6 +33,8 @@ interface DetailTemplateProps {
   deadline?: string;
   /** 기본 필터 박스를 완전히 교체하고 싶을 때 사용 (예: 코테 URL/플랫폼/언어/문제정보 한 박스) */
   infoContentOverride?: React.ReactNode;
+  /** 제목 아래·본문 위에 붙는 안내 영역 (예: 팀장에게만 보이는 개설 반려 안내) */
+  notice?: React.ReactNode;
 }
 
 export default function DetailTemplate({
@@ -56,6 +59,7 @@ export default function DetailTemplate({
   maxMembers,
   deadline,
   infoContentOverride,
+  notice,
 }: DetailTemplateProps) {
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -77,13 +81,15 @@ export default function DetailTemplate({
   const getStatusDisplay = () => {
     switch (status) {
       case "recruiting":
-        return { text: "모집 중", className: "bg-[#45CD89] text-white" };
+        return { text: "모집 중", className: "bg-success text-white" };
       case "completed":
-        return { text: "모집 완료", className: "bg-[#FC5E6E] text-white" };
+        return { text: "모집 완료", className: "bg-danger text-white" };
       case "solved":
-        return { text: "해결", className: "bg-[#45CD89] text-white" };
+        return { text: "해결", className: "bg-success text-white" };
       case "unsolved":
-        return { text: "미해결", className: "bg-[#FC5E6E] text-white" };
+        return { text: "미해결", className: "bg-danger text-white" };
+      case "rejected":
+        return { text: "반려됨", className: "bg-notice text-white" };
       default:
         return { text: "", className: "" };
     }
@@ -96,7 +102,7 @@ export default function DetailTemplate({
       className={`flex-1 min-w-0 bg-white ${
         hasSidebar
           ? "container-x lg:ml-[calc(9.375vw+240px)] lg:pl-16 lg:pr-[9.375%]"
-          : "container-x"
+          : "container-x-lg"
       } py-6 lg:py-16 min-h-screen`}
     >
       <div className="w-full">
@@ -187,22 +193,21 @@ export default function DetailTemplate({
             >
               {statusDisplay.text}
             </span>
-            {typeof activeMemberCount === "number" && typeof maxMembers === "number" && (
-              <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
-                <PersonIcon size={14} className="text-gray-900 shrink-0" />
-                {activeMemberCount}/{maxMembers}
-              </span>
-            )}
+            {typeof activeMemberCount === "number" &&
+              typeof maxMembers === "number" && (
+                <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                  <PersonIcon size={14} className="text-gray-900 shrink-0" />
+                  {activeMemberCount}/{maxMembers}
+                </span>
+              )}
           </div>
 
           {/* 제목 */}
-          <h1 className="text-h1 text-gray-900 mb-4">
-            {title}
-          </h1>
+          <h1 className="text-h1 text-gray-900 mb-4">{title}</h1>
 
           {/* 메타데이터 */}
-          <div className="flex items-center text-sm text-gray-400 gap-4 mb-10">
-            <span className="font-semibold text-base text-gray-700">
+          <div className="flex items-center text-sm text-gray-600 gap-4 mb-10">
+            <span className="font-semibold text-base text-gray-600">
               {author}
             </span>
             <div className="flex items-center gap-1.5">
@@ -240,6 +245,8 @@ export default function DetailTemplate({
               </div>
             )}
           </div>
+
+          {notice && <div className="mb-8">{notice}</div>}
 
           {/* 필터 정보 박스 (페이지별 완전 커스텀 우선) */}
           {infoContentOverride ? (

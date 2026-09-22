@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import RequireMember from "@/components/auth/RequireMember";
 import ProjectWriteClient from "./ProjectWriteClient";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,9 @@ export default function ProjectWritePage() {
         </main>
       }
     >
-      <ProjectWriteClient />
+      <RequireMember>
+        <ProjectWriteClient />
+      </RequireMember>
     </Suspense>
   );
 }

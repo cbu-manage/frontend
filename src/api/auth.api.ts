@@ -48,12 +48,17 @@ export type ChangePasswordRequest = {
 export type ResetPasswordRequest = {
   studentNumber: number;
   email: string;
+  authCode: string;
+  newPassword: string;
 };
 
 export const authApi = {
   login: (data: LoginRequest) => api.post<LoginResponse>("/login", data),
 
   logout: () => api.delete("/login"),
+
+  /** 회원 탈퇴 — 서버가 소프트 삭제(deletedAt·WITHDRAWN) 후 인증 쿠키를 지운다 */
+  deleteAccount: () => api.delete<ApiEnvelope<null>>("/login/account"),
 
   refresh: () => api.post("/login/refresh"),
 

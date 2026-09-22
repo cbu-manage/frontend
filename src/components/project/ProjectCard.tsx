@@ -20,6 +20,8 @@
 import Link from "next/link";
 import { Eye, Clock, UserCircle } from "lucide-react";
 import { PersonIcon } from "@/components/icons/PersonIcon";
+import { StatusBadge } from "@/components/common/StatusBadge";
+import { Tag } from "@/components/common/Tag";
 
 // ============================================
 // 타입 정의
@@ -128,13 +130,9 @@ export function ProjectCard({
         {/* 상단 행: 모집 상태 배지 + 인원 태그 + 마감일 */}
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span
-              className={`text-center py-2 px-3 rounded-full text-xs font-semibold text-white ${
-                isCompleted ? "bg-[#FC5E6E]" : "bg-[#45CD89]"
-              }`}
-            >
+            <StatusBadge tone={isCompleted ? "danger" : "success"}>
               {status}
-            </span>
+            </StatusBadge>
             {typeof maxMembers === "number" &&
               maxMembers > 0 && (
                 <span className="inline-flex items-center gap-1 py-2 px-3 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
@@ -170,12 +168,7 @@ export function ProjectCard({
         {/* 포지션 태그 */}
         <div className="flex flex-wrap gap-1.5">
           {positions.map((pos) => (
-            <span
-              key={pos}
-              className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold"
-            >
-              {pos}
-            </span>
+            <Tag key={pos}>{pos}</Tag>
           ))}
         </div>
 
@@ -262,18 +255,13 @@ export function ProjectRow({
       <div className="flex flex-col gap-3 sm:hidden px-4 w-full">
         {/* 상단: 상태 및 포지션 배지 */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className={`px-3 py-2 rounded-full text-[10px] font-bold text-white ${
-              isCompleted
-                ? "bg-red-400" // 모집 완료: 빨강 배경
-                : "bg-[#6ECA8F]" // 모집 중: 초록 배경
-            }`}
+          <StatusBadge
+            tone={isCompleted ? "danger" : "success"}
+            className="text-[10px] font-bold"
           >
             {status}
-          </span>
-          <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">
-            {position}
-          </span>
+          </StatusBadge>
+          <Tag>{position}</Tag>
         </div>
 
         {/* 하단: 제목과 작성자/시간 */}
@@ -297,20 +285,15 @@ export function ProjectRow({
       {/* ========== 태블릿/PC 그리드형 (sm 이상) ========== */}
       <div className="hidden sm:grid sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-13 text-center items-center">
         <div className="col-span-1 md:col-span-2">
-          <span
-            className={`px-3 py-2 rounded-full text-[10px] font-bold text-white inline-block ${
-              isCompleted
-                ? "bg-red-400" // 모집 완료: 빨강 배경
-                : "bg-[#6ECA8F]" // 모집 중: 초록 배경
-            }`}
+          <StatusBadge
+            tone={isCompleted ? "danger" : "success"}
+            className="text-[10px] font-bold"
           >
             {status}
-          </span>
+          </StatusBadge>
         </div>
         <div className="col-span-2">
-          <span className="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-semibold">
-            {position}
-          </span>
+          <Tag>{position}</Tag>
         </div>
         <div className="col-span-3 md:col-span-4 lg:col-span-4 text-left md:text-center px-4 font-semibold text-gray-800 text-sm md:text-base">
           {title}

@@ -1,133 +1,270 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useState } from "react";
-import { useUserStore } from "@/store/userStore";
+import { ChevronLeft, Clock, Eye, MessageCircle } from "lucide-react";
 import RequireMember from "@/components/auth/RequireMember";
+import KebabMenu from "@/components/common/KebabMenu";
+import { CommentItem } from "@/components/detail/CommentSection";
+import CommentEmpty from "@/components/detail/CommentEmpty";
+import ReportModal from "@/components/detail/ReportModal";
+import { useIsAuthor } from "@/hooks/auth";
+import { useFreeboardDetail } from "@/hooks/board";
+import { freeboardAuthorLabel } from "@/api";
+import { useUserStore } from "@/store/userStore";
+import { formatDate } from "@/lib/date";
+import type { MappedComment } from "@/hooks/board";
 
-// TODO: API 연동 후 교체
-const MOCK_POST = {
-  id: 1,
-  category: "일상",
-  title: "백엔드 면접 후기 — 너무 떨려서 망친 듯ㅠ",
-  author: "익명12",
-  date: "2026.04.18",
-  views: 248,
-  content: `어제 면접 보고 왔는데 답 하나도 제대로 못한 것 너무 속상해서 적어봅니다...
-
-CS 질문이 너무 많이 들어와서 준비 부족함을 느낌. 다음엔 OS 메모리·네트워크 3-way handshake·DB 인덱스 죄르르 외워서 가겠어요.
-DB 인덱스에서는 B+ tree 구조랑 클러스터드 인덱스의 차이점도 질문 받았는데 잠깐 있어서 한참 멈춤...
-
-그래도 프로젝트 면접은 재미있게 했습니다. 다음 회사는 더 잘해보야지ㅠ 우리 동아리에서 도움 많이 받았는데 이렇게 끝 나는 게 보고의 답인가ㅠ`,
-  comments: [
-    { id: 1, author: "익명47", date: "2026.04.18", content: "저도 지난주 비슷한 경험했어요. 면접은 좋았다고 기대하니 너무 지쳐하지 마세요!" },
-    { id: 2, author: "15기 정하은", date: "2026.04.18", content: "면접 후기 공유 고마워요. CS 정리 자료 필요하시면 동아리 자료방에 공유되어 있습니다." },
-    { id: 3, author: "익명83", date: "2026.04.18", content: "프로젝트 면접은 잘했다고 하니 그게 더 중요해요. 기술 면접 준비는 다음에 더 철저히!" },
-    { id: 4, author: "운영진 14기 최준호", date: "2026.04.19", content: "다음주 CS 스터디 하니 관심 있으시면 단독방에 와주세요!" },
-  ],
-};
+function countComments(items: MappedComment[]): number {
+  return items.reduce((n, c) => n + 1 + countComments(c.replies), 0);
+}
 
 export default function BoardDetailPage() {
   const router = useRouter();
-  const name = useUserStore((s) => s.name);
+  const params = useParams();
+  const postId = Number(params.id);
   const [comment, setComment] = useState("");
+  // 댓글 익명 규칙: 익명 글 → 무조건 익명(서버 강제), 실명 글 → 익명/실명 선택
   const [anonymous, setAnonymous] = useState(false);
 
-  const isAuthor = name && name === MOCK_POST.author;
+  const userId = useUserStore((s) => s.userId);
+  const currentUserId = userId ? Number(userId) : null;
+
+  const {
+    postQuery,
+    commentsQuery,
+    createComment,
+    replyComment,
+    deleteComment,
+    deletePost,
+    flagPost,
+    flagComment,
+  } = useFreeboardDetail(postId);
+
+  const post = postQuery.data;
+  const comments = commentsQuery.data ?? [];
+  const commentCount = countComments(comments);
+
+  const { canModify } = useIsAuthor(post?.authorId, post?.isAuthor);
+
+  const handleCommentSubmit = async () => {
+    const trimmed = comment.trim();
+    if (!trimmed || createComment.isPending) return;
+    await createComment.mutateAsync({
+      content: trimmed,
+      isAnonymous: post?.isAnonymous ? true : anonymous,
+    });
+    setComment("");
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm("이 글을 삭제할까요?")) return;
+    await deletePost.mutateAsync();
+    router.push("/board");
+  };
+
+  // 신고 대상: 게시글 자체 또는 댓글 하나. 모달 하나를 둘이 같이 쓴다.
+  const [reportTarget, setReportTarget] = useState<
+    { type: "post" } | { type: "comment"; commentId: number } | null
+  >(null);
+
+  const handleFlag = () => setReportTarget({ type: "post" });
+  const handleCommentFlag = (commentId: number) =>
+    setReportTarget({ type: "comment", commentId });
+
+  const handleReportSubmit = async (content: string) => {
+    if (!reportTarget) return;
+    try {
+      if (reportTarget.type === "post") {
+        await flagPost.mutateAsync(content);
+      } else {
+        await flagComment.mutateAsync({
+          commentId: reportTarget.commentId,
+          content,
+        });
+      }
+      setReportTarget(null);
+      window.alert("신고가 접수되었습니다.");
+    } catch {
+      window.alert("신고 접수에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  if (postQuery.isLoading) {
+    return (
+      <RequireMember>
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
+        </main>
+      </RequireMember>
+    );
+  }
+
+  if (!post) {
+    return (
+      <RequireMember>
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+            게시글을 찾을 수 없습니다.
+          </div>
+        </main>
+      </RequireMember>
+    );
+  }
 
   return (
     <RequireMember>
       <main className="min-h-screen pb-16 bg-white">
         <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16">
-            <button
-              onClick={() => router.push("/board")}
-              className="text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6 flex items-center gap-1"
-            >
-              ← 자유게시판 목록
-            </button>
-
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">{MOCK_POST.title}</h1>
-            <div className="flex items-center gap-2 text-sm text-gray-500 pb-5 border-b border-gray-200">
-              <span className="rounded bg-gray-900 text-white text-xs font-medium px-1.5 py-0.5">{MOCK_POST.category}</span>
-              <span>{MOCK_POST.author}</span>
-              <span>·</span>
-              <span>{MOCK_POST.date}</span>
-              <span>·</span>
-              <span>조회 {MOCK_POST.views}</span>
-              <div className="ml-auto flex gap-3">
-                {isAuthor && (
-                  <>
-                    <button className="text-gray-400 hover:text-gray-700 transition-colors">수정</button>
-                    <button className="text-gray-400 hover:text-red-500 transition-colors">삭제</button>
-                  </>
-                )}
-                <button className="text-gray-400 hover:text-red-500 transition-colors flex items-center gap-0.5">
-                  ► 신고
-                </button>
-              </div>
+          <div className="pt-6 lg:pt-12">
+            {/* 상단 바 */}
+            <div className="flex items-center justify-between mb-6">
+              <button
+                onClick={() => router.push("/board")}
+                className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-5 py-2.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                <ChevronLeft size={16} /> 목록으로
+              </button>
+              <KebabMenu
+                onEdit={
+                  canModify
+                    ? () => router.push(`/board/write?edit=${postId}`)
+                    : undefined
+                }
+                onDelete={canModify ? handleDelete : undefined}
+                onReport={!canModify ? handleFlag : undefined}
+              />
             </div>
 
-            <div className="py-10 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap border-b border-gray-200">
-              {MOCK_POST.content}
+            {/* 제목 / 작성자 / 메타 */}
+            <h1 className="mt-4 text-h1 text-gray-900">{post.title}</h1>
+            <p className="mt-3 text-base text-gray-600">
+              {freeboardAuthorLabel(post)}
+            </p>
+            <div className="mt-3 flex items-center gap-4 border-b border-gray-200 pb-6 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Clock size={14} />{" "}
+                {post.createdAt ? formatDate(post.createdAt as string) : ""}
+              </span>
+              <span className="flex items-center gap-1">
+                <Eye size={14} /> {post.viewCount ?? 0}
+              </span>
+              <span className="flex items-center gap-1">
+                <MessageCircle size={14} /> {commentCount}
+              </span>
             </div>
 
-            {/* 댓글 */}
-            <div className="pt-8">
-              <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                💬 댓글 <span className="text-gray-800">{MOCK_POST.comments.length}</span>
-              </h2>
+            {/* 본문 */}
+            <div className="whitespace-pre-wrap py-10 text-base leading-relaxed text-gray-900 border-b border-gray-200">
+              {post.content}
+            </div>
 
-              {/* 댓글 입력 (상단) */}
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="댓글을 남겨주세요..."
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
-                />
-                <button
-                  type="button"
-                  className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors shrink-0"
-                >
-                  댓글 작성
-                </button>
+            {/* 댓글 목록 */}
+            {commentsQuery.isLoading ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                댓글을 불러오는 중...
               </div>
-              <div className="flex items-center mb-6">
-                <button
-                  type="button"
-                  onClick={() => setAnonymous((v) => !v)}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${
-                    anonymous ? "text-gray-800" : "text-gray-400 hover:text-gray-600"
-                  }`}
-                >
-                  <span className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${anonymous ? "bg-gray-800 border-gray-800" : "border-gray-300"}`}>
-                    {anonymous && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </span>
-                  익명으로 작성
-                </button>
-              </div>
-
-              {/* 댓글 목록 */}
-              <div className="space-y-4">
-                {MOCK_POST.comments.map((c) => (
-                  <div key={c.id} className="pb-4 border-b border-gray-100">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-gray-800">{c.author}</span>
-                        <span className="text-gray-400">·</span>
-                        <span className="text-gray-400">{c.date}</span>
-                      </div>
-                      <button className="text-xs text-gray-400 hover:text-red-500 transition-colors">► 신고</button>
-                    </div>
-                    <p className="text-sm text-gray-700">{c.content}</p>
-                  </div>
+            ) : comments.length === 0 ? (
+              <CommentEmpty />
+            ) : (
+              <div>
+                {comments.map((c) => (
+                  <CommentItem
+                    key={c.id}
+                    {...c}
+                    currentUserId={currentUserId}
+                    onReplySubmit={(parentId, content) =>
+                      replyComment.mutate({ commentId: parentId, content })
+                    }
+                    onDeleteComment={(id) => deleteComment.mutate(id)}
+                    onReportComment={handleCommentFlag}
+                  />
                 ))}
+              </div>
+            )}
+
+            {/* 댓글 입력 */}
+            <div className="mt-6 rounded-2xl border border-gray-200 p-5">
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                maxLength={1000}
+                rows={4}
+                placeholder="씨부엉 회원들과 함께 이야기를 나눠보세요!"
+                aria-label="댓글 입력"
+                className="w-full resize-none text-sm text-gray-700 placeholder-gray-400 focus:outline-none"
+              />
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-xs text-gray-400">
+                  {comment.length} / 1,000
+                </span>
+                <div className="flex items-center gap-3">
+                  {post.isAnonymous ? (
+                    <span className="text-sm text-gray-400">
+                      익명으로 작성됩니다
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setAnonymous((v) => !v)}
+                      aria-pressed={anonymous}
+                      className={`flex items-center gap-1.5 text-sm transition-colors ${
+                        anonymous
+                          ? "text-gray-800"
+                          : "text-gray-400 hover:text-gray-600"
+                      }`}
+                    >
+                      <span
+                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                          anonymous
+                            ? "border-gray-800 bg-gray-800"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {anonymous && (
+                          <svg
+                            width="10"
+                            height="8"
+                            viewBox="0 0 10 8"
+                            fill="none"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M1 4L3.5 6.5L9 1"
+                              stroke="white"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </span>
+                      익명으로 작성
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleCommentSubmit}
+                    disabled={!comment.trim() || createComment.isPending}
+                    className="rounded-full bg-gray-800 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
+                  >
+                    {createComment.isPending ? "등록 중..." : "등록"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <ReportModal
+          open={reportTarget !== null}
+          onClose={() => setReportTarget(null)}
+          target={reportTarget?.type ?? "post"}
+          onSubmit={handleReportSubmit}
+          isPending={flagPost.isPending || flagComment.isPending}
+        />
       </main>
     </RequireMember>
   );

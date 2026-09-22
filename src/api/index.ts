@@ -7,15 +7,11 @@ export {
   type LoginResponse,
   type SignupRequest,
   type ChangePasswordRequest,
+  type ResetPasswordRequest,
 } from "./auth.api";
 
 // Mail
-export {
-  mailApi,
-  type MailSendResponse,
-  type MailVerifyResponse,
-  type MailUpdateRequest,
-} from "./mail.api";
+export { mailApi, type MailUpdateRequest } from "./mail.api";
 
 // User
 export { userApi, type UserInfo, type ValidateUserRequest } from "./user.api";
@@ -39,12 +35,13 @@ export {
 export {
   projectApi,
   type ProjectListParams,
-  type ProjectFilterParams,
   type ProjectListItem,
   type ProjectListResponse,
   type ProjectDetailData,
   type CreateProjectRequest,
   type UpdateProjectRequest,
+  type ProjectFieldType,
+  type ProjectFilterParams,
 } from "./project.api";
 
 // Coding Test
@@ -61,16 +58,28 @@ export {
 } from "./codingTest.api";
 
 // Report
-export { reportApi, type ReportListParams } from "./report.api";
+export {
+  reportApi,
+  type ReportListParams,
+  type ReportPreviewItem,
+  type ReportPreviewPage,
+  type ReportDetail,
+  type ReportMember,
+} from "./report.api";
 
 // Comment
-export { commentApi } from "./comment.api";
+export { commentApi, extractCommentList } from "./comment.api";
+export type { CommentItem, CommentBody } from "./comment.api";
 
 // Group
 export {
   groupApi,
+  type GroupStatus,
+  type GroupReviewRequest,
   type MyGroupItem,
   type GroupMemberItem,
+  type GroupDetailData,
+  type GroupMemberDetail,
 } from "./group.api";
 
 // Post (공통)
@@ -83,7 +92,122 @@ export {
 } from "./post.api";
 
 // Member
-export { memberApi, type MemberInfo } from "./member.api";
+export { memberApi, type MemberInfo, type MemberUpdateDTO } from "./member.api";
+
+// Applicant (신입 부원 신청서 — 모집 기반)
+export {
+  applicantApi,
+  recruitmentApi,
+  questionApi,
+  type VoteDecision,
+  type FinalDecision,
+  type ApplicationTab,
+  type ApplicationField,
+  type Recruitment,
+  type RecruitmentUpdateBody,
+  type ApplicationQuestion,
+  type QuestionCreateBody,
+  type QuestionUpdateBody,
+  type ApplicationListItem,
+  type ApplicationListResponse,
+  type ApplicationListParams,
+  type ApplicationDetail,
+  type ApplicantInfo,
+  type AnswerItem,
+  type PortfolioItem,
+  type VoteItem,
+  type MyVote,
+  type FinalizeDecision,
+  type Page,
+} from "./applicant.api";
+
+// Gathering (모임 일정)
+export {
+  gatheringApi,
+  GATHERING_TYPE_LABEL,
+  type GatheringType,
+  type MyAttendanceStatus,
+  // VoteDecision("PASS"|"FAIL")은 지원자 합불 전용(applicant.api) — 모임 투표는 AttendanceVote 사용
+  type AttendanceVote,
+  type AttendanceSummary,
+  type Gathering,
+  type GatheringMember,
+  type AdminGatheringMember,
+  type AttendanceList,
+  type AdminAttendanceList,
+  type CreateGatheringBody,
+  type UpdateGatheringBody,
+} from "./gathering.api";
 
 // Image
 export { imageApi } from "./image.api";
+
+// Apply
+export {
+  applyApi,
+  type CurrentGeneration,
+  type ApplicationRequest,
+  type ApplicationMyRequest,
+  type ApplicationMyResponse,
+  type ApplicationResult,
+} from "./apply.api";
+
+// News (공지·뉴스레터)
+export {
+  newsApi,
+  type NewsCategory,
+  type NewsletterType,
+  type NewsListParams,
+  type NewsListItem,
+  type NewsListResponse,
+  type NewsDetail,
+  type NewsAttachment,
+  type NewsCreateBody,
+  type NewsUpdateBody,
+  type AttachmentDownload,
+  type PageInfo,
+  type NewsSearchInfo,
+} from "./news.api";
+
+// Settings
+export {
+  settingsApi,
+  type OnboardingLinks,
+  type FeeInfo,
+} from "./settings.api";
+
+// Free Board
+export {
+  freeboardApi,
+  freeboardAuthorLabel,
+  type FreeBoardCreateBody,
+  type FreeBoardUpdateBody,
+  type FreeBoardListItem,
+  type FreeBoardListResponse,
+  type FreeBoardPost,
+} from "./freeboard.api";
+
+// Flag (신고 관리)
+export {
+  flagApi,
+  type FlagPage,
+  type FlagListParams,
+  type FlagPostPreview,
+  type FlagPostInfo,
+  type FlagCommentPreview,
+  type FlagCommentInfo,
+} from "./flag.api";
+// Suggestion (건의방 · 대나무숲)
+export {
+  suggestionApi,
+  type SuggestionType,
+  type SuggestionStatus,
+  type SuggestionListParams,
+  type SuggestionListItem,
+  type SuggestionPost,
+  type SuggestionPage,
+  type SuggestionSummary,
+  type SuggestionCreateBody,
+  type SuggestionUpdateBody,
+  type SuggestionComment,
+} from "./suggestion.api";

@@ -210,6 +210,7 @@ function CodingTestWriteContent() {
   const createMutation = useMutation({
     mutationFn: (data: import("@/api").CreateProblemRequest) =>
       codingTestApi.create(data),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["codingTest", "list"] });
       router.push("/coding-test");
@@ -224,6 +225,7 @@ function CodingTestWriteContent() {
       id: number;
       data: import("@/api").UpdateProblemRequest;
     }) => codingTestApi.update(id, data),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["codingTest", "list"] });
       queryClient.invalidateQueries({

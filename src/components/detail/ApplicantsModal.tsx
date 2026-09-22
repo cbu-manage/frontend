@@ -65,7 +65,11 @@ function getGrade(item: ApplicantItem): string {
 }
 
 function getName(item: ApplicantItem): string {
-  return (item.userName ?? item.memberName ?? item.authorName ?? item.name ?? "익명") as string;
+  return (item.userName ??
+    item.memberName ??
+    item.authorName ??
+    item.name ??
+    "익명") as string;
 }
 
 export default function ApplicantsModal({
@@ -104,6 +108,7 @@ export default function ApplicantsModal({
       });
     },
     onMutate: ({ groupMemberId }) => setUpdatingId(groupMemberId),
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSettled: () => setUpdatingId(null),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["applicants", groupId] });
@@ -118,17 +123,21 @@ export default function ApplicantsModal({
   const getStatus = (a: ApplicantItem) => a.groupMemberStatus ?? a.status;
   const filteredList = isApplicantsMode
     ? applicants.filter(
-        (a) => !getStatus(a) || getStatus(a) === "PENDING" || getStatus(a) === "APPLIED",
+        (a) =>
+          !getStatus(a) ||
+          getStatus(a) === "PENDING" ||
+          getStatus(a) === "APPLIED",
       )
     : applicants.filter((a) => getStatus(a) === "ACTIVE");
 
-  const activeMemberCount = applicants.filter(
+  // overview 응답은 팀장을 제외한 팀원만 준다. 서버 마감 조건은 팀장 포함 2명이므로 여기서는 1명이 기준.
+  const acceptedMemberCount = applicants.filter(
     (a) => getStatus(a) === "ACTIVE",
   ).length;
 
   const handleCloseRecruitment = () => {
-    if (activeMemberCount < 2) {
-      alert("모집 마감을 하려면 현재 인원이 2명 이상이어야 합니다.");
+    if (acceptedMemberCount < 1) {
+      alert("모집 마감을 하려면 수락된 팀원이 1명 이상이어야 합니다.");
       return;
     }
     const message = "이대로 마감하시겠습니까?";
@@ -228,7 +237,9 @@ export default function ApplicantsModal({
             )}
             {!isLoading && !isError && filteredList.length === 0 && (
               <div className="py-12 text-center text-gray-500">
-                {isApplicantsMode ? "신청 인원이 없습니다." : "현재 활동 중인 인원이 없습니다."}
+                {isApplicantsMode
+                  ? "신청 인원이 없습니다."
+                  : "현재 활동 중인 인원이 없습니다."}
               </div>
             )}
             {!isLoading &&
@@ -274,7 +285,7 @@ export default function ApplicantsModal({
                                 accept: true,
                               });
                             }}
-                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#45CD89] text-white hover:opacity-90 disabled:opacity-50"
+                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-success text-white hover:opacity-90 disabled:opacity-50"
                           >
                             수락
                           </button>
@@ -288,7 +299,7 @@ export default function ApplicantsModal({
                                 accept: false,
                               });
                             }}
-                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-[#FC5E6E] text-white hover:opacity-90 disabled:opacity-50"
+                            className="px-3 py-2.5 rounded-xl text-sm font-semibold bg-danger text-white hover:opacity-90 disabled:opacity-50"
                           >
                             거부
                           </button>

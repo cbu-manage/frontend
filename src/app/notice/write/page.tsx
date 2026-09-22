@@ -1,156 +1,164 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronDown, Check } from "lucide-react";
-import RequireAdmin from "@/components/auth/RequireAdmin";
+import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import PostWriteForm from "@/components/board/PostWriteForm";
+import { useNewsCreate, useNewsUpdate } from "@/hooks/news/useNewsMutation";
+import { newsApi, type NewsCategory } from "@/api";
 
-const NOTICE_CATEGORIES = ["공지", "이벤트", "뉴스레터", "IT소식", "활동"];
+/** BE 소식 첨부 허용 목록(NewsController.addAttachment)과 동일. 파일당 20MB */
+const ATTACHMENT_ACCEPT =
+  ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.hwp,.hwpx,.txt,.csv,.zip,image/*";
+const ATTACHMENT_HINT =
+  "이미지·PDF·문서(doc/ppt/xls/hwp/txt/csv)·zip, 파일당 20MB";
 
-export default function NoticeWritePage() {
+/**
+ * 게시글 저장 뒤 첨부를 하나씩 올린다. 일부만 실패하면 어떤 파일이 안 올라갔는지 알려주고 계속 진행한다.
+ * 글은 이미 저장된 상태라 실패한 파일은 상세에서 다시 올릴 수 있다.
+ */
+async function uploadAttachments(newsId: number, files: File[]) {
+  const failed: string[] = [];
+  for (const file of files) {
+    try {
+      await newsApi.addAttachment(newsId, file);
+    } catch {
+      failed.push(file.name);
+    }
+  }
+  if (failed.length > 0) {
+    window.alert(
+      `글은 저장됐지만 첨부 ${failed.length}개를 올리지 못했어요.\n${failed.join("\n")}`,
+    );
+  }
+}
+
+const CATEGORY_MAP: Record<string, NewsCategory> = {
+  공지: "NOTICE",
+  이벤트: "EVENT",
+  IT소식: "IT_NEWS",
+};
+
+const CATEGORY_LABEL: Record<string, string> = {
+  NOTICE: "공지",
+  EVENT: "이벤트",
+  IT_NEWS: "IT소식",
+};
+
+function NoticeWriteClient() {
   const router = useRouter();
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("공지");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const [pinned, setPinned] = useState(false);
-  const [content, setContent] = useState("");
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit")
+    ? Number(searchParams.get("edit"))
+    : null;
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const { mutateAsync: createNews, isPending: isCreating } = useNewsCreate();
+  const { mutateAsync: updateNews, isPending: isUpdating } = useNewsUpdate();
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!title.trim() || !content.trim()) return;
-    // TODO: API 연동 (POST /api/v1/post?category=공지)
-    router.push("/notice");
-  };
+  const postQuery = useQuery({
+    queryKey: ["news", editId],
+    queryFn: async () => {
+      const res = await newsApi.getById(editId!);
+      return res.data.data;
+    },
+    enabled: !!editId,
+  });
 
-  return (
-    <RequireAdmin>
-      <main className="min-h-screen pb-16 bg-white">
-        <div className="container-x-lg">
-          <div className="pt-6 lg:pt-16">
-            <div className="flex items-start justify-between mb-2">
-              <div>
-                <h1 className="text-h1 text-gray-900">새 소식 작성</h1>
-              </div>
-              <div className="flex gap-2">
-                <button type="button" onClick={() => router.back()} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">취소</button>
-                <button type="submit" form="notice-form" className="px-4 py-2 bg-gray-800 rounded-lg text-sm text-white hover:bg-gray-700 transition-colors">게시</button>
-              </div>
-            </div>
+  const editPost = editId ? postQuery.data : null;
 
-            <form id="notice-form" onSubmit={handleSubmit} className="mt-6 space-y-4">
-              {/* 제목 */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1.5">제목</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="소식 제목을 입력하세요"
-                  required
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-300"
-                />
-              </div>
-
-              {/* 카테고리 + 상단 고정 */}
-              <div className="flex items-center gap-6">
-                <div className="flex-1" ref={dropdownRef}>
-                  <label className="text-sm font-medium text-gray-700 block mb-1.5">카테고리</label>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen((v) => !v)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-left flex items-center justify-between focus:outline-none focus:ring-1 focus:ring-gray-300 bg-white"
-                    >
-                      <span className="text-gray-700">{category}</span>
-                      <ChevronDown size={15} className={`text-gray-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-                    {dropdownOpen && (
-                      <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden">
-                        {NOTICE_CATEGORIES.map((c) => (
-                          <li key={c}>
-                            <button
-                              type="button"
-                              onClick={() => { setCategory(c); setDropdownOpen(false); }}
-                              className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              {c}
-                              {category === c && <Check size={13} className="text-gray-700" />}
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
-                <div className="shrink-0">
-                  <label className="text-sm font-medium text-gray-700 block mb-1.5">상단 고정 (📌 핀)</label>
-                  <button
-                    type="button"
-                    onClick={() => setPinned((v) => !v)}
-                    className={`relative w-10 h-6 rounded-full transition-colors ${pinned ? "bg-gray-800" : "bg-gray-200"}`}
-                  >
-                    <span className={`absolute left-0 top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${pinned ? "translate-x-5" : "translate-x-1"}`} />
-                  </button>
-                </div>
-              </div>
-
-              {/* 본문 */}
-              <div>
-                <label className="text-sm font-medium text-gray-700 block mb-1.5">본문</label>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                  {/* 툴바 (UI 전용) */}
-                  <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 bg-gray-50 text-sm text-gray-500 flex-wrap">
-                    {["B", "I", "U"].map((t) => <button key={t} type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded font-medium">{t}</button>)}
-                    <span className="text-gray-200 mx-1">|</span>
-                    {["H1", "H2"].map((t) => <button key={t} type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded text-xs font-medium">{t}</button>)}
-                    <span className="text-gray-200 mx-1">|</span>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded">• 목록</button>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded">1 번호</button>
-                    <span className="text-gray-200 mx-1">|</span>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded text-xs">{`</>`}</button>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded text-xs">🖼</button>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded text-xs">—</button>
-                    <button type="button" className="px-1.5 py-0.5 hover:bg-gray-200 rounded text-xs">표</button>
-                  </div>
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="내용을 입력하세요..."
-                    required
-                    rows={16}
-                    className="w-full px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none resize-none"
-                  />
-                </div>
-              </div>
-
-              {/* 파일 첨부 */}
-              <div>
-                <label className="text-sm text-gray-500 cursor-pointer flex items-center gap-1.5 w-fit">
-                  <span>🔗</span>
-                  <span>파일 첨부 (선택)</span>
-                  <input type="file" multiple className="hidden" />
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
-                {/*<button type="button" onClick={() => router.back()} className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">취소</button>
-                <button type="submit" className="px-4 py-2 bg-gray-800 rounded-lg text-sm text-white hover:bg-gray-700 transition-colors">게시</button>*/}
-              </div>
-            </form>
-          </div>
+  if (editId && postQuery.isLoading) {
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+          불러오는 중...
         </div>
       </main>
-    </RequireAdmin>
+    );
+  }
+
+  if (editId && postQuery.isError) {
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+          게시글을 불러오지 못했습니다.
+        </div>
+      </main>
+    );
+  }
+
+  if (editId && !postQuery.isLoading && !editPost) {
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="container-x-lg pt-16 text-center text-sm text-gray-500">
+          게시글을 찾을 수 없습니다.
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <PostWriteForm
+      boardName="씨부엉 소식"
+      heading={editId ? "글 수정" : "글 작성"}
+      categories={["공지", "이벤트", "IT소식"]}
+      categoryMaxLength={{ 공지: 20000 }}
+      staffOnly
+      backPath={editId ? `/notice/${editId}` : "/notice"}
+      initialValues={
+        editPost
+          ? {
+              title: editPost.title,
+              content: editPost.content,
+              category: CATEGORY_LABEL[editPost.category],
+            }
+          : undefined
+      }
+      isSubmitting={isCreating || isUpdating}
+      attachmentAccept={ATTACHMENT_ACCEPT}
+      attachmentHint={ATTACHMENT_HINT}
+      onSubmit={async ({ title, content, category, files }) => {
+        if (!category) {
+          window.alert("분류를 선택해주세요.");
+          return;
+        }
+        try {
+          if (editId) {
+            await updateNews({
+              id: editId,
+              data: { title, content, category: CATEGORY_MAP[category] },
+            });
+            await uploadAttachments(editId, files);
+            router.push(`/notice/${editId}`);
+          } else {
+            const created = await createNews({
+              title,
+              content,
+              category: CATEGORY_MAP[category],
+            });
+            const newsId = created.data.data?.newsId;
+            if (newsId) await uploadAttachments(newsId, files);
+            router.push(newsId ? `/notice/${newsId}` : "/notice");
+          }
+        } catch {
+          window.alert("저장에 실패했습니다. 다시 시도해주세요.");
+        }
+      }}
+    />
+  );
+}
+
+export default function NoticeWritePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-white">
+          <div className="container-x-lg pt-16 text-center text-sm text-gray-400">
+            불러오는 중...
+          </div>
+        </main>
+      }
+    >
+      <NoticeWriteClient />
+    </Suspense>
   );
 }

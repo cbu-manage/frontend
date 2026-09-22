@@ -9,6 +9,8 @@ import Sidebar from "@/components/shared/Sidebar";
 import RequireMember from "@/components/auth/RequireMember";
 import { useUserStore } from "@/store/userStore";
 import { studyApi, groupApi } from "@/api";
+import GroupRejectedBanner from "@/components/group/GroupRejectedBanner";
+import { useGroupRejection } from "@/hooks/group";
 
 const CATEGORIES = [
   { label: "전체", value: "전체" },
@@ -77,17 +79,27 @@ export default function StudyDetailPage() {
       if (!numericId) return;
       await studyApi.delete(numericId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["studies"] });
       router.push("/study");
     },
   });
 
+  const { group, isRejected, resubmit, isResubmitting } = useGroupRejection({
+    groupId,
+    enabled: isAuthor,
+    detailQueryKey: ["study", numericId],
+  });
+
   const closeMutation = useMutation({
     mutationFn: async () => {
       if (!groupId) return;
-      await groupApi.updateRecruitment(groupId, { groupRecruitmentStatus: "CLOSED" });
+      await groupApi.updateRecruitment(groupId, {
+        groupRecruitmentStatus: "CLOSED",
+      });
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       queryClient.invalidateQueries({ queryKey: ["studies"] });
@@ -100,14 +112,19 @@ export default function StudyDetailPage() {
       if (!groupId) return;
       await groupApi.join(groupId);
     },
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       setJustApplied(true);
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       alert("스터디 신청이 완료되었습니다.");
     },
-    onError: () => {
+    onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ["study", numericId] });
-      alert("이미 들어간 스터디입니다.");
+      // 중복 신청 말고도 재신청 횟수 초과 등 사유가 여럿이라 서버 문구를 그대로 쓴다
+      alert(
+        (err as Error)?.message ||
+          "스터디 신청에 실패했습니다. 다시 시도해주세요.",
+      );
     },
   });
 
@@ -116,9 +133,12 @@ export default function StudyDetailPage() {
       if (!groupId) return;
       await groupApi.leave(groupId);
     },
-    onSuccess: () => {
+    // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
+    // 무효화를 await 해야 isPending 이 refetch 까지 유지된다. 먼저 풀리면
+    // 취소 버튼이 낡은 신청 상태로 다시 눌린다
+    onSuccess: async () => {
       setJustApplied(false);
-      queryClient.invalidateQueries({ queryKey: ["study", numericId] });
+      await queryClient.invalidateQueries({ queryKey: ["study", numericId] });
       alert("스터디 신청이 취소되었습니다.");
     },
   });
@@ -155,6 +175,20 @@ export default function StudyDetailPage() {
 
   const statusKey = study.recruiting ? "recruiting" : "completed";
 
+  const goEditPage = () => {
+    const payload = {
+      id: String(id),
+      title: study.title,
+      studyName: study.studyName,
+      categories: study.studyTags,
+      recruitStatus: study.recruiting ? "recruiting" : "completed",
+      recruitCount: study.maxMembers,
+      content: study.content,
+    };
+    sessionStorage.setItem("editPost_study", JSON.stringify(payload));
+    router.push(`/study/write?id=${id}`);
+  };
+
   return (
     <RequireMember>
       <main className="min-h-screen bg-white">
@@ -168,7 +202,7 @@ export default function StudyDetailPage() {
           <DetailTemplate
             backPath="/study"
             title={study.title}
-            status={statusKey}
+            status={isRejected ? "rejected" : statusKey}
             author={authorDisplay}
             date={formatDate(study.createdAt)}
             views={study.viewCount ?? 0}
@@ -177,6 +211,16 @@ export default function StudyDetailPage() {
             activeMemberCount={activeMemberCount}
             maxMembers={study.maxMembers}
             content={study.content}
+            notice={
+              isRejected && group ? (
+                <GroupRejectedBanner
+                  group={group}
+                  onResubmit={resubmit}
+                  onEdit={goEditPage}
+                  isSubmitting={isResubmitting}
+                />
+              ) : undefined
+            }
             onEdit={
               isAuthor
                 ? () => {
@@ -184,22 +228,7 @@ export default function StudyDetailPage() {
                       alert("모집 완료된 글은 수정할 수 없습니다.");
                       return;
                     }
-                    const payload = {
-                      id: String(id),
-                      title: study.title,
-                      studyName: study.studyName,
-                      categories: study.studyTags,
-                      recruitStatus: study.recruiting
-                        ? "recruiting"
-                        : "completed",
-                      recruitCount: study.maxMembers,
-                      content: study.content,
-                    };
-                    sessionStorage.setItem(
-                      "editPost_study",
-                      JSON.stringify(payload),
-                    );
-                    router.push(`/study/write?id=${id}`);
+                    goEditPage();
                   }
                 : undefined
             }
@@ -234,15 +263,16 @@ export default function StudyDetailPage() {
               ) : justApplied || hasAppliedFromApi ? (
                 <button
                   type="button"
+                  disabled={cancelApplyMutation.isPending}
                   onClick={() => {
-                    if (!groupId) return;
+                    if (!groupId || cancelApplyMutation.isPending) return;
                     if (window.confirm("이 스터디 신청을 취소할까요?")) {
                       cancelApplyMutation.mutate();
                     }
                   }}
-                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200"
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-gray-300 bg-white text-gray-600 text-base font-semibold hover:bg-gray-50 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white"
                 >
-                  신청 취소
+                  {cancelApplyMutation.isPending ? "취소 중..." : "신청 취소"}
                 </button>
               ) : !study.recruiting ? (
                 <span className="flex items-center justify-center px-5 py-2 rounded-full border-2 border-gray-200 bg-gray-50 text-gray-500 text-base font-semibold cursor-not-allowed">
@@ -251,15 +281,18 @@ export default function StudyDetailPage() {
               ) : (
                 <button
                   type="button"
+                  /* 광클·더블클릭으로 신청이 두 번 나가면 서버에 중복 행이 생겨
+                     이후 이 스터디 상세가 영구히 열리지 않는다. 요청 중에는 눌리지 않게 막는다 */
+                  disabled={applyMutation.isPending}
                   onClick={() => {
-                    if (!groupId) return;
+                    if (!groupId || applyMutation.isPending) return;
                     if (window.confirm("이 스터디에 신청하시겠습니까?")) {
                       applyMutation.mutate();
                     }
                   }}
-                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200"
+                  className="flex items-center justify-center px-5 py-2 gap-[7px] rounded-full border-2 border-brand bg-white text-brand text-base font-semibold hover:bg-(--Brand-100,#F4F9F1) transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-white"
                 >
-                  신청하기
+                  {applyMutation.isPending ? "신청 중..." : "신청하기"}
                 </button>
               )
             }

@@ -1,16 +1,20 @@
 "use client";
+
+import { Suspense } from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useLogin } from "@/hooks/auth";
 import InputBox from "@/components/common/InputBox";
-import LongBtn from "@/components/common/LongBtn";
-import OutlineBtn from "@/components/common/OutlineBtn";
+import { Button } from "@/components/ui/button";
 
-export default function LoginPage() {
+function LoginClient() {
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, errorMessage } = useLogin();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") ?? undefined;
+  const { handleLogin, errorMessage } = useLogin(redirect);
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -32,7 +36,7 @@ export default function LoginPage() {
           className="space-y-6"
         >
           <InputBox
-            placeholder="아이디를 입력하세요"
+            placeholder="학번을 입력하세요 (10자리)"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             required
@@ -46,17 +50,43 @@ export default function LoginPage() {
             required
             errorMessage={errorMessage ?? undefined}
           />
-          <LongBtn type="submit">로그인</LongBtn>
+          <Button
+            type="submit"
+            variant="brand"
+            className="w-full h-auto rounded-lg p-4 text-base font-semibold"
+          >
+            로그인
+          </Button>
         </form>
         <div className="mt-8 flex justify-center gap-6">
           <Link href="/signup">
-            <OutlineBtn type="button">회원가입</OutlineBtn>
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto px-2 py-1 text-base font-medium text-gray-600"
+            >
+              회원가입
+            </Button>
           </Link>
-          {/* <Link href="/find-password">
-            <OutlineBtn type="button">비밀번호 찾기</OutlineBtn>
-          </Link> */}
+          <Link href="/find-password">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-auto px-2 py-1 text-base font-medium text-gray-600"
+            >
+              비밀번호 찾기
+            </Button>
+          </Link>
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginClient />
+    </Suspense>
   );
 }

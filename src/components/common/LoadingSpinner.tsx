@@ -18,5 +18,3 @@ export default function LoadingSpinner({
     />
   );
 }
-
-// 주석 테스트

@@ -1,13 +1,14 @@
 import { api } from "./client";
 
-export type MailSendResponse = {
+type MailResult = {
   success: boolean;
   responseMessage?: string;
 };
 
-export type MailVerifyResponse = {
-  success: boolean;
-  responseMessage?: string;
+type MailApiResponse = {
+  code: string;
+  message: string;
+  data: MailResult;
 };
 
 export type MailUpdateRequest = {
@@ -16,16 +17,14 @@ export type MailUpdateRequest = {
 };
 
 export const mailApi = {
+  // 백엔드가 address/authCode를 쿼리 파라미터로 받음 (body 아님)
   send: (address: string) =>
-    api.post<MailSendResponse>("/mail/send", null, {
-      params: { address },
-    }),
+    api.post<MailApiResponse>("/mail/send", null, { params: { address } }),
 
   verify: (address: string, authCode: string) =>
-    api.post<MailVerifyResponse>("/mail/verify", null, {
+    api.post<MailApiResponse>("/mail/verify", null, {
       params: { address, authCode },
     }),
 
-  update: (data: MailUpdateRequest) =>
-    api.post("/mail/update", data),
+  update: (data: MailUpdateRequest) => api.post("/mail/update", data),
 };
