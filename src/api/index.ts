@@ -40,6 +40,8 @@ export {
   type ProjectDetailData,
   type CreateProjectRequest,
   type UpdateProjectRequest,
+  type ProjectFieldType,
+  type ProjectFilterParams,
 } from "./project.api";
 
 // Coding Test
@@ -184,3 +186,28 @@ export {
   type FreeBoardListResponse,
   type FreeBoardPost,
 } from "./freeboard.api";
+
+// Flag (신고 관리)
+export {
+  flagApi,
+  type FlagPage,
+  type FlagListParams,
+  type FlagPostPreview,
+  type FlagPostInfo,
+  type FlagCommentPreview,
+  type FlagCommentInfo,
+} from "./flag.api";
+// Suggestion (건의방 · 대나무숲)
+export {
+  suggestionApi,
+  type SuggestionType,
+  type SuggestionStatus,
+  type SuggestionListParams,
+  type SuggestionListItem,
+  type SuggestionPost,
+  type SuggestionPage,
+  type SuggestionSummary,
+  type SuggestionCreateBody,
+  type SuggestionUpdateBody,
+  type SuggestionComment,
+} from "./suggestion.api";

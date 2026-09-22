@@ -8,6 +8,7 @@ import KebabMenu from "@/components/common/KebabMenu";
 import { CommentItem } from "@/components/detail/CommentSection";
 import CommentEmpty from "@/components/detail/CommentEmpty";
 import AttachmentList from "@/components/detail/AttachmentList";
+import ReportModal from "@/components/detail/ReportModal";
 import { useNewsDetail } from "@/hooks/news/useNewsDetail";
 import { useNewsPin } from "@/hooks/news/useNewsMutation";
 import { useCan } from "@/hooks/auth";
@@ -95,11 +96,15 @@ export default function NoticeDetailPage() {
     }
   };
 
-  const handleCommentFlag = async (commentId: number) => {
-    const reason = window.prompt("댓글 신고 사유를 입력해주세요.");
-    if (!reason?.trim()) return;
+  const [reportCommentId, setReportCommentId] = useState<number | null>(null);
+  const handleCommentFlag = (commentId: number) =>
+    setReportCommentId(commentId);
+
+  const handleReportSubmit = async (content: string) => {
+    if (reportCommentId === null) return;
     try {
-      await flagComment.mutateAsync({ commentId, content: reason.trim() });
+      await flagComment.mutateAsync({ commentId: reportCommentId, content });
+      setReportCommentId(null);
       window.alert("신고가 접수되었습니다.");
     } catch {
       window.alert("신고 접수에 실패했습니다. 다시 시도해주세요.");
@@ -288,6 +293,14 @@ export default function NoticeDetailPage() {
             </div>
           </div>
         </div>
+
+        <ReportModal
+          open={reportCommentId !== null}
+          onClose={() => setReportCommentId(null)}
+          target="comment"
+          onSubmit={handleReportSubmit}
+          isPending={flagComment.isPending}
+        />
       </main>
     </RequireMember>
   );

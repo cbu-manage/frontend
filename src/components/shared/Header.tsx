@@ -20,6 +20,7 @@ const NAV: NavCategory[] = [
       { name: "씨부엉 소식", path: "/notice" },
       { name: "뉴스레터", path: "/news" },
       { name: "자유게시판", path: "/board" },
+      { name: "건의방", path: "/suggestion" },
     ],
   },
   {

@@ -44,6 +44,7 @@ export default function ProjectPage() {
   const { data, isLoading, isError } = useProjectList({
     page: currentPage,
     status: statusFilter,
+    field: selectedPosition,
     enabled: isMember,
   });
 
@@ -51,10 +52,13 @@ export default function ProjectPage() {
   const totalPages = data?.totalPages ?? 1;
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
-  const filteredProjects =
-    selectedPosition === "전체"
-      ? projects
-      : projects.filter((p) => p.positions.includes(selectedPosition));
+  // 분야 필터는 서버(useProjectList → /post/project/filter)가 처리한다
+  const filteredProjects = projects;
+
+  const handleChangePosition = (position: string) => {
+    setSelectedPosition(position);
+    setCurrentPage(1);
+  };
 
   const handleChangeStatus = (status: ProjectStatus) => {
     setStatusFilter(status);
@@ -68,16 +72,14 @@ export default function ProjectPage() {
           <Sidebar
             items={POSITIONS}
             selected={selectedPosition}
-            onSelect={setSelectedPosition}
+            onSelect={handleChangePosition}
             writeLink="/project/write"
           />
 
           <div className="flex-1 min-w-0 px-6 sm:px-8 lg:ml-[calc(9.375vw+240px)] lg:pl-6 lg:pr-[9.375%] py-3 lg:py-16">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-                <h1 className="text-h1 text-gray-900">
-                  프로젝트 모집 공고
-                </h1>
+                <h1 className="text-h1 text-gray-900">프로젝트 모집 공고</h1>
               </div>
 
               <div className="flex items-center gap-3 mb-6 text-sm">
@@ -89,9 +91,7 @@ export default function ProjectPage() {
                       : "text-gray-400"
                   }`}
                 >
-                  {statusFilter === "모집 중" && (
-                    <Check className="w-4 h-4" />
-                  )}
+                  {statusFilter === "모집 중" && <Check className="w-4 h-4" />}
                   모집 중
                 </button>
                 <span className="text-gray-300">|</span>
@@ -145,13 +145,11 @@ export default function ProjectPage() {
                     />
                   ))}
 
-                {!isLoading &&
-                  !isError &&
-                  filteredProjects.length === 0 && (
-                    <div className="text-center py-12 text-gray-500">
-                      해당 조건에 맞는 프로젝트가 없습니다.
-                    </div>
-                  )}
+                {!isLoading && !isError && filteredProjects.length === 0 && (
+                  <div className="text-center py-12 text-gray-500">
+                    해당 조건에 맞는 프로젝트가 없습니다.
+                  </div>
+                )}
               </div>
 
               <PGN
