@@ -52,6 +52,7 @@ const CATEGORY_PATH: Record<number, string> = {
   5: "/coding-test",
   7: "/report",
   8: "/board",
+  9: "/suggestion",
 };
 
 function postHref(category: number | undefined, postId: number) {

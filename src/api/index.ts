@@ -195,3 +195,17 @@ export {
   type FlagCommentPreview,
   type FlagCommentInfo,
 } from "./flag.api";
+// Suggestion (건의방 · 대나무숲)
+export {
+  suggestionApi,
+  type SuggestionType,
+  type SuggestionStatus,
+  type SuggestionListParams,
+  type SuggestionListItem,
+  type SuggestionPost,
+  type SuggestionPage,
+  type SuggestionSummary,
+  type SuggestionCreateBody,
+  type SuggestionUpdateBody,
+  type SuggestionComment,
+} from "./suggestion.api";
