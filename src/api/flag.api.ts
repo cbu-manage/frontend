@@ -36,7 +36,7 @@ export type FlagPostInfo = FlagPostPreview & {
   targetPostContent: string;
   targetUserId: number | null;
   targetUserName: string | null;
-  targetUserGeneration?: number | null;
+  targetUserGeneration: number | null;
 };
 
 /** 댓글 신고 목록 행 */
@@ -55,7 +55,7 @@ export type FlagCommentPreview = {
 export type FlagCommentInfo = FlagCommentPreview & {
   targetUserId: number | null;
   targetUserName: string | null;
-  targetUserGeneration?: number | null;
+  targetUserGeneration: number | null;
 };
 
 /**
