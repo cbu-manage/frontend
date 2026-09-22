@@ -40,6 +40,8 @@ export {
   type ProjectDetailData,
   type CreateProjectRequest,
   type UpdateProjectRequest,
+  type ProjectFieldType,
+  type ProjectFilterParams,
 } from "./project.api";
 
 // Coding Test
