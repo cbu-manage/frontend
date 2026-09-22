@@ -31,12 +31,12 @@ export type FlagPostPreview = {
   authorGeneration?: number;
 };
 
-/** 게시글 신고 상세 — 대상 글 본문·작성자 포함. 익명 글이어도 작성자는 실명으로 온다 */
+/** 게시글 신고 상세 — 대상 글 본문 포함. 익명 글이면 targetUser* 가 전부 null 이다 */
 export type FlagPostInfo = FlagPostPreview & {
   targetPostContent: string;
-  targetUserId: number;
-  targetUserName: string;
-  targetUserGeneration?: number;
+  targetUserId: number | null;
+  targetUserName: string | null;
+  targetUserGeneration?: number | null;
 };
 
 /** 댓글 신고 목록 행 */
@@ -51,10 +51,11 @@ export type FlagCommentPreview = {
   authorGeneration?: number;
 };
 
+/** 댓글 신고 상세 — 익명 댓글이면 targetUser* 가 전부 null 이다 */
 export type FlagCommentInfo = FlagCommentPreview & {
-  targetUserId: number;
-  targetUserName: string;
-  targetUserGeneration?: number;
+  targetUserId: number | null;
+  targetUserName: string | null;
+  targetUserGeneration?: number | null;
 };
 
 /**

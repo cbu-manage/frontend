@@ -33,9 +33,15 @@ const TAB_ITEMS: { label: string; value: FlagTab }[] = [
 ];
 
 /** "{기수}기 {이름}" — 기수 없으면 이름만 */
-function personLabel(name?: string, generation?: number | null) {
+function personLabel(name?: string | null, generation?: number | null) {
   if (!name) return "-";
   return generation != null ? `${generation}기 ${name}` : name;
+}
+
+/** 신고 대상 작성자 표기. 익명이면 서버가 신원을 내려주지 않는다 */
+function targetPersonLabel(name?: string | null, generation?: number | null) {
+  if (!name) return "익명 (비공개)";
+  return personLabel(name, generation);
 }
 
 function toPageList(totalPages: number) {
@@ -105,7 +111,7 @@ export default function FlagManageSection() {
           renderDetailBody={(d) => (
             <>
               <DetailRow label="게시글 작성자">
-                {personLabel(d.targetUserName, d.targetUserGeneration)}
+                {targetPersonLabel(d.targetUserName, d.targetUserGeneration)}
               </DetailRow>
               <DetailRow label="게시글 제목">
                 <div className="flex flex-wrap items-center gap-3">
@@ -143,7 +149,7 @@ export default function FlagManageSection() {
           renderDetailBody={(d) => (
             <>
               <DetailRow label="댓글 작성자">
-                {personLabel(d.targetUserName, d.targetUserGeneration)}
+                {targetPersonLabel(d.targetUserName, d.targetUserGeneration)}
               </DetailRow>
               <DetailRow label="댓글 내용">
                 <div className="max-h-64 overflow-y-auto rounded-lg bg-gray-50 p-3 whitespace-pre-wrap text-body-sm">
