@@ -11,6 +11,7 @@ import { codingTestApi } from "@/api";
 import { useCodingTestMetaStore } from "@/store/codingTestMetaStore";
 import { useCodingTestMeta } from "@/hooks/coding-test/useCodingTestMeta";
 import { ChevronDown, Check, X } from "lucide-react";
+import RequireMember from "@/components/auth/RequireMember";
 
 const SOLVE_STATUS_OPTIONS = [
   { label: "미해결", value: "UNSOLVED" },
@@ -501,7 +502,9 @@ export default function CodingTestWritePage() {
         </main>
       }
     >
-      <CodingTestWriteContent />
+      <RequireMember>
+        <CodingTestWriteContent />
+      </RequireMember>
     </Suspense>
   );
 }
