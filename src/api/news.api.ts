@@ -112,9 +112,11 @@ export const newsApi = {
   addAttachment: (id: number, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
+    // client.ts 기본 Content-Type(JSON) 을 지워야 브라우저가 boundary 붙은 multipart 로 보낸다 — report.uploadImage 와 동일
     return api.post<ApiEnvelope<NewsAttachment>>(
       `/news/${id}/attachments`,
       formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
     );
   },
 

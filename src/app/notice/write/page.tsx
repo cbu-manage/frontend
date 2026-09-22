@@ -7,6 +7,32 @@ import PostWriteForm from "@/components/board/PostWriteForm";
 import { useNewsCreate, useNewsUpdate } from "@/hooks/news/useNewsMutation";
 import { newsApi, type NewsCategory } from "@/api";
 
+/** BE 소식 첨부 허용 목록(NewsController.addAttachment)과 동일. 파일당 20MB */
+const ATTACHMENT_ACCEPT =
+  ".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.hwp,.hwpx,.txt,.csv,.zip,image/*";
+const ATTACHMENT_HINT =
+  "이미지·PDF·문서(doc/ppt/xls/hwp/txt/csv)·zip, 파일당 20MB";
+
+/**
+ * 게시글 저장 뒤 첨부를 하나씩 올린다. 일부만 실패하면 어떤 파일이 안 올라갔는지 알려주고 계속 진행한다.
+ * 글은 이미 저장된 상태라 실패한 파일은 상세에서 다시 올릴 수 있다.
+ */
+async function uploadAttachments(newsId: number, files: File[]) {
+  const failed: string[] = [];
+  for (const file of files) {
+    try {
+      await newsApi.addAttachment(newsId, file);
+    } catch {
+      failed.push(file.name);
+    }
+  }
+  if (failed.length > 0) {
+    window.alert(
+      `글은 저장됐지만 첨부 ${failed.length}개를 올리지 못했어요.\n${failed.join("\n")}`,
+    );
+  }
+}
+
 const CATEGORY_MAP: Record<string, NewsCategory> = {
   공지: "NOTICE",
   이벤트: "EVENT",
@@ -88,7 +114,9 @@ function NoticeWriteClient() {
           : undefined
       }
       isSubmitting={isCreating || isUpdating}
-      onSubmit={async ({ title, content, category }) => {
+      attachmentAccept={ATTACHMENT_ACCEPT}
+      attachmentHint={ATTACHMENT_HINT}
+      onSubmit={async ({ title, content, category, files }) => {
         if (!category) {
           window.alert("분류를 선택해주세요.");
           return;
@@ -99,14 +127,17 @@ function NoticeWriteClient() {
               id: editId,
               data: { title, content, category: CATEGORY_MAP[category] },
             });
+            await uploadAttachments(editId, files);
             router.push(`/notice/${editId}`);
           } else {
-            await createNews({
+            const created = await createNews({
               title,
               content,
               category: CATEGORY_MAP[category],
             });
-            router.push("/notice");
+            const newsId = created.data.data?.newsId;
+            if (newsId) await uploadAttachments(newsId, files);
+            router.push(newsId ? `/notice/${newsId}` : "/notice");
           }
         } catch {
           window.alert("저장에 실패했습니다. 다시 시도해주세요.");
