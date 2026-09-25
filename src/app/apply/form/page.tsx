@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { GRADE_TO_CODE, CODE_TO_GRADE } from "@/lib/grade";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
@@ -172,18 +173,6 @@ function validate(
   return errors;
 }
 
-const GRADE_MAP: Record<string, string> = {
-  "1학년": "FRESHMAN",
-  "2학년": "SOPHOMORE",
-  "3학년": "JUNIOR",
-  "4학년": "SENIOR",
-  졸업생: "GRADUATE",
-  휴학생: "ABSENCE",
-};
-
-const GRADE_MAP_REVERSE = Object.fromEntries(
-  Object.entries(GRADE_MAP).map(([k, v]) => [v, k]),
-) as Record<string, string>;
 
 const APPLY_FIELD_MAP: Record<string, string> = {
   스터디: "STUDY",
@@ -268,7 +257,7 @@ export default function ApplyFormPage() {
       studentId: String(draft.studentNumber),
       phoneNumber: draft.phoneNumber,
       department: draft.major,
-      schoolYear: GRADE_MAP_REVERSE[draft.grade] ?? "1학년",
+      schoolYear: CODE_TO_GRADE[draft.grade] ?? "1학년",
       applyFields: draft.applicationFields
         .map((f) => APPLY_FIELD_MAP_REVERSE[f])
         .filter(Boolean),
@@ -373,7 +362,7 @@ export default function ApplyFormPage() {
         phoneNumber: form.phoneNumber.replace(/-/g, ""),
         emailAuthCode: form.verificationCode,
         major: form.department,
-        grade: GRADE_MAP[form.schoolYear],
+        grade: GRADE_TO_CODE[form.schoolYear],
         applicationFields: form.applyFields.map((f) => APPLY_FIELD_MAP[f]),
         answers,
         portfolioUrl: form.devLinks,
