@@ -125,7 +125,7 @@ export default function Header() {
         </Link>
 
         {/* 데스크탑 카테고리 네비 — 메가메뉴(헤더 전체폭 펼침) */}
-        <nav className="hidden md:flex flex-1 justify-center group/cats">
+        <nav className="hidden md:flex flex-1 items-center justify-center gap-20 lg:gap-32 group/cats">
           <ul
             className={`flex items-center gap-20 lg:gap-32 text-lg font-semibold ${text}`}
           >
@@ -171,22 +171,21 @@ export default function Header() {
                 </li>
               );
             })}
-            {/* 관리자 페이지 — 아카이브 옆, 운영진만. 카테고리 버튼과 동일 스타일(드롭다운만 없음) */}
-            {showAdmin && (
-              <li className="group/cat relative">
-                <Link
-                  href="/manage"
-                  className={`inline-block pb-0.5 px-2 border-b-4 font-semibold whitespace-nowrap transition-colors ${
-                    pathname.startsWith("/manage")
-                      ? "border-brand text-brand"
-                      : `border-transparent group-hover/cat:text-brand ${isHome ? "text-white" : "text-gray-900"}`
-                  }`}
-                >
-                  관리자 페이지
-                </Link>
-              </li>
-            )}
           </ul>
+          {/* 관리자 페이지 — 아카이브 옆, 운영진만. 드롭다운이 없으므로 여기 hover 시
+              전체폭 셸프가 펼쳐지면 빈칸만 생긴다. peer 로 셸프를 눌러 둔다. */}
+          {showAdmin && (
+            <Link
+              href="/manage"
+              className={`peer/admin inline-block pb-0.5 px-2 border-b-4 text-lg font-semibold whitespace-nowrap transition-colors hover:text-brand ${
+                pathname.startsWith("/manage")
+                  ? "border-brand text-brand"
+                  : `border-transparent ${isHome ? "text-white" : "text-gray-900"}`
+              }`}
+            >
+              관리자 페이지
+            </Link>
+          )}
           {/* 전체폭 셸프 — 카테고리 hover/focus 시 헤더가 통째로 펼쳐지는 배경.
               드롭다운(글자)이 focus-within으로도 열리므로 배경도 동일 조건을 줘야
               "배경 없이 글자만 남는" 현상이 안 생김 (방어로직)
@@ -194,7 +193,7 @@ export default function Header() {
               항목 44 × 4 + gap 4 × 3 = 208, 아래 여백 16 → h-56 */}
           <div
             aria-hidden="true"
-            className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 group-focus-within/cats:visible group-focus-within/cats:opacity-100 absolute inset-x-0 top-full z-30 h-56 border-b transition-opacity ${
+            className={`invisible opacity-0 group-hover/cats:visible group-hover/cats:opacity-100 group-focus-within/cats:visible group-focus-within/cats:opacity-100 peer-hover/admin:!invisible peer-hover/admin:!opacity-0 peer-focus/admin:!invisible peer-focus/admin:!opacity-0 absolute inset-x-0 top-full z-30 h-56 border-b transition-opacity ${
               isHome
                 ? "bg-[#151517] border-white/10"
                 : "bg-gray-0 border-gray-200"
