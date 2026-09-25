@@ -274,7 +274,9 @@ export default function Home() {
           {/* 호버 시 부엉이 밑 환영 문구 */}
           <div
             className={`flex flex-col items-center gap-3 mt-20 text-center transition-opacity duration-300 ${
-              isHeroHovered ? "opacity-100" : "opacity-0 pointer-events-none"
+              isHeroHovered
+                ? "opacity-100"
+                : "opacity-0 pointer-events-none max-sm:opacity-100 max-sm:pointer-events-auto"
             }`}
           >
             <h2
@@ -306,6 +308,20 @@ export default function Home() {
               "
             >
               {generationLabel && `${generationLabel} `}씨부엉 신청하기
+            </Link>
+            <Link
+              href="/guide"
+              className="
+                inline-flex h-10 px-5 py-2
+                items-center justify-center gap-3
+                rounded-full border border-[#F2F2F2]/60
+                text-sm sm:text-base font-semibold tracking-tight
+                text-[#F2F2F2]
+                hover:bg-white/10 hover:border-[#F2F2F2]
+                transition-colors
+              "
+            >
+              홈페이지 사용 설명서
             </Link>
           </div>
 
