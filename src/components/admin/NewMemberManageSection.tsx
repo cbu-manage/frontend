@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { gradeLabel } from "@/lib/grade";
 import { Search } from "lucide-react";
 import { AxiosError } from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -281,7 +282,7 @@ export default function NewMemberManageSection() {
                     [
                       ["이름", detail.application.name],
                       ["닉네임", detail.application.nickname],
-                      ["학년", detail.application.grade],
+                      ["학년", gradeLabel(detail.application.grade)],
                       ["학번", String(detail.application.studentNumber)],
                       ["학과", detail.application.major],
                       ["연락처", detail.application.phoneNumber],
