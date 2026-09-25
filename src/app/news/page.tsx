@@ -99,11 +99,11 @@ export default function NewsPage() {
 
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
-              <span className="w-28 text-center shrink-0">카테고리</span>
+            <div className="flex items-center gap-2 sm:gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
+              <span className="w-20 sm:w-28 text-center shrink-0">카테고리</span>
               <span className="flex-1 text-center">제목</span>
-              <span className="w-28 text-center shrink-0">작성일</span>
-              <span className="w-20 text-center shrink-0">조회</span>
+              <span className="w-20 sm:w-28 text-center shrink-0">작성일</span>
+              <span className="w-20 text-center shrink-0 hidden sm:block">조회</span>
             </div>
             {isLoading && (
               <div className="py-16 text-center text-sm text-gray-500">
@@ -126,9 +126,9 @@ export default function NewsPage() {
                 <Link
                   key={news.newsId}
                   href={`/news/${news.newsId}`}
-                  className="flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50"
+                  className="flex items-center gap-2 sm:gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50"
                 >
-                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                  <span className="w-20 sm:w-28 text-center shrink-0 text-sm text-gray-900">
                     [
                     {news.newsletterType
                       ? TYPE_TO_LABEL[news.newsletterType]
@@ -138,10 +138,10 @@ export default function NewsPage() {
                   <span className="flex-1 min-w-0 text-sm text-gray-900">
                     <span className="block truncate">{news.title}</span>
                   </span>
-                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                  <span className="w-20 sm:w-28 text-center shrink-0 text-sm text-gray-900">
                     {formatDate(news.createdAt)}
                   </span>
-                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">
+                  <span className="w-20 text-center shrink-0 hidden sm:block text-sm text-gray-900">
                     {news.viewCount}
                   </span>
                 </Link>
