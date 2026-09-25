@@ -45,27 +45,27 @@ export default function BoardPage() {
             </p>
           </div>
 
-          {/* 탭 + 검색 + 글 작성 */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+          {/* 분류 탭 + 검색 + 글 작성 (같은 행) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <Tabs
               items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
               value={activeTab}
               onValueChange={(v) => setActiveTab(v as CategoryTab)}
             />
-          </div>
-          <div className="flex w-full items-center justify-end gap-3 mb-4">
-            <SearchBar
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="제목 · 작성자로 검색해주세요."
-              className="w-full sm:w-80"
-            />
-            <Link
-              href="/board/write"
-              className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
-            >
-              <Pencil size={16} /> 글 작성하기
-            </Link>
+            <div className="flex flex-1 items-center justify-end gap-3">
+              <SearchBar
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="제목 · 작성자로 검색해주세요."
+                className="w-full sm:w-80"
+              />
+              <Link
+                href="/board/write"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-gray-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-700"
+              >
+                <Pencil size={16} /> 글 작성하기
+              </Link>
+            </div>
           </div>
 
           {/* 테이블 */}
