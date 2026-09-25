@@ -83,11 +83,11 @@ export default function SuggestionPage() {
 
           {/* 테이블 */}
           <div className="overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
+            <div className="flex items-center gap-2 sm:gap-8 px-2 py-3 bg-brand text-sm font-bold text-white">
               <span className="w-20 text-center shrink-0">종류</span>
               <span className="flex-1 text-center">제목</span>
-              <span className="w-28 text-center shrink-0">작성일</span>
-              <span className="w-20 text-center shrink-0">조회</span>
+              <span className="w-20 sm:w-28 text-center shrink-0">작성일</span>
+              <span className="w-20 text-center shrink-0 hidden sm:block">조회</span>
             </div>
 
             {isLoading ? (
@@ -107,7 +107,7 @@ export default function SuggestionPage() {
                 <Link
                   key={post.postId}
                   href={`/suggestion/${post.postId}`}
-                  className={`flex items-center gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50 ${
+                  className={`flex items-center gap-2 sm:gap-8 px-2 py-6 border-b border-gray-100 transition-colors hover:bg-gray-50 ${
                     post.isPinned ? "bg-brand/5" : ""
                   }`}
                 >
@@ -130,10 +130,10 @@ export default function SuggestionPage() {
                       </span>
                     )}
                   </span>
-                  <span className="w-28 text-center shrink-0 text-sm text-gray-900">
+                  <span className="w-20 sm:w-28 text-center shrink-0 text-sm text-gray-900">
                     {post.createdAt ? formatDate(post.createdAt) : ""}
                   </span>
-                  <span className="w-20 text-center shrink-0 text-sm text-gray-900">
+                  <span className="w-20 text-center shrink-0 hidden sm:block text-sm text-gray-900">
                     {post.viewCount ?? 0}
                   </span>
                 </Link>
