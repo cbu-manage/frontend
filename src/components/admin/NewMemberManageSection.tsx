@@ -347,12 +347,15 @@ export default function NewMemberManageSection() {
                       운영진 투표 현황
                     </h2>
                     <span className="text-sm font-semibold text-success">
-                      {detail.votes.length} / {voterCount}
+                      {detail.votes.filter((v) => v.decision).length} /{" "}
+                      {voterCount}
                     </span>
                   </div>
+                  {/* 서버는 미투표 운영진도 decision=null 로 함께 내려준다.
+                      따라서 배열이 비는 건 투표할 운영진이 아예 없을 때뿐이다. */}
                   {detail.votes.length === 0 ? (
                     <p className="mt-3 text-xs text-gray-400">
-                      아직 투표한 운영진이 없습니다.
+                      투표할 운영진이 없습니다.
                     </p>
                   ) : (
                     <ul className="mt-3 space-y-2">
@@ -364,9 +367,21 @@ export default function NewMemberManageSection() {
                           <span className="text-gray-700">{v.voterName}</span>
                           <span className="shrink-0 text-right">
                             <span
-                              className={`font-semibold ${v.decision === "PASS" ? "text-success" : "text-danger"}`}
+                              className={`font-semibold ${
+                                v.decision === "PASS"
+                                  ? "text-success"
+                                  : v.decision === "FAIL"
+                                    ? "text-danger"
+                                    : "text-gray-400"
+                              }`}
                             >
-                              {v.decision === "PASS" ? "합격" : "불합격"}
+                              {/* 서버는 아직 투표하지 않은 운영진도 decision=null 로 내려준다.
+                                  이걸 불합격으로 그리면 반대한 적 없는 사람이 반대로 보인다. */}
+                              {v.decision === "PASS"
+                                ? "합격"
+                                : v.decision === "FAIL"
+                                  ? "불합격"
+                                  : "미투표"}
                             </span>
                             {v.reason && (
                               <span className="block text-xs text-gray-400">
