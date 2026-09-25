@@ -347,10 +347,11 @@ export default function NewMemberManageSection() {
                       운영진 투표 현황
                     </h2>
                     <span className="text-sm font-semibold text-success">
-                      {detail.votes.length} / {voterCount}
+                      {detail.votes.filter((v) => v.decision).length} /{" "}
+                      {voterCount}
                     </span>
                   </div>
-                  {detail.votes.length === 0 ? (
+                  {detail.votes.filter((v) => v.decision).length === 0 ? (
                     <p className="mt-3 text-xs text-gray-400">
                       아직 투표한 운영진이 없습니다.
                     </p>
@@ -364,9 +365,21 @@ export default function NewMemberManageSection() {
                           <span className="text-gray-700">{v.voterName}</span>
                           <span className="shrink-0 text-right">
                             <span
-                              className={`font-semibold ${v.decision === "PASS" ? "text-success" : "text-danger"}`}
+                              className={`font-semibold ${
+                                v.decision === "PASS"
+                                  ? "text-success"
+                                  : v.decision === "FAIL"
+                                    ? "text-danger"
+                                    : "text-gray-400"
+                              }`}
                             >
-                              {v.decision === "PASS" ? "합격" : "불합격"}
+                              {/* 서버는 아직 투표하지 않은 운영진도 decision=null 로 내려준다.
+                                  이걸 불합격으로 그리면 반대한 적 없는 사람이 반대로 보인다. */}
+                              {v.decision === "PASS"
+                                ? "합격"
+                                : v.decision === "FAIL"
+                                  ? "불합격"
+                                  : "미투표"}
                             </span>
                             {v.reason && (
                               <span className="block text-xs text-gray-400">
