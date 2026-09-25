@@ -24,6 +24,13 @@ type StatusFilter = "전체" | "PENDING" | "ACTIVE" | "REJECTED";
 /** 심사 대기로 묶어 보는 상태 — 신규 개설(PENDING)과 재심사 요청(RESUBMITTED) */
 const PENDING_STATUSES: string[] = ["PENDING", "RESUBMITTED"];
 
+/** 심사 화면에 올릴 상태 — 신청이 올라왔거나(대기·재신청) 이미 판정된 것 */
+const REVIEW_STATUSES: string[] = [
+  ...PENDING_STATUSES,
+  "ACTIVE",
+  "REJECTED",
+];
+
 /** 서버 상태값 → 화면 표기. 서버는 5종을 내려준다 */
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {
   PENDING: { text: "승인 대기 중", className: "bg-amber-100 text-amber-700" },
@@ -78,14 +85,11 @@ export default function GroupManageSection() {
 
   const groups = useMemo(() => extractGroups(res?.data ?? null), [res]);
 
-  // 심사 대상은 모집을 마감한 팀. 단 반려되면 서버가 모집을 다시 열어주므로,
-  // 상태로도 걸러 반려된 팀이 목록에서 사라지지 않게 한다.
+  // 심사 대상은 승인 신청이 올라온 팀이다. 모집 마감 여부로 거르면
+  // 팀장이 마감을 누르기 전까지 운영진이 그룹의 존재조차 볼 수 없어,
+  // 승인 대기 중인 팀이 화면에서 통째로 사라진다.
   const reviewable = useMemo(
-    () =>
-      groups.filter(
-        (g) =>
-          g.groupRecruitmentStatus === "CLOSED" || g.groupStatus === "REJECTED",
-      ),
+    () => groups.filter((g) => REVIEW_STATUSES.includes(g.groupStatus)),
     [groups],
   );
 
