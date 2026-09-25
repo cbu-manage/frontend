@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -79,6 +79,12 @@ export default function ProjectWriteClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  // 제출 잠금은 state 가 아니라 ref 로 한다. state 는 리렌더 후에 바뀌어서
+
+  // 같은 틱에 들어온 연타를 놓친다.
+
+  const submitting = useRef(false);
+
   const [title, setTitle] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [recruitStatus, setRecruitStatus] = useState("recruiting");
@@ -150,6 +156,9 @@ export default function ProjectWriteClient() {
     onError: (err) => {
       alert(getErrorMessage(err));
     },
+    onSettled: () => {
+      submitting.current = false;
+    },
   });
 
   const updateMutation = useMutation({
@@ -177,10 +186,14 @@ export default function ProjectWriteClient() {
     onError: (err) => {
       alert(getErrorMessage(err));
     },
+    onSettled: () => {
+      submitting.current = false;
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting.current) return;
 
     // 조용히 return하면 버튼이 고장난 것처럼 보인다 — 무엇이 빠졌는지 알려준다
     const missing: string[] = [];
@@ -199,6 +212,7 @@ export default function ProjectWriteClient() {
       if (!confirmed) return;
     }
 
+    submitting.current = true;
     if (editId && isValidEditId) {
       updateMutation.mutate();
       return;
@@ -435,13 +449,19 @@ export default function ProjectWriteClient() {
             </Link>
             <button
               type="submit"
+              disabled={createMutation.isPending || updateMutation.isPending}
               className="
                 px-6 py-2.5 text-sm font-medium
                 text-white bg-gray-800 rounded-full
                 hover:bg-gray-900 transition-colors duration-150
+                disabled:opacity-50 disabled:cursor-not-allowed
               "
             >
-              {editId ? "수정하기" : "게시하기"}
+              {createMutation.isPending || updateMutation.isPending
+                ? "저장 중..."
+                : editId
+                  ? "수정하기"
+                  : "게시하기"}
             </button>
           </div>
         </form>
