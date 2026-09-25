@@ -351,9 +351,11 @@ export default function NewMemberManageSection() {
                       {voterCount}
                     </span>
                   </div>
-                  {detail.votes.filter((v) => v.decision).length === 0 ? (
+                  {/* 서버는 미투표 운영진도 decision=null 로 함께 내려준다.
+                      따라서 배열이 비는 건 투표할 운영진이 아예 없을 때뿐이다. */}
+                  {detail.votes.length === 0 ? (
                     <p className="mt-3 text-xs text-gray-400">
-                      아직 투표한 운영진이 없습니다.
+                      투표할 운영진이 없습니다.
                     </p>
                   ) : (
                     <ul className="mt-3 space-y-2">
