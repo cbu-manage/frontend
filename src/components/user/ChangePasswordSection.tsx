@@ -24,7 +24,7 @@ export default function ChangePasswordSection() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
-    changePassword(newPassword);
+    changePassword({ currentPassword, newPassword });
   };
 
   const handleCancel = () => {

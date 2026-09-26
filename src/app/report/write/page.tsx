@@ -375,16 +375,6 @@ function ReportUploadContent() {
               imageOnly
               accept="image/*"
             />
-
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-700">파싱 미리보기</span>
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-md border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                자동 추출
-              </button>
-            </div>
           </div>
 
           {/* 활동 내용 + 참여자 명단 */}
