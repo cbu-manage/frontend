@@ -41,8 +41,8 @@ export type SignupRequest = {
 };
 
 export type ChangePasswordRequest = {
-  studentNumber: number;
-  password: string;
+  currentPassword: string;
+  newPassword: string;
 };
 
 export type ResetPasswordRequest = {

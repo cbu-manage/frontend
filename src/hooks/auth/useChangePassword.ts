@@ -7,12 +7,12 @@ import { useUserStore } from "@/store/userStore";
 
 export function useChangePassword() {
   const router = useRouter();
-  const studentNumber = useUserStore((s) => s.studentNumber);
   const setAuthStatus = useUserStore((s) => s.setAuthStatus);
 
   const mutation = useMutation({
-    mutationFn: (newPassword: string) =>
-      authApi.changePassword({ studentNumber, password: newPassword }),
+    // 서버는 현재 비밀번호를 대조한 뒤 바꾼다. 새 비밀번호만 보내면 무조건 실패한다.
+    mutationFn: (vars: { currentPassword: string; newPassword: string }) =>
+      authApi.changePassword(vars),
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
     onSuccess: () => {
       const { isEmailNull } = useUserStore.getState();
@@ -22,13 +22,15 @@ export function useChangePassword() {
     },
   });
 
-  const mutate = (newPassword: string) => {
-    mutation.mutate(newPassword);
+  const mutate = (vars: { currentPassword: string; newPassword: string }) => {
+    mutation.mutate(vars);
   };
 
   return {
     mutate,
     isPending: mutation.isPending,
-    errorMessage: mutation.isError ? "비밀번호 변경에 실패하였습니다. 다시 시도해주세요." : null,
+    errorMessage: mutation.isError
+      ? "비밀번호 변경에 실패하였습니다. 다시 시도해주세요."
+      : null,
   };
 }
