@@ -221,9 +221,12 @@ function extractTotalElements(raw: unknown): number {
   const obj = raw as Record<string, unknown>;
   const inner =
     "data" in obj && obj.data && typeof obj.data === "object"
-      ? (obj.data as { totalElements?: number })
-      : (obj as { totalElements?: number });
-  return inner?.totalElements ?? 0;
+      ? (obj.data as {
+          totalElements?: number;
+          page?: { totalElements?: number };
+        })
+      : (obj as { totalElements?: number; page?: { totalElements?: number } });
+  return inner?.totalElements ?? inner?.page?.totalElements ?? 0;
 }
 
 /** resources API 응답에서 totalElements 또는 content 길이 추출 */
@@ -232,9 +235,19 @@ function extractResourcesTotal(raw: unknown): number {
   const obj = raw as Record<string, unknown>;
   const inner =
     "data" in obj && obj.data && typeof obj.data === "object"
-      ? (obj.data as { totalElements?: number; content?: unknown[] })
-      : (obj as { totalElements?: number; content?: unknown[] });
+      ? (obj.data as {
+          totalElements?: number;
+          content?: unknown[];
+          page?: { totalElements?: number };
+        })
+      : (obj as {
+          totalElements?: number;
+          content?: unknown[];
+          page?: { totalElements?: number };
+        });
   if (typeof inner?.totalElements === "number") return inner.totalElements;
+  if (typeof inner?.page?.totalElements === "number")
+    return inner.page.totalElements;
   if (Array.isArray(inner?.content)) return inner.content.length;
   if (Array.isArray(raw)) return (raw as unknown[]).length;
   return 0;
@@ -675,7 +688,11 @@ export default function MyPostsSection() {
         !(isAllTab ? allTabLoading : postsQuery?.isLoading) &&
         !(isAllTab ? allTabError : postsQuery?.isError) && (
           <>
-            {activeTab === "전체보기" && (
+            {/* 전체보기 카드가 카테고리 라벨을 함께 보여주는 범용 형태라
+                모집 개념이 없는 자유게시판·보고서도 같은 카드를 쓴다 */}
+            {(activeTab === "전체보기" ||
+              activeTab === "자유게시판" ||
+              activeTab === "보고서") && (
               <div className="flex flex-col gap-4">
                 {posts.map((post) => {
                   const isExternal = post.href.startsWith("http");
@@ -838,6 +855,13 @@ export default function MyPostsSection() {
 }
 
 // ============================================
+/** 모집 개념이 없어 상태 배지 대신 카테고리 라벨을 다는 카테고리 */
+const NO_RECRUIT_CATEGORIES: PostCategory[] = [
+  "자료방",
+  "자유게시판",
+  "보고서",
+];
+
 // AllViewCardContent (전체보기 - 프로젝트 양식)
 // ============================================
 
@@ -846,9 +870,9 @@ function AllViewCardContent({ post }: { post: MyPost }) {
     <>
       <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          {post.category === "자료방" ? (
+          {NO_RECRUIT_CATEGORIES.includes(post.category) ? (
             <span className="text-center py-2 px-3 rounded-full text-xs font-semibold text-white bg-gray-600">
-              자료방
+              {post.category}
             </span>
           ) : (
             <span
