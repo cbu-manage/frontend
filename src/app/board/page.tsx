@@ -8,7 +8,12 @@ import Pagination from "@/components/shared/Pagination";
 import Tabs from "@/components/common/Tabs";
 import SearchBar from "@/components/common/SearchBar";
 import { useFreeboardList } from "@/hooks/board";
-import { freeboardAuthorLabel, type FreeBoardListItem } from "@/api";
+import {
+  freeboardAuthorLabel,
+  LABEL_TO_TOPIC,
+  TOPIC_TO_LABEL,
+  type FreeBoardListItem,
+} from "@/api";
 import { formatDate } from "@/lib/date";
 
 const CATEGORY_TABS = ["전체", "일상", "질문", "잡담", "홍보"] as const;
@@ -19,7 +24,11 @@ export default function BoardPage() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading } = useFreeboardList({ page: currentPage });
+  // 말머리 필터는 서버가 건다. 화면에 실린 쪽만 거르면 다른 쪽 글이 통째로 빠진다.
+  const { data, isLoading } = useFreeboardList({
+    page: currentPage,
+    topic: activeTab === "전체" ? undefined : LABEL_TO_TOPIC[activeTab],
+  });
 
   const posts: FreeBoardListItem[] = data?.items ?? [];
   const totalPages = Array.from(
@@ -27,12 +36,10 @@ export default function BoardPage() {
     (_, i) => i + 1,
   );
 
-  const filtered = posts.filter((p) => {
-    const matchTab = activeTab === "전체" || p.category === activeTab;
-    const matchSearch =
-      (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search);
-    return matchTab && matchSearch;
-  });
+  const filtered = posts.filter(
+    (p) =>
+      (p.title ?? "").includes(search) || (p.authorName ?? "").includes(search),
+  );
 
   return (
     <RequireMember>
@@ -50,7 +57,10 @@ export default function BoardPage() {
             <Tabs
               items={CATEGORY_TABS.map((t) => ({ label: t, value: t }))}
               value={activeTab}
-              onValueChange={(v) => setActiveTab(v as CategoryTab)}
+              onValueChange={(v) => {
+                setActiveTab(v as CategoryTab);
+                setCurrentPage(1);
+              }}
             />
             <div className="flex flex-1 items-center justify-end gap-3">
               <SearchBar
@@ -74,7 +84,9 @@ export default function BoardPage() {
               <span className="w-20 sm:w-28 text-center shrink-0">작성자</span>
               <span className="flex-1 text-center">제목</span>
               <span className="w-20 sm:w-28 text-center shrink-0">작성일</span>
-              <span className="w-20 text-center shrink-0 hidden sm:block">조회</span>
+              <span className="w-20 text-center shrink-0 hidden sm:block">
+                조회
+              </span>
             </div>
 
             {isLoading ? (
@@ -96,6 +108,11 @@ export default function BoardPage() {
                     {freeboardAuthorLabel(post)}
                   </span>
                   <span className="flex-1 flex items-center gap-1.5 min-w-0 text-sm text-gray-900">
+                    {post.topic && (
+                      <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
+                        {TOPIC_TO_LABEL[post.topic]}
+                      </span>
+                    )}
                     <span className="truncate">{post.title}</span>
                     {(post.commentCount ?? 0) > 0 && (
                       <span className="shrink-0 text-brand text-xs">
