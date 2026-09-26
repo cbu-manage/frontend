@@ -18,6 +18,8 @@ export type MappedComment = {
   content: string;
   date: string;
   deleted?: boolean;
+  /** 익명 댓글은 userId 가 없어 서버가 준 isAuthor 로만 본인 여부를 안다 */
+  isMine?: boolean;
   replies: MappedComment[];
 };
 
@@ -35,6 +37,7 @@ function mapComment(c: CommentItem): MappedComment {
     content: c.content,
     date: c.createdAt ? formatDate(c.createdAt) : "",
     deleted: c.deleted,
+    isMine: c.isAuthor,
     replies: (c.replies ?? []).map(mapComment),
   };
 }

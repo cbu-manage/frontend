@@ -30,7 +30,9 @@ type PostCategory =
   | "스터디 모집"
   | "프로젝트 모집"
   | "코딩테스트 준비"
-  | "자료방";
+  | "자료방"
+  | "자유게시판"
+  | "보고서";
 
 type PostStatus = "모집 중" | "모집 완료";
 
@@ -56,6 +58,8 @@ const CATEGORY_LIST: Exclude<PostCategory, "전체보기">[] = [
   "프로젝트 모집",
   "코딩테스트 준비",
   "자료방",
+  "자유게시판",
+  "보고서",
 ];
 
 /** API 카테고리 번호 → 탭 라벨 */
@@ -67,6 +71,8 @@ const CATEGORY_NUM_TO_LABEL: Record<
   [POST_CATEGORY.PROJECT]: "프로젝트 모집",
   [POST_CATEGORY.CODING_TEST]: "코딩테스트 준비",
   [POST_CATEGORY.ARCHIVE]: "자료방",
+  [POST_CATEGORY.FREEBOARD]: "자유게시판",
+  [POST_CATEGORY.REPORT]: "보고서",
 };
 
 /** API 카테고리 번호 → 상세 경로 prefix */
@@ -75,6 +81,8 @@ const CATEGORY_NUM_TO_PATH: Record<number, string> = {
   [POST_CATEGORY.PROJECT]: "/project",
   [POST_CATEGORY.CODING_TEST]: "/coding-test",
   [POST_CATEGORY.ARCHIVE]: "/archive",
+  [POST_CATEGORY.FREEBOARD]: "/board",
+  [POST_CATEGORY.REPORT]: "/report",
 };
 
 const TAB_PAGE_SIZE: Record<PostCategory, number> = {
@@ -83,6 +91,8 @@ const TAB_PAGE_SIZE: Record<PostCategory, number> = {
   "프로젝트 모집": 10,
   "코딩테스트 준비": 10,
   자료방: 12,
+  자유게시판: 12,
+  보고서: 12,
 };
 
 function formatTime(iso?: string): string {
@@ -158,10 +168,7 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
         ? `${item.authorGeneration}기 ${item.authorName}`
         : item.authorName
       : undefined;
-  const postId =
-    item.postId ??
-    (item as { id?: number }).id ??
-    0;
+  const postId = item.postId ?? (item as { id?: number }).id ?? 0;
   const isProject = categoryNum === POST_CATEGORY.PROJECT;
   const deadline = (item as { deadline?: string }).deadline;
   const extra = item as {
@@ -178,7 +185,9 @@ function toMyPost(item: PostListItem, categoryNum: number): MyPost {
     author,
     views: item.viewCount ?? 0,
     comments: item.comments ?? 0,
-    time: isProject ? formatDeadline(deadline) : formatTime(item.createdAt as string),
+    time: isProject
+      ? formatDeadline(deadline)
+      : formatTime(item.createdAt as string),
     href: `${path}/${postId}`,
     createdAt: item.createdAt as string | undefined,
     activeMemberCount: extra.activeMemberCount,
@@ -200,6 +209,8 @@ const TAB_TO_CATEGORY: Record<PostCategory, number | undefined> = {
   "프로젝트 모집": POST_CATEGORY.PROJECT,
   "코딩테스트 준비": POST_CATEGORY.CODING_TEST,
   자료방: POST_CATEGORY.ARCHIVE,
+  자유게시판: POST_CATEGORY.FREEBOARD,
+  보고서: POST_CATEGORY.REPORT,
 };
 
 // NOTE: TAB_KEYS was unused and removed to satisfy linter
@@ -210,9 +221,12 @@ function extractTotalElements(raw: unknown): number {
   const obj = raw as Record<string, unknown>;
   const inner =
     "data" in obj && obj.data && typeof obj.data === "object"
-      ? (obj.data as { totalElements?: number })
-      : (obj as { totalElements?: number });
-  return inner?.totalElements ?? 0;
+      ? (obj.data as {
+          totalElements?: number;
+          page?: { totalElements?: number };
+        })
+      : (obj as { totalElements?: number; page?: { totalElements?: number } });
+  return inner?.totalElements ?? inner?.page?.totalElements ?? 0;
 }
 
 /** resources API 응답에서 totalElements 또는 content 길이 추출 */
@@ -221,9 +235,19 @@ function extractResourcesTotal(raw: unknown): number {
   const obj = raw as Record<string, unknown>;
   const inner =
     "data" in obj && obj.data && typeof obj.data === "object"
-      ? (obj.data as { totalElements?: number; content?: unknown[] })
-      : (obj as { totalElements?: number; content?: unknown[] });
+      ? (obj.data as {
+          totalElements?: number;
+          content?: unknown[];
+          page?: { totalElements?: number };
+        })
+      : (obj as {
+          totalElements?: number;
+          content?: unknown[];
+          page?: { totalElements?: number };
+        });
   if (typeof inner?.totalElements === "number") return inner.totalElements;
+  if (typeof inner?.page?.totalElements === "number")
+    return inner.page.totalElements;
   if (Array.isArray(inner?.content)) return inner.content.length;
   if (Array.isArray(raw)) return (raw as unknown[]).length;
   return 0;
@@ -239,7 +263,14 @@ export default function MyPostsSection() {
   const pageSize = TAB_PAGE_SIZE[activeTab];
 
   // stable list of tabs used for counting
-  const COUNT_TABS = ["스터디 모집", "프로젝트 모집", "코딩테스트 준비", "자료방"] as const;
+  const COUNT_TABS = [
+    "스터디 모집",
+    "프로젝트 모집",
+    "코딩테스트 준비",
+    "자료방",
+    "자유게시판",
+    "보고서",
+  ] as const;
 
   /** 각 탭 개수 조회 (스터디=study/me, 프로젝트=project/me, 자료방=resources, 코딩=post/my) */
   const countResults = useQueries({
@@ -289,11 +320,7 @@ export default function MyPostsSection() {
           ? extractResourcesTotal(apiBody ?? res)
           : extractTotalElements(apiBody ?? res);
     });
-    map["전체보기"] =
-      (map["스터디 모집"] ?? 0) +
-      (map["프로젝트 모집"] ?? 0) +
-      (map["코딩테스트 준비"] ?? 0) +
-      (map["자료방"] ?? 0);
+    map["전체보기"] = COUNT_TABS.reduce((sum, tab) => sum + (map[tab] ?? 0), 0);
     return map;
   }, [countResults, COUNT_TABS]);
 
@@ -353,7 +380,11 @@ export default function MyPostsSection() {
               ? (res.data as { data?: unknown }).data
               : res.data;
           if (Array.isArray(payload))
-            return { content: payload, totalPages: 1, totalElements: payload.length };
+            return {
+              content: payload,
+              totalPages: 1,
+              totalElements: payload.length,
+            };
           const obj = payload as {
             content?: ResourceItem[];
             totalPages?: number;
@@ -361,12 +392,37 @@ export default function MyPostsSection() {
           };
           return {
             content: Array.isArray(obj?.content) ? obj.content : [],
-            totalPages: typeof obj?.totalPages === "number" ? obj.totalPages : 1,
+            totalPages:
+              typeof obj?.totalPages === "number" ? obj.totalPages : 1,
             totalElements:
               typeof obj?.totalElements === "number"
                 ? obj.totalElements
-                : obj?.content?.length ?? 0,
+                : (obj?.content?.length ?? 0),
           };
+        },
+        enabled: isAllTab,
+      },
+      {
+        queryKey: ["post", "my", POST_CATEGORY.FREEBOARD, 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await postApi.getMyPosts({
+            category: POST_CATEGORY.FREEBOARD,
+            page: 0,
+            size: allTabFetchSize,
+          });
+          return res.data;
+        },
+        enabled: isAllTab,
+      },
+      {
+        queryKey: ["post", "my", POST_CATEGORY.REPORT, 0, allTabFetchSize],
+        queryFn: async () => {
+          const res = await postApi.getMyPosts({
+            category: POST_CATEGORY.REPORT,
+            page: 0,
+            size: allTabFetchSize,
+          });
+          return res.data;
         },
         enabled: isAllTab,
       },
@@ -396,7 +452,10 @@ export default function MyPostsSection() {
             ? (res.data as { data?: unknown }).data
             : res.data;
         if (Array.isArray(payload)) return { content: payload, totalPages: 1 };
-        const obj = payload as { content?: ResourceItem[]; totalPages?: number };
+        const obj = payload as {
+          content?: ResourceItem[];
+          totalPages?: number;
+        };
         return {
           content: Array.isArray(obj?.content) ? obj.content : [],
           totalPages: typeof obj?.totalPages === "number" ? obj.totalPages : 1,
@@ -437,8 +496,7 @@ export default function MyPostsSection() {
       const projectContent = extractContent(allTabQueries[1]?.data);
       const codingContent = extractContent(allTabQueries[2]?.data);
       const resourceData = allTabQueries[3]?.data as
-        | { content?: ResourceItem[] }
-        | undefined;
+        { content?: ResourceItem[] } | undefined;
       const resourceContent = Array.isArray(resourceData?.content)
         ? resourceData.content
         : [];
@@ -452,6 +510,12 @@ export default function MyPostsSection() {
       const codingPosts = codingContent.map((item) =>
         toMyPost(item, POST_CATEGORY.CODING_TEST),
       );
+      const freeboardPosts = extractContent(allTabQueries[4]?.data).map(
+        (item) => toMyPost(item, POST_CATEGORY.FREEBOARD),
+      );
+      const reportPosts = extractContent(allTabQueries[5]?.data).map((item) =>
+        toMyPost(item, POST_CATEGORY.REPORT),
+      );
       const resourcePosts: MyPost[] = resourceContent.map((r) => ({
         id: r.resourceId,
         category: "자료방",
@@ -462,7 +526,7 @@ export default function MyPostsSection() {
         author:
           r.generation != null && r.authorName
             ? `${r.generation}기 ${r.authorName}`
-            : r.authorName ?? "씨부엉 멤버",
+            : (r.authorName ?? "씨부엉 멤버"),
         views: (r.views as number) ?? 0,
         comments: 0,
         time: r.createdAt ? formatTime(r.createdAt) : "-",
@@ -475,6 +539,8 @@ export default function MyPostsSection() {
         ...projectPosts,
         ...codingPosts,
         ...resourcePosts,
+        ...freeboardPosts,
+        ...reportPosts,
       ].sort((a, b) => {
         const da = new Date(a.createdAt ?? 0).getTime();
         const db = new Date(b.createdAt ?? 0).getTime();
@@ -491,7 +557,9 @@ export default function MyPostsSection() {
         extractTotalElements(allTabQueries[0]?.data) +
         extractTotalElements(allTabQueries[1]?.data) +
         extractTotalElements(allTabQueries[2]?.data) +
-        extractResourcesTotal(resourceData);
+        extractResourcesTotal(resourceData) +
+        extractTotalElements(allTabQueries[4]?.data) +
+        extractTotalElements(allTabQueries[5]?.data);
       const totalPages = Math.max(
         1,
         Math.ceil(totalCount / TAB_PAGE_SIZE["전체보기"]),
@@ -500,13 +568,20 @@ export default function MyPostsSection() {
       return {
         posts: paginated,
         totalPages,
-        archiveItems: [] as { id: number; title: string; link?: string; thumbnailUrl?: string; author: string; time: string; views: number }[],
+        archiveItems: [] as {
+          id: number;
+          title: string;
+          link?: string;
+          thumbnailUrl?: string;
+          author: string;
+          time: string;
+          views: number;
+        }[],
       };
     }
     if (isArchiveTab) {
       const data = singleTabQuery.data as
-        | { content?: ResourceItem[]; totalPages?: number }
-        | undefined;
+        { content?: ResourceItem[]; totalPages?: number } | undefined;
       const content = Array.isArray(data?.content) ? data.content : [];
       const tp = typeof data?.totalPages === "number" ? data.totalPages : 1;
       const items = content.map((r) => ({
@@ -517,7 +592,7 @@ export default function MyPostsSection() {
         author:
           r.generation != null && r.authorName
             ? `${r.generation}기 ${r.authorName}`
-            : r.authorName ?? "씨부엉 멤버",
+            : (r.authorName ?? "씨부엉 멤버"),
         time: r.createdAt ? formatTime(r.createdAt) : "-",
         views: (r.views as number) ?? 0,
       }));
@@ -537,7 +612,15 @@ export default function MyPostsSection() {
     return {
       posts,
       totalPages: Math.max(1, tp),
-      archiveItems: [] as { id: number; title: string; link?: string; thumbnailUrl?: string; author: string; time: string; views: number }[],
+      archiveItems: [] as {
+        id: number;
+        title: string;
+        link?: string;
+        thumbnailUrl?: string;
+        author: string;
+        time: string;
+        views: number;
+      }[],
     };
   }, [
     isAllTab,
@@ -552,9 +635,7 @@ export default function MyPostsSection() {
 
   return (
     <div className="max-w-6xl mx-auto px-2 md:px-4">
-      <h1 className="text-h1 text-gray-900 mb-6">
-        나의 작성 목록
-      </h1>
+      <h1 className="text-h1 text-gray-900 mb-6">나의 작성 목록</h1>
 
       {/* 카테고리 탭 필터 */}
       <div className="flex flex-wrap items-center gap-4 mb-8 text-sm">
@@ -606,165 +687,181 @@ export default function MyPostsSection() {
       {!isCountsLoading &&
         !(isAllTab ? allTabLoading : postsQuery?.isLoading) &&
         !(isAllTab ? allTabError : postsQuery?.isError) && (
-        <>
-          {activeTab === "전체보기" && (
-            <div className="flex flex-col gap-4">
-              {posts.map((post) => {
-                const isExternal = post.href.startsWith("http");
-                const cardClass =
-                  "group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden";
-                return isExternal ? (
-                  <a
-                    key={`${post.category}-${post.id}`}
-                    href={post.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cardClass}
-                  >
-                    <AllViewCardContent post={post} />
-                  </a>
-                ) : (
-                  <Link
-                    key={`${post.category}-${post.id}`}
-                    href={post.href}
-                    className={cardClass}
-                  >
-                    <AllViewCardContent post={post} />
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          <>
+            {/* 전체보기 카드가 카테고리 라벨을 함께 보여주는 범용 형태라
+                모집 개념이 없는 자유게시판·보고서도 같은 카드를 쓴다 */}
+            {(activeTab === "전체보기" ||
+              activeTab === "자유게시판" ||
+              activeTab === "보고서") && (
+              <div className="flex flex-col gap-4">
+                {posts.map((post) => {
+                  const isExternal = post.href.startsWith("http");
+                  const cardClass =
+                    "group bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer overflow-hidden";
+                  return isExternal ? (
+                    <a
+                      key={`${post.category}-${post.id}`}
+                      href={post.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cardClass}
+                    >
+                      <AllViewCardContent post={post} />
+                    </a>
+                  ) : (
+                    <Link
+                      key={`${post.category}-${post.id}`}
+                      href={post.href}
+                      className={cardClass}
+                    >
+                      <AllViewCardContent post={post} />
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
 
-          {activeTab === "스터디 모집" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {posts.map((post) => (
-                <StudyCard
-                  key={post.id}
-                  id={post.id}
-                  status={post.status}
-                  title={post.title}
-                  time={post.time}
-                  authorDisplay={post.author}
-                  categories={post.tags}
-                  viewCount={post.views}
-                  activeMemberCount={post.activeMemberCount}
-                  maxMembers={post.maxMembers}
-                />
-              ))}
-            </div>
-          )}
-
-          {activeTab === "프로젝트 모집" && (
-            <div className="flex flex-col gap-4">
-              {posts.map((post) => (
-                <ProjectCard
-                  key={post.id}
-                  id={post.id}
-                  status={post.status}
-                  title={post.title}
-                  positions={post.tags}
-                  author={post.author}
-                  views={post.views}
-                  time={post.time}
-                  content={post.content}
-                />
-              ))}
-            </div>
-          )}
-
-          {activeTab === "코딩테스트 준비" && (
-            <div className="bg-white border border-gray-200 overflow-x-auto">
-              <table className="w-full min-w-[600px]">
-                <thead className="bg-[#95C674] text-white">
-                  <tr>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">
-                      상태
-                    </th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">
-                      문제
-                    </th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">
-                      언어
-                    </th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
-                      플랫폼
-                    </th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
-                      작성자
-                    </th>
-                    <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[60px] sm:w-[80px]"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {posts.map((post) => {
-                    const lang =
-                      post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) ||
-                      "Python";
-                    return (
-                      <CodingTestRow
-                        key={post.id}
-                        id={post.id}
-                        status={post.status === "모집 완료" ? "해결" : "미해결"}
-                        title={post.title}
-                        language={lang}
-                        platform="프로그래머스"
-                        comments={post.comments}
-                      />
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {activeTab === "자료방" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-              {archiveItems.map((item, index) => (
-                <div key={`archive-${item.id}-${index}`} className="relative group">
-                  <ArchiveCard
-                    id={String(item.id)}
-                    title={item.title}
-                    link={item.link}
-                    thumbnailUrl={item.thumbnailUrl}
-                    uploadedBy={item.author}
-                    uploadedAt={item.time}
-                    views={item.views}
+            {activeTab === "스터디 모집" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {posts.map((post) => (
+                  <StudyCard
+                    key={post.id}
+                    id={post.id}
+                    status={post.status}
+                    title={post.title}
+                    time={post.time}
+                    authorDisplay={post.author}
+                    categories={post.tags}
+                    viewCount={post.views}
+                    activeMemberCount={post.activeMemberCount}
+                    maxMembers={post.maxMembers}
                   />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm("이 자료를 삭제할까요?")) {
-                        deleteResourceMutation.mutate(item.id);
-                      }
-                    }}
-                    className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                ))}
+              </div>
+            )}
+
+            {activeTab === "프로젝트 모집" && (
+              <div className="flex flex-col gap-4">
+                {posts.map((post) => (
+                  <ProjectCard
+                    key={post.id}
+                    id={post.id}
+                    status={post.status}
+                    title={post.title}
+                    positions={post.tags}
+                    author={post.author}
+                    views={post.views}
+                    time={post.time}
+                    content={post.content}
+                  />
+                ))}
+              </div>
+            )}
+
+            {activeTab === "코딩테스트 준비" && (
+              <div className="bg-white border border-gray-200 overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="bg-[#95C674] text-white">
+                    <tr>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[80px] sm:w-[100px]">
+                        상태
+                      </th>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium">
+                        문제
+                      </th>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[70px] sm:w-[100px]">
+                        언어
+                      </th>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                        플랫폼
+                      </th>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[90px] sm:w-[120px]">
+                        작성자
+                      </th>
+                      <th className="py-2 sm:py-3 px-2 sm:px-4 text-center text-xs sm:text-sm font-medium w-[60px] sm:w-[80px]"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {posts.map((post) => {
+                      const lang =
+                        post.tags.find((t) => KNOWN_LANGUAGES.includes(t)) ||
+                        "Python";
+                      return (
+                        <CodingTestRow
+                          key={post.id}
+                          id={post.id}
+                          status={
+                            post.status === "모집 완료" ? "해결" : "미해결"
+                          }
+                          title={post.title}
+                          language={lang}
+                          platform="프로그래머스"
+                          comments={post.comments}
+                        />
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {activeTab === "자료방" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                {archiveItems.map((item, index) => (
+                  <div
+                    key={`archive-${item.id}-${index}`}
+                    className="relative group"
                   >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+                    <ArchiveCard
+                      id={String(item.id)}
+                      title={item.title}
+                      link={item.link}
+                      thumbnailUrl={item.thumbnailUrl}
+                      uploadedBy={item.author}
+                      uploadedAt={item.time}
+                      views={item.views}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm("이 자료를 삭제할까요?")) {
+                          deleteResourceMutation.mutate(item.id);
+                        }
+                      }}
+                      className="absolute top-3 right-3 z-10 rounded-full bg-black/60 text-white p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {posts.length === 0 && archiveItems.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              해당 카테고리에 작성한 글이 없습니다.
-            </div>
-          )}
+            {posts.length === 0 && archiveItems.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                해당 카테고리에 작성한 글이 없습니다.
+              </div>
+            )}
 
-          <PGN
-            currentPage={currentPage}
-            totalPages={pageNumbers}
-            onPageChange={(num) => setCurrentPage(num)}
-          />
-        </>
-      )}
+            <PGN
+              currentPage={currentPage}
+              totalPages={pageNumbers}
+              onPageChange={(num) => setCurrentPage(num)}
+            />
+          </>
+        )}
     </div>
   );
 }
 
 // ============================================
+/** 모집 개념이 없어 상태 배지 대신 카테고리 라벨을 다는 카테고리 */
+const NO_RECRUIT_CATEGORIES: PostCategory[] = [
+  "자료방",
+  "자유게시판",
+  "보고서",
+];
+
 // AllViewCardContent (전체보기 - 프로젝트 양식)
 // ============================================
 
@@ -773,9 +870,9 @@ function AllViewCardContent({ post }: { post: MyPost }) {
     <>
       <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 sm:pb-5 flex flex-col gap-3">
         <div className="flex justify-between items-center">
-          {post.category === "자료방" ? (
+          {NO_RECRUIT_CATEGORIES.includes(post.category) ? (
             <span className="text-center py-2 px-3 rounded-full text-xs font-semibold text-white bg-gray-600">
-              자료방
+              {post.category}
             </span>
           ) : (
             <span

@@ -5,9 +5,11 @@ import { AxiosError } from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   recruitmentApi,
+  reportApi,
   settingsApi,
   type OnboardingLinks,
   type FeeInfo,
+  type PresidentInfo,
   type RecruitmentUpdateBody,
 } from "@/api";
 import { useCan } from "@/hooks/auth";
@@ -287,6 +289,53 @@ export default function ClubScheduleSettingsSection() {
       discountAmount: fee.discountAmount,
       paymentDeadline: fee.paymentDeadline,
     });
+  };
+
+  // ── 대표자 정보 (활동 내역서 하단) ─────────────────────────
+  const { data: presidentRes, isLoading: presidentLoading } = useQuery({
+    queryKey: ["settings", "president"],
+    queryFn: () => settingsApi.getPresidentInfo(),
+    enabled: canEditSettings,
+  });
+  const savedPresident = presidentRes?.data?.data ?? null;
+  const [editedPresident, setEditedPresident] = useState<Partial<PresidentInfo>>(
+    {},
+  );
+  const [signatureUploading, setSignatureUploading] = useState(false);
+
+  const president: PresidentInfo = {
+    presidentName:
+      editedPresident.presidentName ?? savedPresident?.presidentName ?? "",
+    signatureImageUrl:
+      editedPresident.signatureImageUrl ??
+      savedPresident?.signatureImageUrl ??
+      "",
+  };
+  const presidentDirty = Object.keys(editedPresident).length > 0;
+
+  const presidentMutation = useMutation({
+    mutationFn: () => settingsApi.updatePresidentInfo(president),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings", "president"] });
+      setEditedPresident({});
+      alert("대표자 정보가 저장되었습니다.");
+    },
+    onError: () => alert("저장 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+
+  /** 서명 이미지는 S3 에 올린 뒤 그 주소를 설정에 저장한다 (보고서 사진과 같은 경로) */
+  const handleSignatureUpload = async (file: File) => {
+    setSignatureUploading(true);
+    try {
+      const res = await reportApi.uploadImage(file);
+      const url = res.data?.data;
+      if (!url) throw new Error("업로드 응답에 주소가 없습니다");
+      setEditedPresident((prev) => ({ ...prev, signatureImageUrl: url }));
+    } catch {
+      alert("서명 이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setSignatureUploading(false);
+    }
   };
 
   // ── 온보딩 링크 ────────────────────────────────────────────
@@ -661,6 +710,99 @@ export default function ClubScheduleSettingsSection() {
                     {saveMutation.isPending ? "저장 중..." : "저장"}
                   </button>
                   {!dirty && savedLinks != null && (
+                    <span className="text-caption text-gray-400">
+                      변경 사항 없음
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── 대표자 정보 ── */}
+        {canEditSettings && (
+          <section className="rounded-2xl border border-gray-200 p-6">
+            <h2 className="text-lg font-bold text-gray-900">대표자 정보</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              활동 내역서(HWP) 하단에 찍히는 회장 이름과 서명이에요. 회장이
+              바뀌면 여기서 바꾸면 됩니다.
+            </p>
+
+            {presidentLoading ? (
+              <p className="mt-5 text-sm text-gray-400">불러오는 중...</p>
+            ) : (
+              <div className="mt-5 space-y-4">
+                <div>
+                  <label
+                    htmlFor="president-name"
+                    className="block text-body-sm font-medium text-gray-900"
+                  >
+                    회장 이름
+                  </label>
+                  <input
+                    id="president-name"
+                    type="text"
+                    value={president.presidentName}
+                    onChange={(e) =>
+                      setEditedPresident((prev) => ({
+                        ...prev,
+                        presidentName: e.target.value,
+                      }))
+                    }
+                    placeholder="예: 황건하"
+                    className="mt-1.5 w-full max-w-xs rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 focus:border-gray-400"
+                  />
+                </div>
+
+                <div>
+                  <span className="block text-body-sm font-medium text-gray-900">
+                    서명 이미지
+                  </span>
+                  <p className="mt-1 text-caption text-gray-400">
+                    흰 배경에 검은 펜으로 쓴 사인을 올려주세요. 올리지 않으면
+                    기존 서명이 그대로 쓰입니다.
+                  </p>
+                  <div className="mt-2 flex items-center gap-4">
+                    {president.signatureImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={president.signatureImageUrl}
+                        alt="현재 서명"
+                        className="h-16 w-auto rounded border border-gray-200 bg-white object-contain p-1"
+                      />
+                    ) : (
+                      <span className="text-caption text-gray-400">
+                        등록된 서명 없음
+                      </span>
+                    )}
+                    <label className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                      {signatureUploading ? "올리는 중..." : "이미지 선택"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={signatureUploading}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) void handleSignatureUpload(f);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => presidentMutation.mutate()}
+                    disabled={!presidentDirty || presidentMutation.isPending}
+                    className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+                  >
+                    {presidentMutation.isPending ? "저장 중..." : "저장"}
+                  </button>
+                  {!presidentDirty && savedPresident != null && (
                     <span className="text-caption text-gray-400">
                       변경 사항 없음
                     </span>

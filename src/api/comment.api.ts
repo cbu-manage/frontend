@@ -17,6 +17,8 @@ export type CommentItem = {
   authorGeneration?: number;
   createdAt?: string;
   updatedAt?: string;
+  /** 서버가 계산한 본인 여부. 익명 댓글은 작성자 정보를 안 주므로 이 값으로만 판단한다 */
+  isAuthor?: boolean;
   replies?: CommentItem[];
   deleted?: boolean;
   [key: string]: unknown;
