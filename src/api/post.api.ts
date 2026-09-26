@@ -12,10 +12,12 @@ export const POST_CATEGORY = {
   PROJECT: 2,
   CODING_TEST: 5,
   ARCHIVE: 6,
+  REPORT: 7,
+  FREEBOARD: 8,
 } as const;
 
 export type PostListParams = {
-  /** 카테고리 (1 스터디, 2 프로젝트, 5 코딩테스트, 6 자료방) */
+  /** 카테고리 (1 스터디, 2 프로젝트, 5 코딩테스트, 6 자료방, 7 보고서, 8 자유게시판) */
   category: number;
   /** 페이지 (0부터) */
   page: number;
