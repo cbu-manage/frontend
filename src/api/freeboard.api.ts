@@ -1,10 +1,30 @@
 import { api } from "./client";
 import { type ApiEnvelope } from "./auth.api";
 
+/** 자유게시판 말머리. 게시판 번호를 뜻하는 category 와는 다른 축이다. */
+export const FREEBOARD_TOPICS = [
+  "DAILY",
+  "QUESTION",
+  "CHAT",
+  "PROMOTION",
+] as const;
+export type FreeboardTopic = (typeof FREEBOARD_TOPICS)[number];
+
+export const TOPIC_TO_LABEL: Record<FreeboardTopic, string> = {
+  DAILY: "일상",
+  QUESTION: "질문",
+  CHAT: "잡담",
+  PROMOTION: "홍보",
+};
+
+export const LABEL_TO_TOPIC: Record<string, FreeboardTopic> =
+  Object.fromEntries(FREEBOARD_TOPICS.map((t) => [TOPIC_TO_LABEL[t], t]));
+
 export type FreeBoardCreateBody = {
   title: string;
   content: string;
   isAnonymous: boolean;
+  topic?: FreeboardTopic | null;
 };
 
 export type FreeBoardUpdateBody = Partial<FreeBoardCreateBody>;
@@ -18,7 +38,9 @@ export type FreeBoardListItem = {
   authorGeneration?: number;
   authorId?: string | number;
   isAnonymous?: boolean;
-  category?: string;
+  category?: number;
+  /** 말머리. 이 기능 이전 글은 값이 없다. */
+  topic?: FreeboardTopic | null;
   viewCount?: number;
   commentCount?: number;
   createdAt?: string;
@@ -52,7 +74,7 @@ export type FreeBoardPost = FreeBoardListItem & {
 
 export const freeboardApi = {
   /** 자유게시판 목록 페이징 조회 */
-  getList: (params: { page: number; size: number }) =>
+  getList: (params: { page: number; size: number; topic?: FreeboardTopic }) =>
     api.get<ApiEnvelope<FreeBoardListResponse>>("/freeboard", { params }),
 
   /** 자유게시판 게시글 단건 조회 */

@@ -181,6 +181,10 @@ export {
 export {
   freeboardApi,
   freeboardAuthorLabel,
+  FREEBOARD_TOPICS,
+  TOPIC_TO_LABEL,
+  LABEL_TO_TOPIC,
+  type FreeboardTopic,
   type FreeBoardCreateBody,
   type FreeBoardUpdateBody,
   type FreeBoardListItem,
