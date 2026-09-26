@@ -29,7 +29,22 @@ export type FeeInfo = {
   paymentDeadline: string;
 };
 
+/** 활동 내역서(HWP) 하단에 찍히는 대표자 정보 */
+export type PresidentInfo = {
+  presidentName: string;
+  /** 서명 이미지 URL — 업로드 후 받은 주소 */
+  signatureImageUrl: string;
+};
+
 export const settingsApi = {
+  /** 대표자 정보 조회 — 회장/부회장/ADMIN */
+  getPresidentInfo: () =>
+    api.get<ApiEnvelope<PresidentInfo>>("/admin/settings/president"),
+
+  /** 대표자 정보 수정 — 보내지 않은 항목은 서버가 기존 값을 유지한다 */
+  updatePresidentInfo: (data: Partial<PresidentInfo>) =>
+    api.put<ApiEnvelope<PresidentInfo>>("/admin/settings/president", data),
+
   /** 온보딩 링크 조회 — 회장/부회장/ADMIN */
   getOnboardingLinks: () =>
     api.get<ApiEnvelope<OnboardingLinks>>("/admin/settings/onboarding-links"),

@@ -174,6 +174,7 @@ export {
   settingsApi,
   type OnboardingLinks,
   type FeeInfo,
+  type PresidentInfo,
 } from "./settings.api";
 
 // Free Board
