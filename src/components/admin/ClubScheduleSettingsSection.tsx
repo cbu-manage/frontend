@@ -786,7 +786,11 @@ export default function ClubScheduleSettingsSection() {
                         type="file"
                         accept="image/*"
                         className="sr-only"
-                        disabled={signatureUploading}
+                        // 저장 중에 업로드가 끝나면 성공 콜백이 새 주소를 지운다.
+                        // 저장이 끝날 때까지는 새 파일을 고르지 못하게 한다.
+                        disabled={
+                          signatureUploading || presidentMutation.isPending
+                        }
                         onChange={(e) => {
                           const f = e.target.files?.[0];
                           if (f) void handleSignatureUpload(f);
