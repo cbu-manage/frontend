@@ -4,7 +4,12 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import PostWriteForm from "@/components/board/PostWriteForm";
 import { useFreeboardDetail } from "@/hooks/board";
-import { freeboardApi } from "@/api";
+import {
+  freeboardApi,
+  LABEL_TO_TOPIC,
+  TOPIC_TO_LABEL,
+  type FreeboardTopic,
+} from "@/api";
 import RequireMember from "@/components/auth/RequireMember";
 
 function BoardWriteClient() {
@@ -21,6 +26,7 @@ function BoardWriteClient() {
   const handleSubmit = async ({
     title,
     content,
+    category,
     isAnonymous,
   }: {
     title: string;
@@ -30,11 +36,25 @@ function BoardWriteClient() {
   }) => {
     setIsSubmitting(true);
     try {
+      // 화면은 말머리를 한글 라벨로 다루고 서버는 enum 으로 받는다.
+      const topic: FreeboardTopic | undefined = category
+        ? LABEL_TO_TOPIC[category]
+        : undefined;
       if (editId) {
-        await freeboardApi.update(editId, { title, content, isAnonymous });
+        await freeboardApi.update(editId, {
+          title,
+          content,
+          isAnonymous,
+          ...(topic ? { topic } : {}),
+        });
         router.push(`/board/${editId}`);
       } else {
-        await freeboardApi.create({ title, content, isAnonymous });
+        await freeboardApi.create({
+          title,
+          content,
+          isAnonymous,
+          ...(topic ? { topic } : {}),
+        });
         router.push("/board");
       }
     } catch (e) {
@@ -80,6 +100,9 @@ function BoardWriteClient() {
           ? {
               title: editPost.title ?? "",
               content: editPost.content ?? "",
+              category: editPost.topic
+                ? TOPIC_TO_LABEL[editPost.topic]
+                : undefined,
               isAnonymous: editPost.isAnonymous ?? true,
             }
           : undefined

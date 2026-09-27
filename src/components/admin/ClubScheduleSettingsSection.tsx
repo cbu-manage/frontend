@@ -298,9 +298,9 @@ export default function ClubScheduleSettingsSection() {
     enabled: canEditSettings,
   });
   const savedPresident = presidentRes?.data?.data ?? null;
-  const [editedPresident, setEditedPresident] = useState<Partial<PresidentInfo>>(
-    {},
-  );
+  const [editedPresident, setEditedPresident] = useState<
+    Partial<PresidentInfo>
+  >({});
   const [signatureUploading, setSignatureUploading] = useState(false);
 
   const president: PresidentInfo = {
@@ -314,7 +314,9 @@ export default function ClubScheduleSettingsSection() {
   const presidentDirty = Object.keys(editedPresident).length > 0;
 
   const presidentMutation = useMutation({
-    mutationFn: () => settingsApi.updatePresidentInfo(president),
+    // 이번에 바꾼 항목만 보낸다. 합친 값을 보내면 다른 관리자가 방금 바꾼 서명을
+    // 이름만 고친 저장이 덮어쓴다(서버는 안 보낸 항목을 그대로 둔다).
+    mutationFn: () => settingsApi.updatePresidentInfo(editedPresident),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["settings", "president"] });
       setEditedPresident({});
@@ -776,13 +778,19 @@ export default function ClubScheduleSettingsSection() {
                         등록된 서명 없음
                       </span>
                     )}
-                    <label className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    {/* hidden 인 입력에는 초점이 가지 않아 키보드로는 고를 수 없다.
+                        눈에서만 감추고 초점은 살려 둔다. */}
+                    <label className="cursor-pointer rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-within:ring-2 focus-within:ring-brand focus-within:ring-offset-2">
                       {signatureUploading ? "올리는 중..." : "이미지 선택"}
                       <input
                         type="file"
                         accept="image/*"
-                        className="hidden"
-                        disabled={signatureUploading}
+                        className="sr-only"
+                        // 저장 중에 업로드가 끝나면 성공 콜백이 새 주소를 지운다.
+                        // 저장이 끝날 때까지는 새 파일을 고르지 못하게 한다.
+                        disabled={
+                          signatureUploading || presidentMutation.isPending
+                        }
                         onChange={(e) => {
                           const f = e.target.files?.[0];
                           if (f) void handleSignatureUpload(f);
@@ -797,7 +805,11 @@ export default function ClubScheduleSettingsSection() {
                   <button
                     type="button"
                     onClick={() => presidentMutation.mutate()}
-                    disabled={!presidentDirty || presidentMutation.isPending}
+                    disabled={
+                      !presidentDirty ||
+                      presidentMutation.isPending ||
+                      signatureUploading
+                    }
                     className="px-5 py-2.5 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:opacity-90 active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
                   >
                     {presidentMutation.isPending ? "저장 중..." : "저장"}
