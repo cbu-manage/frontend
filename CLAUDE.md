@@ -21,13 +21,14 @@
 
 ## 📚 분야별 문서 (`docs/`)
 
-| 문서 | 언제 보나 |
-|---|---|
-| [docs/architecture.md](./docs/architecture.md) | 폴더 구조, 모듈 역할, **새 파일 어디 둘지**, 의존 방향 규칙 |
-| [docs/api.md](./docs/api.md) | 서버 통신, `*.api.ts` 패턴, `ApiEnvelope`, BFF, React Query 훅 |
-| [docs/components.md](./docs/components.md) | 컴포넌트 폴더 역할, **Section/PageClient 패턴**, `use client`, 분할 규칙 |
-| [docs/styling.md](./docs/styling.md) | 디자인 토큰(색·타이포·스페이싱), Tailwind v4, 작성 규칙 |
-| [docs/contributing.md](./docs/contributing.md) | 브랜치·커밋·PR·리뷰·머지 규칙 |
+| 문서                                           | 언제 보나                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| [docs/architecture.md](./docs/architecture.md) | 폴더 구조, 모듈 역할, **새 파일 어디 둘지**, 의존 방향 규칙              |
+| [docs/api.md](./docs/api.md)                   | 서버 통신, `*.api.ts` 패턴, `ApiEnvelope`, BFF, React Query 훅           |
+| [docs/components.md](./docs/components.md)     | 컴포넌트 폴더 역할, **Section/PageClient 패턴**, `use client`, 분할 규칙 |
+| [docs/styling.md](./docs/styling.md)           | 디자인 토큰(색·타이포·스페이싱), Tailwind v4, 작성 규칙                  |
+| [docs/contributing.md](./docs/contributing.md) | 브랜치·커밋·PR·리뷰·머지 규칙                                            |
+| [docs/guide.md](./docs/guide.md)               | 부원 가이드(`/guide`) 생성기 위치, 손으로 고친 부분                      |
 
 ---
 
