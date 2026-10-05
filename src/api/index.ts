@@ -61,6 +61,7 @@ export {
 export {
   reportApi,
   type ReportListParams,
+  type ReportBulkExportParams,
   type ReportPreviewItem,
   type ReportPreviewPage,
   type ReportDetail,

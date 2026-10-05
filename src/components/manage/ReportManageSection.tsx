@@ -5,12 +5,17 @@ import { useRouter } from "next/navigation";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Upload, CalendarIcon, Search } from "lucide-react";
+import { AxiosError } from "axios";
+import { Upload, Download, CalendarIcon, Search } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import ReportCard from "@/components/report/ReportCard";
 import Pagination from "@/components/shared/Pagination";
 import { useInfiniteScroll } from "@/hooks/common";
-import { reportApi, type ReportPreviewItem } from "@/api";
+import {
+  reportApi,
+  type ReportPreviewItem,
+  type ReportBulkExportParams,
+} from "@/api";
 
 const PAGE_SIZE = 9;
 /** 팀별 그룹핑 시 무한스크롤 한 페이지 크기 (초기 로딩 ~30개) */
@@ -20,12 +25,52 @@ function toApiDate(d?: Date): string | undefined {
   return d ? format(d, "yyyy-MM-dd") : undefined;
 }
 
-/** 서버 필터 파라미터 (기간·검색어) */
-type ReportFilters = {
-  startDate?: string;
-  endDate?: string;
-  keyword?: string;
-};
+/** 서버 필터 파라미터 (기간·검색어) — 목록 조회와 일괄 다운로드가 같은 값을 쓴다 */
+type ReportFilters = ReportBulkExportParams;
+
+/** 파일명에 못 쓰는 문자(\ / : * ? " < > |)와 공백을 _로 치환 */
+function sanitizeFilePart(v: string): string {
+  return v.replace(/[\\/:*?"<>|\s]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+/** 일괄 다운로드 ZIP 파일명: 보고서_기간_검색어.zip (없는 조각은 뺀다, 기간 없으면 전체) */
+function buildZipFilename(f: ReportFilters): string {
+  const range =
+    f.startDate || f.endDate
+      ? `${f.startDate ?? ""}~${f.endDate ?? ""}`.replace(/-/g, ".")
+      : "전체";
+  const parts = ["보고서", range, f.keyword ?? ""]
+    .filter(Boolean)
+    .map(sanitizeFilePart);
+  return `${parts.join("_")}.zip`;
+}
+
+/**
+ * 일괄 다운로드 실패 안내문. responseType 이 blob 이라 서버 에러 본문도 Blob 으로 오므로
+ * text() 로 풀어 message(상한 초과) / failedReports(일부 생성 실패)를 꺼낸다.
+ */
+async function bulkExportErrorMessage(err: unknown): Promise<string> {
+  const fallback = "일괄 다운로드에 실패했습니다.";
+  if (!(err instanceof AxiosError)) return fallback;
+  const data: unknown = err.response?.data;
+  if (data instanceof Blob) {
+    try {
+      const body = JSON.parse(await data.text()) as {
+        message?: string;
+        failedReports?: string[];
+      };
+      if (body.message) return body.message;
+      if (body.failedReports?.length) {
+        return `일부 보고서를 만들지 못했습니다.\n${body.failedReports.join("\n")}`;
+      }
+    } catch {
+      // JSON 이 아니면 아래 상태코드 안내로
+    }
+  }
+  if (err.response?.status === 404) return "조건에 맞는 보고서가 없습니다.";
+  if (err.response?.status === 403) return "일괄 다운로드 권한이 없습니다.";
+  return fallback;
+}
 
 function renderReportCard(r: ReportPreviewItem) {
   return (
@@ -73,6 +118,8 @@ export default function ReportManageSection() {
     setCurrentPage(1);
   };
 
+  const [exporting, setExporting] = useState(false);
+
   const filters: ReportFilters = {
     startDate: toApiDate(startDate),
     endDate: toApiDate(endDate),
@@ -83,6 +130,7 @@ export default function ReportManageSection() {
   const {
     data: res,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: [
@@ -102,18 +150,57 @@ export default function ReportManageSection() {
   const flatReports: ReportPreviewItem[] = reportPage?.content ?? [];
   const totalPagesCount = Math.max(1, reportPage?.page?.totalPages ?? 1);
   const totalPages = Array.from({ length: totalPagesCount }, (_, i) => i + 1);
+  // 필터에 걸린 전체 건수 — 일괄 다운로드가 묶을 개수. 평면 조회는 그룹핑 모드에서도 돌고 있어 그대로 쓴다.
+  const totalCount = reportPage?.page?.totalElements ?? 0;
+
+  /** 지금 필터(기간·검색어)에 걸린 보고서 전부를 HWP ZIP 으로 받는다. 서버가 목록과 같은 필터를 쓴다. */
+  const handleBulkExport = async () => {
+    // 필터가 바뀌어 목록을 다시 받는 중이면 totalCount 가 이전 필터 값이라 그때는 잠근다.
+    if (exporting || isFetching || totalCount === 0) return;
+    setExporting(true);
+    try {
+      const fileRes = await reportApi.exportFilteredZip(filters);
+      const url = URL.createObjectURL(fileRes.data);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = buildZipFilename(filters);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(await bulkExportErrorMessage(err));
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* 헤더: 제목 + 업로드 버튼 */}
       <div className="flex items-center justify-between mb-10">
         <h1 className="text-h1 text-gray-900">전체 보고서 관리</h1>
-        <button
-          onClick={() => router.push("/report/write")}
-          className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 shrink-0 whitespace-nowrap tracking-wide"
-        >
-          <Upload size={18} />새 보고서 업로드
-        </button>
+        <div className="flex items-center gap-3 shrink-0">
+          {/* 필터에 걸린 보고서 전부를 HWP ZIP 으로. 0건이거나 받는 중이면 잠근다. */}
+          <button
+            type="button"
+            onClick={handleBulkExport}
+            disabled={exporting || isFetching || totalCount === 0}
+            aria-busy={exporting}
+            className="px-6 py-3 border border-gray-300 text-gray-800 bg-white rounded-2xl font-medium text-base hover:bg-gray-50 transition-colors flex items-center gap-4 whitespace-nowrap tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Download size={18} />
+            {exporting
+              ? "ZIP 만드는 중..."
+              : `일괄 다운로드${totalCount > 0 ? ` (${totalCount}건)` : ""}`}
+          </button>
+          <button
+            onClick={() => router.push("/report/write")}
+            className="px-6 py-3 bg-gray-800 text-white rounded-2xl font-medium text-base hover:bg-[#3E434A]/90 transition-colors flex items-center gap-4 whitespace-nowrap tracking-wide"
+          >
+            <Upload size={18} />새 보고서 업로드
+          </button>
+        </div>
       </div>
 
       {/* 필터 영역: 기간(활동일) + 검색 + 팀으로 그룹핑 */}
