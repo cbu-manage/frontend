@@ -16,6 +16,9 @@ export type ReportListParams = {
   groupIds?: number[];
 };
 
+/** GET /report/export 필터 — 목록 필터에서 페이징만 뺀 것 */
+export type ReportBulkExportParams = Omit<ReportListParams, "page" | "size">;
+
 /** GET /report, /report/group/{groupId} 응답의 보고서 미리보기 한 건 */
 export type ReportPreviewItem = {
   postId: number;
@@ -132,4 +135,12 @@ export const reportApi = {
   /** 그룹 보고서 전체 ZIP 추출 (관리자 전용, blob 다운로드) */
   exportGroupZip: (groupId: number) =>
     api.get(`/report/export/group/${groupId}`, { responseType: "blob" }),
+
+  /**
+   * 목록 필터(기간·검색어·그룹)에 걸린 보고서 전체를 HWP ZIP 으로 추출 (관리자 전용, blob 다운로드).
+   * 서버가 목록 조회와 같은 필터 해석을 쓰므로 화면에 보이는 것과 받는 것이 같다.
+   * 0건 404 / 300건 초과·일부 실패 400 — 에러 본문은 blob 이라 호출부에서 text()로 풀어 message 를 읽는다.
+   */
+  exportFilteredZip: (params: ReportBulkExportParams) =>
+    api.get("/report/export", { params, responseType: "blob" }),
 };
