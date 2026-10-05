@@ -130,6 +130,7 @@ export default function ReportManageSection() {
   const {
     data: res,
     isLoading,
+    isFetching,
     isError,
   } = useQuery({
     queryKey: [
@@ -154,11 +155,12 @@ export default function ReportManageSection() {
 
   /** 지금 필터(기간·검색어)에 걸린 보고서 전부를 HWP ZIP 으로 받는다. 서버가 목록과 같은 필터를 쓴다. */
   const handleBulkExport = async () => {
-    if (exporting || totalCount === 0) return;
+    // 필터가 바뀌어 목록을 다시 받는 중이면 totalCount 가 이전 필터 값이라 그때는 잠근다.
+    if (exporting || isFetching || totalCount === 0) return;
     setExporting(true);
     try {
       const fileRes = await reportApi.exportFilteredZip(filters);
-      const url = URL.createObjectURL(fileRes.data as Blob);
+      const url = URL.createObjectURL(fileRes.data);
       const a = document.createElement("a");
       a.href = url;
       a.download = buildZipFilename(filters);
@@ -183,7 +185,7 @@ export default function ReportManageSection() {
           <button
             type="button"
             onClick={handleBulkExport}
-            disabled={exporting || isLoading || totalCount === 0}
+            disabled={exporting || isFetching || totalCount === 0}
             aria-busy={exporting}
             className="px-6 py-3 border border-gray-300 text-gray-800 bg-white rounded-2xl font-medium text-base hover:bg-gray-50 transition-colors flex items-center gap-4 whitespace-nowrap tracking-wide disabled:cursor-not-allowed disabled:opacity-40"
           >

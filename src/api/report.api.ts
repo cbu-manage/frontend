@@ -142,5 +142,5 @@ export const reportApi = {
    * 0건 404 / 300건 초과·일부 실패 400 — 에러 본문은 blob 이라 호출부에서 text()로 풀어 message 를 읽는다.
    */
   exportFilteredZip: (params: ReportBulkExportParams) =>
-    api.get("/report/export", { params, responseType: "blob" }),
+    api.get<Blob>("/report/export", { params, responseType: "blob" }),
 };
