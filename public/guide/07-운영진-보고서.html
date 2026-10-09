@@ -2,7 +2,7 @@
 <html lang="ko"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>알고리즘 · 씨부엉</title>
+<title>보고서 관리 (운영진) · 씨부엉</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <style>
 :root {
@@ -105,37 +105,94 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:18px;color:v
   <div class="bar">
     <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjI2IiBoZWlnaHQ9IjI0NSIgdmlld0JveD0iMCAwIDIyNiAyNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM0NCA0Mi40ODIzQzI1Ljc3NDIgMTEuMDEyMiAzMy4xOTI4IC01LjA5NDc0IDM2LjY0MzYgMS40MzU0NkMzOC44MzgxIDUuNTg3NjggNTEuOTgwNCAxMy4xOTc2IDYyLjc2NDYgMTguODEwNUM3Ny4xNDEgMTIuNTgzMiA5NC4wODc4IDguOTg4MiAxMTIuMjMzIDguOTg4MkMxMzAuMDI2IDguOTg4MjIgMTQ2LjY2NSAxMi40NDQxIDE2MC44NTkgMTguNDQ5MUMxNzEuNSAxMi44NzY2IDE4NC4xMTQgNS41MDkzMyAxODYuMjYgMS40NDkxM0MxODkuNjUxIC00Ljk2Nzk5IDE5Ni44NzIgMTAuNDc0NyAxOTIuODg5IDQwLjg3NDlDMjAxLjQ3MyA1MC44MjAyIDIwNi40MTMgNjIuNDgxIDIwNi40MTMgNzQuOTUwMUMyMDYuNDEzIDg3LjExNDggMjAxLjcxIDk4LjUwOTMgMTkzLjUxIDEwOC4yOTNDMjAxLjcxIDEyMC41MzMgMjA2LjQxMyAxMzQuNzkgMjA2LjQxMyAxNTAuMDFDMjA2LjQxMyAxOTUuNTg2IDE2NC4yNDggMjMyLjUzMyAxMTIuMjMzIDIzMi41MzNDNjAuMjE5MiAyMzIuNTMzIDE4LjA1MjkgMTk1LjU4NiAxOC4wNTI3IDE1MC4wMUMxOC4wNTI3IDEzNC43OSAyMi43NTU2IDEyMC41MzMgMzAuOTU2MSAxMDguMjkzQzIyLjc1NTggOTguNTA5MyAxOC4wNTI5IDg3LjExNDcgMTguMDUyNyA3NC45NTAxQzE4LjA1MjcgNjMuMTQ2NyAyMi40ODA1IDUyLjA2NzYgMzAuMjM0NCA0Mi40ODIzWiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE5OTlfNDExNCkiLz4KPHBhdGggZD0iTTYwLjEzODcgMjExLjg3N0gxMDQuMzkyVjIyNC4zNTJDMTA0LjM5MiAyMzUuNzU2IDk1LjE0NzUgMjQ1IDgzLjc0MzkgMjQ1QzczLjkyNTMgMjQ1IDY1LjQ2NDcgMjM4LjA4NiA2My41MDk0IDIyOC40NjRMNjAuMTM4NyAyMTEuODc3WiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzE5OTlfNDExNCkiLz4KPHBhdGggZD0iTTE2Ni4zODUgMjA3Ljg4OUgxMjEuODgzVjIyNC40MjhDMTIxLjg4MyAyMzUuNzkgMTMxLjA5NCAyNDUuMDAxIDE0Mi40NTYgMjQ1LjAwMUMxNTIuMzk0IDI0NS4wMDEgMTYwLjkxMiAyMzcuODk2IDE2Mi42OTUgMjI4LjExOUwxNjYuMzg1IDIwNy44ODlaIiBmaWxsPSJ1cmwoI3BhaW50Ml9saW5lYXJfMTk5OV80MTE0KSIvPgo8cGF0aCBkPSJNMTQ4Ljk1NiAyMi40MTJDMTQ4Ljg3NSAyOC4yNzE5IDE0OC43NjIgNDAuNDMxNCAxNDguOTU2IDQyLjE4OTRMMTEyLjA4OCA1NC4yNzUzTDc1LjIxODggNDIuMTg5NEM3NS40MTI4IDQwLjQzMTQgNzUuMjk5NiAyOC4yNzE5IDc1LjIxODggMjIuNDEyQzgyLjM3NDQgMjMuMzA3MyA5OS43NjYgMjkuMjI0MyAxMTIuMDg4IDQ1LjcyOTRMMTEyLjY2OSA0NC45NjM4QzEyNC45NSAyOS4wNDEgMTQxLjkxMiAyMy4yOTM1IDE0OC45NTYgMjIuNDEyWiIgZmlsbD0iIzI3ODY1NSIvPgo8ZWxsaXBzZSBjeD0iMTEyLjA1IiBjeT0iMTc1LjYxMSIgcng9IjY4LjkzMzEiIHJ5PSI1Ni44MjQiIGZpbGw9InVybCgjcGFpbnQzX2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik02My4wNzA4IDE1NC45OTVDNTguMTAwMSAxODEuNzYgNDAuODYyIDIwMi41ODIgMjYuNjEzNiAyMDIuOTg1QzEyLjg4OTUgMTk2LjI0NSA0Ljg3MDgxIDE3MS43NDQgOS44NDE1MiAxNDQuOTc4QzE0LjgxMjIgMTE4LjIxMyAzMC43NTc2IDk4Ljc1NzggNDUuNDU2NCAxMDEuNTI0QzYwLjE1NTMgMTA0LjI5IDY4LjA0MTUgMTI4LjIzIDYzLjA3MDggMTU0Ljk5NVoiIGZpbGw9InVybCgjcGFpbnQ0X2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik0xNjIuMTgzIDE1NC40MjNDMTY3LjE1NCAxODEuMTg4IDE4NC4zOTIgMjAyLjAwOSAxOTguNjQgMjAyLjQxM0MyMTIuMzY0IDE5NS42NzMgMjIwLjM4MyAxNzEuMTcyIDIxNS40MTIgMTQ0LjQwNkMyMTAuNDQyIDExNy42NDEgMTk0LjQ5NiA5OC4xODU1IDE3OS43OTcgMTAwLjk1MUMxNjUuMDk5IDEwMy43MTcgMTU3LjIxMiAxMjcuNjU3IDE2Mi4xODMgMTU0LjQyM1oiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik0xNDguNTI2IDM2LjI0MjFDMTY4LjY1IDM2LjI0MjMgMTg0Ljk2MyA1MS45NDk2IDE4NC45NjMgNzEuMzI1MUMxODQuOTYzIDg5Ljk4OTMgMTY5LjgyNSAxMDUuMjQ2IDE1MC43MjcgMTA2LjM0MlYxMDYuMzYxSDE1MC40MTdDMTQ5Ljc5MSAxMDYuMzkyIDE0OS4xNiAxMDYuNDA4IDE0OC41MjYgMTA2LjQwOEMxNDcuODkyIDEwNi40MDggMTQ3LjI2MiAxMDYuMzkyIDE0Ni42MzYgMTA2LjM2MUg3Ny41NDNDNzYuOTE2OSAxMDYuMzkyIDc2LjI4NjMgMTA2LjQwOCA3NS42NTIzIDEwNi40MDhDNTUuNTI5IDEwNi40MDggMzkuMjE1IDkwLjcwMDYgMzkuMjE0OCA3MS4zMjUxQzM5LjIxNDkgNTEuOTQ5NiA1NS41MjkgMzYuMjQyMyA3NS42NTIzIDM2LjI0MjFDOTUuMzE1NiAzNi4yNDIzIDExMS4zMzggNTEuMjM5NSAxMTIuMDYxIDcwLjAwMTlIMTEyLjExN0MxMTIuODQgNTEuMjM5NSAxMjguODYzIDM2LjI0MjMgMTQ4LjUyNiAzNi4yNDIxWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTk3LjM5ODQgOTAuMTcxTDExMi4wODggNzYuMjUzOEwxMjYuNzc4IDkwLjE3MUwxMTIuMDg4IDEwOC4yOTJMOTcuMzk4NCA5MC4xNzFaIiBmaWxsPSIjRkJFRDY4Ii8+CjxlbGxpcHNlIGN4PSI4MS43MDA1IiBjeT0iNzAuODkwNCIgcng9IjEzLjM5MzgiIHJ5PSIxMy40ODIyIiBmaWxsPSIjMjQyNzMxIi8+CjxlbGxpcHNlIGN4PSI3Ni4zODQxIiBjeT0iNjYuOTc4OSIgcng9IjQuNjAwOTMiIHJ5PSI0LjYzMTMiIGZpbGw9IndoaXRlIi8+CjxlbGxpcHNlIGN4PSIxNDIuNTk3IiBjeT0iNzAuODkwNCIgcng9IjEzLjM5MzgiIHJ5PSIxMy40ODIyIiBmaWxsPSIjMjQyNzMxIi8+CjxlbGxpcHNlIGN4PSIxMzcuMjgxIiBjeT0iNjYuOTc4OSIgcng9IjQuNjAwOTMiIHJ5PSI0LjYzMTMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMjQuNDI5IDY0LjQwMDNMMTEyLjAwOSA3My4wMjA0QzEwOS4zNjEgNzAuODY1MyAxMDQuMDY0IDY2LjMzOTUgMTA0LjA2NCA2NS40Nzc0QzEwNC4wNjQgNjQuNjE0OCA5OS4xODc5IDQ5Ljk0NDIgOTguNjU4MiA0NC4xOTcyTDExMi4wMDkgNTMuMzE2M0wxMjcuMjkzIDQyLjc1NThMMTI0LjQyOSA2NC40MDAzWiIgZmlsbD0id2hpdGUiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xOTk5XzQxMTQiIHgxPSIxMTIuMjMzIiB5MT0iMCIgeDI9IjExMi4yMzMiIHkyPSIyMzIuNTMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM0OEMyODEiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjI1QzUyIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQxX2xpbmVhcl8xOTk5XzQxMTQiIHgxPSI4Mi4yNjUzIiB5MT0iMjExLjg3NyIgeDI9IjgyLjI2NTMiIHkyPSIyNDUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDJfbGluZWFyXzE5OTlfNDExNCIgeDE9IjE0NC4xMzQiIHkxPSIyMDcuODg5IiB4Mj0iMTQ0LjEzNCIgeTI9IjI0NS4wMDEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE5OTlfNDExNCIgeDE9IjExMi4wNSIgeTE9IjExOC43ODciIHgyPSIxMTIuMDUiIHkyPSIyMzIuNDM1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNDRUUwQzUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOTVDRkE3Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQ0X2xpbmVhcl8xOTk5XzQxMTQiIHgxPSI0NS40NTY0IiB5MT0iMTAxLjUyNCIgeDI9IjI2LjM3MjYiIHkyPSIyMDIuOTQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE5OTlfNDExNCIgeDE9IjE3OS43OTciIHkxPSIxMDAuOTUxIiB4Mj0iMTk4Ljg4MSIgeTI9IjIwMi4zNjciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" alt="">
     <a class="site" href="/guide/index.html">씨부엉 홈페이지 설명서</a>
-    <span class="who">부원용</span>
+    <span class="who">운영진용</span>
     <a class="home" href="/">홈페이지로</a>
   </div>
-  <nav class="tabs"><div class="inner"><a href="/guide/index.html" class="">홈</a><span class="sep"></span><a href="/guide/01-시작하기.html" class="">시작하기</a><a href="/guide/02-커뮤니티.html" class="">커뮤니티</a><a href="/guide/03-네트워킹.html" class="">네트워킹</a><a href="/guide/04-알고리즘.html" class="on">알고리즘</a><a href="/guide/05-아카이브.html" class="">아카이브</a><a href="/guide/06-마이페이지.html" class="">마이페이지</a><span class="sep"></span><a href="/guide/07-운영진-보고서.html" class="">운영진 · 보고서</a></div></nav>
+  <nav class="tabs"><div class="inner"><a href="/guide/index.html" class="">홈</a><span class="sep"></span><a href="/guide/01-시작하기.html" class="">시작하기</a><a href="/guide/02-커뮤니티.html" class="">커뮤니티</a><a href="/guide/03-네트워킹.html" class="">네트워킹</a><a href="/guide/04-알고리즘.html" class="">알고리즘</a><a href="/guide/05-아카이브.html" class="">아카이브</a><a href="/guide/06-마이페이지.html" class="">마이페이지</a><span class="sep"></span><a href="/guide/07-운영진-보고서.html" class="on">운영진 · 보고서</a></div></nav>
 </header>
 <div class="wrap">
-  <h1 class="doc">알고리즘</h1>
-  <p class="lede">코딩 테스트 관리.</p>
-  
-  <div class="jump"><strong>이 문서 안에서</strong><ul><li><a href="#s1">코딩 테스트 관리</a></li><li><a href="#s2">풀이 올리기</a></li></ul></div>
-  <section id="s1"><h2>코딩 테스트 관리</h2>
-<p>백준·프로그래머스 등에서 푼 문제의 풀이와 코드를 공유합니다.</p>
-<figure><img src="/guide/shots/52-%EC%BD%94%EB%94%A9%ED%85%8C%EC%8A%A4%ED%8A%B8.jpg" alt="코딩 테스트 관리 목록" loading="lazy"><figcaption>코딩 테스트 관리 목록</figcaption></figure>
-<p>목록은 <strong>플랫폼·언어·해결 상태</strong>로 필터링합니다. 해결 상태를 미해결로 두고 나중에 수정할 수 있습니다.</p>
-</section><section id="s2"><h2>풀이 올리기</h2>
+  <h1 class="doc">보고서 관리 (운영진)</h1>
+  <p class="lede">활동 내역서 내려받기 · 대표자 서명.</p>
+
+<div class="key"><strong>부원이 쓴 보고서가 곧 학교 제출 문서입니다</strong>
+부원이 <a href="/guide/05-아카이브.html">아카이브 → 보고서 업로드</a>에 쓴 내용이 학교 활동 내역서(HWP) 양식에 자동으로 채워집니다. 운영진은 내려받아 그대로 제출하면 됩니다.</div>
+
+<div class="flow">
+  <div class="step"><b>① 부원이 보고서 작성</b><span>내용·사진·참여자</span></div>
+  <div class="step"><b>② 대표자 서명 확인</b><span>동아리 일정 설정 → 대표자 정보</span></div>
+  <div class="step"><b>③ 내려받기</b><span>한 건씩(HWP) 또는 한 번에(ZIP)</span></div>
+  <div class="step"><b>④ 학교 제출</b><span>그대로 제출</span></div>
+</div>
+
+  <div class="jump"><strong>이 문서 안에서</strong><ul><li><a href="#s1">한 건씩 내려받기</a></li><li><a href="#s2">한 번에 내려받기 (ZIP)</a></li><li><a href="#s3">양식에 들어가는 것</a></li><li><a href="#s4">대표자 이름·서명</a></li><li><a href="#s5">제출 전 확인</a></li></ul></div>
+
+  <section id="s1"><h2>한 건씩 내려받기</h2>
+<p>보고서를 열면 제목 오른쪽에 <strong>HWP 추출</strong> 버튼이 있습니다. 누르면 그 보고서 한 건이 학교 양식 한글 파일로 내려옵니다.</p>
 <ol class="steps">
-  <li><strong>글 작성하기</strong></li>
-  <li>제목 입력</li>
-  <li><strong>문제 링크</strong> 입력 — 플랫폼이 자동 인식됩니다</li>
-  <li><strong>언어</strong>와 <strong>카테고리</strong> 선택 (카테고리는 복수 선택)</li>
-  <li><strong>해결 상태</strong> 선택 — 미해결 / 해결</li>
-  <li>풀이를 마크다운으로 작성 후 <strong>게시하기</strong></li>
+  <li>아카이브 → 보고서 업로드에서 보고서를 엽니다 (관리자 페이지 → 보고서 관리에서 열어도 됩니다)</li>
+  <li>오른쪽 위 <strong>HWP 추출</strong></li>
+  <li>파일명은 <code>[팀명]_작성자_활동일.hwp</code> 로 저장됩니다 (예: <code>[QA스터디]_홍길동_261005.hwp</code>)</li>
 </ol>
-<div class="note"><strong>코드는 코드 블록으로</strong>
-본문의 <strong>코드 블록 추가</strong>를 쓰거나 백틱 세 개(<code>```</code>)로 감쌉니다. 언어를 함께 적으면 문법 강조가 적용됩니다.</div>
-<p>작성에는 로그인이 필요합니다. 비로그인 상태에서는 안내 화면이 표시됩니다.</p>
+<div class="note"><strong>버튼이 안 보이면</strong>
+내려받기는 관리자·회장·부회장·서기만 할 수 있습니다. 다른 운영진 직책에는 버튼이 나타나지 않습니다.</div>
+</section>
+
+  <section id="s2"><h2>한 번에 내려받기 (ZIP)</h2>
+<p>학기 말처럼 여러 건을 한꺼번에 제출할 때는 <strong>관리자 페이지 → 보고서 관리</strong>에서 묶어 받습니다. 화면에 보이는 목록이 그대로 ZIP 하나로 내려옵니다.</p>
+<ol class="steps">
+  <li>관리자 페이지 → <strong>보고서 관리</strong></li>
+  <li><strong>기간</strong>(활동일 기준)과 <strong>검색</strong>(제목·작성자)으로 받을 보고서를 좁힙니다. 아무것도 안 걸면 전체입니다</li>
+  <li>오른쪽 위 <strong>일괄 다운로드 (N건)</strong> — N이 지금 목록에 걸린 보고서 수입니다</li>
+  <li>ZIP 파일명은 <code>보고서_기간_검색어.zip</code>, 안에는 한 건씩 <code>[팀명]_작성자_활동일.hwp</code> 로 들어 있습니다</li>
+</ol>
+<table>
+  <tr><th>상황</th><th>동작</th></tr>
+  <tr><td>목록이 0건</td><td>버튼이 눌리지 않습니다</td></tr>
+  <tr><td>목록을 불러오는 중</td><td>건수가 확정될 때까지 잠깁니다</td></tr>
+  <tr><td>300건이 넘음</td><td>"기간이나 그룹을 좁혀 주세요" 안내가 뜨고 만들지 않습니다. 기간을 나눠 받으세요</td></tr>
+  <tr><td>일부 보고서를 못 만듦</td><td>어떤 보고서가 문제인지 제목과 함께 알려 주고, ZIP은 만들지 않습니다. 해당 보고서를 고친 뒤 다시 받으세요</td></tr>
+</table>
+<div class="note"><strong>"팀으로 그룹핑"은 보기 방식만 바꿉니다</strong>
+켜도 끄도 내려받는 내용은 같습니다. 기간·검색만 ZIP 에 영향을 줍니다.</div>
+</section>
+
+  <section id="s3"><h2>양식에 들어가는 것</h2>
+<table>
+  <tr><th>보고서 칸</th><th>양식에서</th></tr>
+  <tr><td>스터디/프로젝트 명 · 작성자 · 시작일 · 활동 장소</td><td>머리 부분에 그대로</td></tr>
+  <tr><td>활동 내용</td><td>본문에 그대로</td></tr>
+  <tr><td>참여자 명단</td><td>이름·학번·학과 표</td></tr>
+  <tr><td>활동 사진</td><td>사진 칸에 <strong>원본 비율 그대로</strong> 칸을 꽉 채워 들어갑니다. 가로·세로 모두 됩니다</td></tr>
+  <tr><td>대표자 이름 · 서명</td><td>맨 아래 "씨부엉 회장 ○○○" 옆에 서명 그림</td></tr>
+  <tr><td>스터디 후 느낀 점 · 다음 주 계획</td><td>들어가지 않습니다 (홈페이지 안에서만)</td></tr>
+</table>
+<div class="note"><strong>고치면 다시 내려받으면 됩니다</strong>
+파일은 내려받는 순간 만들어집니다. 부원이 보고서를 수정하거나 대표자 정보를 바꾸면, 다시 내려받은 파일에 반영됩니다. 이미 받아 둔 파일은 바뀌지 않습니다.</div>
+</section>
+
+  <section id="s4"><h2>대표자 이름·서명</h2>
+<p>양식 맨 아래 회장 이름과 서명은 <strong>관리자 페이지 → 동아리 일정 설정 → 대표자 정보</strong>에서 가져옵니다. 회장이 바뀌면 여기서 바꿔야 모든 보고서에 새 이름·서명이 들어갑니다.</p>
+<ol class="steps">
+  <li>관리자 페이지 → <strong>동아리 일정 설정</strong></li>
+  <li><strong>대표자 정보</strong>에서 이름을 적고 서명 이미지를 올립니다 (현재 서명이 아래에 보입니다)</li>
+  <li>저장 후 보고서를 하나 내려받아 맨 아래를 확인합니다</li>
+</ol>
+<div class="warn"><strong>서명이 비어 있으면 양식에 들어 있던 예전 서명이 그대로 나갑니다</strong>
+인수인계 직후에는 꼭 한 번 내려받아 이름과 서명이 바뀌었는지 보세요.</div>
+</section>
+
+  <section id="s5"><h2>제출 전 확인</h2>
+<ul>
+  <li>맨 아래 회장 이름·서명이 지금 회장 것인지</li>
+  <li>활동 사진이 사진 칸에 들어 있는지 (사진이 없는 보고서는 저장 자체가 안 되지만, 엉뚱한 사진이 올라온 경우가 있습니다)</li>
+  <li>참여자 표에 빠진 사람이 없는지 — 빠졌으면 부원에게 보고서를 수정해 달라고 한 뒤 다시 내려받습니다</li>
+  <li>기간으로 묶어 받았다면 ZIP 안 파일 수가 화면의 건수와 같은지</li>
+</ul>
 </section>
   <div class="pager">
-    <span><a href="/guide/03-네트워킹.html">← 네트워킹</a></span>
-    <span><a href="/guide/05-아카이브.html">아카이브 →</a></span>
+    <span><a href="/guide/06-마이페이지.html">← 마이페이지와 계정</a></span>
+    <span><a href="/guide/index.html">설명서 홈 →</a></span>
   </div>
   <footer><a href="/">← 씨부엉 홈페이지로 돌아가기</a><br>한국공학대학교 씨부엉 · 문의 cbumanage@gmail.com<br>
-  화면은 2026. 9. 26. 기준입니다.</footer>
+  화면은 2026. 10. 9. 기준입니다.</footer>
 </div></body></html>
