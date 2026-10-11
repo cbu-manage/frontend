@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>관리자 페이지 (운영진) · 씨부엉</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+:root {
+  --brand:#95C674; --brand-dark:#5f9440; --ink:#1f2328; --muted:#5b6470;
+  --line:#e3e6ea; --bg:#fff; --soft:#f6f8f5; --warn:#b54708; --warn-bg:#fff6ed;
+  --key:#2f6f3e; --key-bg:#eef7ec;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ink:#e8eaed; --muted:#9aa3ad; --line:#2c3136; --bg:#16181a; --soft:#1d2320;
+  --warn:#f0a868; --warn-bg:#2a1f14; --key:#a8d99a; --key-bg:#1b2a1c; --brand-dark:#a8d99a;
+}}
+:root[data-theme="dark"] {
+  --ink:#e8eaed; --muted:#9aa3ad; --line:#2c3136; --bg:#16181a; --soft:#1d2320;
+  --warn:#f0a868; --warn-bg:#2a1f14; --key:#a8d99a; --key-bg:#1b2a1c; --brand-dark:#a8d99a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.75 "Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+  word-break:keep-all}
+a{color:var(--brand-dark)}
+header.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:860px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.bar .logo{width:28px;height:28px;flex:none;display:block}
+.bar .site{font-size:15px;font-weight:700;text-decoration:none;color:var(--ink)}
+.bar .home,.bar .who:last-child{margin-left:auto}
+.bar .home{font-size:13px;text-decoration:none;color:var(--brand-dark);font-weight:600}
+.bar .who{font-size:12px;color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:3px 10px}
+nav.tabs{border-top:1px solid var(--line);background:var(--soft)}
+nav.tabs .inner{max-width:860px;margin:0 auto;padding:0 10px;display:flex;gap:2px;overflow-x:auto}
+nav.tabs a{flex:none;padding:9px 12px;font-size:13px;text-decoration:none;color:var(--muted);
+  border-bottom:2px solid transparent;white-space:nowrap}
+nav.tabs a.on{color:var(--ink);font-weight:700;border-bottom-color:var(--brand)}
+nav.tabs .sep{flex:none;align-self:center;width:1px;height:14px;background:var(--line);margin:0 6px}
+.wrap{max-width:860px;margin:0 auto;padding:30px 16px 90px}
+h1.doc{font-size:25px;margin:0 0 6px}
+.lede{color:var(--muted);font-size:15px;margin:0 0 26px}
+.jump{border:1px solid var(--line);border-radius:12px;background:var(--soft);padding:14px 18px;margin-bottom:34px}
+.jump strong{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+.jump ul{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px 14px}
+.jump a{font-size:14px;text-decoration:none;color:var(--ink)}
+.jump a:hover{color:var(--brand-dark);text-decoration:underline}
+section{margin-bottom:46px;scroll-margin-top:110px}
+h2{font-size:20px;margin:0 0 10px;padding-bottom:8px;border-bottom:2px solid var(--brand);display:inline-block}
+h3{font-size:16px;margin:24px 0 8px}
+p{margin:0 0 12px}
+ul,ol.steps{margin:0 0 14px;padding-left:22px}
+li{margin-bottom:6px}
+figure{margin:16px 0 8px}
+figure img{width:100%;border:1px solid var(--line);border-radius:10px;display:block}
+figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.note,.warn,.key{border-radius:10px;padding:14px 16px;margin:16px 0;font-size:15px}
+.note{background:var(--soft);border-left:3px solid var(--brand)}
+.warn{background:var(--warn-bg);border-left:3px solid var(--warn)}
+.key{background:var(--key-bg);border-left:3px solid var(--key)}
+.note>strong:first-child,.warn>strong:first-child,.key>strong:first-child{display:block;margin-bottom:4px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-weight:600}
+table.matrix th:not(:first-child),table.matrix td:not(:first-child){text-align:center}
+td.yes{color:var(--brand-dark);font-weight:700;text-align:center}
+td.no{color:var(--muted);text-align:center}
+code{background:var(--soft);padding:1px 5px;border-radius:4px;font-size:14px}
+.missing{color:var(--muted);font-size:14px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:18px 0}
+.flow .step{flex:1 1 150px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--soft)}
+.flow .step b{display:block;font-size:14px;margin-bottom:3px}
+.flow .step span{font-size:13px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:20px 0}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;text-decoration:none;color:var(--ink);display:block}
+.card:hover{border-color:var(--brand)}
+.card b{display:block;font-size:16px;margin-bottom:4px}
+.card span{font-size:14px;color:var(--muted)}
+.card .tagline{display:inline-block;font-size:11px;color:var(--brand-dark);border:1px solid var(--brand);
+  border-radius:999px;padding:1px 8px;margin-bottom:8px}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;padding-top:20px;border-top:1px solid var(--line)}
+.pager a{font-size:14px;text-decoration:none;color:var(--ink)}
+.pager a:hover{color:var(--brand-dark)}
+footer{margin-top:42px;border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:13px}
+@media(max-width:640px){
+  .wrap{padding:22px 16px 70px}
+  .bar{padding:10px 16px}
+  .bar .who{display:none}
+  h1.doc{font-size:21px}
+  h2{font-size:18px}
+  .jump ul{flex-direction:column;gap:4px}
+  .cards{grid-template-columns:1fr}
+  .pager{flex-direction:column;gap:8px}
+  table{display:block;overflow-x:auto;white-space:nowrap}
+}
+@media print{
+  header.top{display:none}
+  nav.tabs{display:none}
+  h2,h3{break-after:avoid}
+  figure,table,.note,.warn,.key,.flow{break-inside:avoid}
+}
+</style>
+</head><body>
+<header class="top">
+  <div class="bar">
+    <img class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjI2IiBoZWlnaHQ9IjI0NSIgdmlld0JveD0iMCAwIDIyNiAyNDUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM0NCA0Mi40ODIzQzI1Ljc3NDIgMTEuMDEyMiAzMy4xOTI4IC01LjA5NDc0IDM2LjY0MzYgMS40MzU0NkMzOC44MzgxIDUuNTg3NjggNTEuOTgwNCAxMy4xOTc2IDYyLjc2NDYgMTguODEwNUM3Ny4xNDEgMTIuNTgzMiA5NC4wODc4IDguOTg4MiAxMTIuMjMzIDguOTg4MkMxMzAuMDI2IDguOTg4MjIgMTQ2LjY2NSAxMi40NDQxIDE2MC44NTkgMTguNDQ5MUMxNzEuNSAxMi44NzY2IDE4NC4xMTQgNS41MDkzMyAxODYuMjYgMS40NDkxM0MxODkuNjUxIC00Ljk2Nzk5IDE5Ni44NzIgMTAuNDc0NyAxOTIuODg5IDQwLjg3NDlDMjAxLjQ3MyA1MC44MjAyIDIwNi40MTMgNjIuNDgxIDIwNi40MTMgNzQuOTUwMUMyMDYuNDEzIDg3LjExNDggMjAxLjcxIDk4LjUwOTMgMTkzLjUxIDEwOC4yOTNDMjAxLjcxIDEyMC41MzMgMjA2LjQxMyAxMzQuNzkgMjA2LjQxMyAxNTAuMDFDMjA2LjQxMyAxOTUuNTg2IDE2NC4yNDggMjMyLjUzMyAxMTIuMjMzIDIzMi41MzNDNjAuMjE5MiAyMzIuNTMzIDE4LjA1MjkgMTk1LjU4NiAxOC4wNTI3IDE1MC4wMUMxOC4wNTI3IDEzNC43OSAyMi43NTU2IDEyMC41MzMgMzAuOTU2MSAxMDguMjkzQzIyLjc1NTggOTguNTA5MyAxOC4wNTI5IDg3LjExNDcgMTguMDUyNyA3NC45NTAxQzE4LjA1MjcgNjMuMTQ2NyAyMi40ODA1IDUyLjA2NzYgMzAuMjM0NCA0Mi40ODIzWiIgZmlsbD0idXJsKCNwYWludDBfbGluZWFyXzE5OTlfNDExNCkiLz4KPHBhdGggZD0iTTYwLjEzODcgMjExLjg3N0gxMDQuMzkyVjIyNC4zNTJDMTA0LjM5MiAyMzUuNzU2IDk1LjE0NzUgMjQ1IDgzLjc0MzkgMjQ1QzczLjkyNTMgMjQ1IDY1LjQ2NDcgMjM4LjA4NiA2My41MDk0IDIyOC40NjRMNjAuMTM4NyAyMTEuODc3WiIgZmlsbD0idXJsKCNwYWludDFfbGluZWFyXzE5OTlfNDExNCkiLz4KPHBhdGggZD0iTTE2Ni4zODUgMjA3Ljg4OUgxMjEuODgzVjIyNC40MjhDMTIxLjg4MyAyMzUuNzkgMTMxLjA5NCAyNDUuMDAxIDE0Mi40NTYgMjQ1LjAwMUMxNTIuMzk0IDI0NS4wMDEgMTYwLjkxMiAyMzcuODk2IDE2Mi42OTUgMjI4LjExOUwxNjYuMzg1IDIwNy44ODlaIiBmaWxsPSJ1cmwoI3BhaW50Ml9saW5lYXJfMTk5OV80MTE0KSIvPgo8cGF0aCBkPSJNMTQ4Ljk1NiAyMi40MTJDMTQ4Ljg3NSAyOC4yNzE5IDE0OC43NjIgNDAuNDMxNCAxNDguOTU2IDQyLjE4OTRMMTEyLjA4OCA1NC4yNzUzTDc1LjIxODggNDIuMTg5NEM3NS40MTI4IDQwLjQzMTQgNzUuMjk5NiAyOC4yNzE5IDc1LjIxODggMjIuNDEyQzgyLjM3NDQgMjMuMzA3MyA5OS43NjYgMjkuMjI0MyAxMTIuMDg4IDQ1LjcyOTRMMTEyLjY2OSA0NC45NjM4QzEyNC45NSAyOS4wNDEgMTQxLjkxMiAyMy4yOTM1IDE0OC45NTYgMjIuNDEyWiIgZmlsbD0iIzI3ODY1NSIvPgo8ZWxsaXBzZSBjeD0iMTEyLjA1IiBjeT0iMTc1LjYxMSIgcng9IjY4LjkzMzEiIHJ5PSI1Ni44MjQiIGZpbGw9InVybCgjcGFpbnQzX2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik02My4wNzA4IDE1NC45OTVDNTguMTAwMSAxODEuNzYgNDAuODYyIDIwMi41ODIgMjYuNjEzNiAyMDIuOTg1QzEyLjg4OTUgMTk2LjI0NSA0Ljg3MDgxIDE3MS43NDQgOS44NDE1MiAxNDQuOTc4QzE0LjgxMjIgMTE4LjIxMyAzMC43NTc2IDk4Ljc1NzggNDUuNDU2NCAxMDEuNTI0QzYwLjE1NTMgMTA0LjI5IDY4LjA0MTUgMTI4LjIzIDYzLjA3MDggMTU0Ljk5NVoiIGZpbGw9InVybCgjcGFpbnQ0X2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik0xNjIuMTgzIDE1NC40MjNDMTY3LjE1NCAxODEuMTg4IDE4NC4zOTIgMjAyLjAwOSAxOTguNjQgMjAyLjQxM0MyMTIuMzY0IDE5NS42NzMgMjIwLjM4MyAxNzEuMTcyIDIxNS40MTIgMTQ0LjQwNkMyMTAuNDQyIDExNy42NDEgMTk0LjQ5NiA5OC4xODU1IDE3OS43OTcgMTAwLjk1MUMxNjUuMDk5IDEwMy43MTcgMTU3LjIxMiAxMjcuNjU3IDE2Mi4xODMgMTU0LjQyM1oiIGZpbGw9InVybCgjcGFpbnQ1X2xpbmVhcl8xOTk5XzQxMTQpIi8+CjxwYXRoIGQ9Ik0xNDguNTI2IDM2LjI0MjFDMTY4LjY1IDM2LjI0MjMgMTg0Ljk2MyA1MS45NDk2IDE4NC45NjMgNzEuMzI1MUMxODQuOTYzIDg5Ljk4OTMgMTY5LjgyNSAxMDUuMjQ2IDE1MC43MjcgMTA2LjM0MlYxMDYuMzYxSDE1MC40MTdDMTQ5Ljc5MSAxMDYuMzkyIDE0OS4xNiAxMDYuNDA4IDE0OC41MjYgMTA2LjQwOEMxNDcuODkyIDEwNi40MDggMTQ3LjI2MiAxMDYuMzkyIDE0Ni42MzYgMTA2LjM2MUg3Ny41NDNDNzYuOTE2OSAxMDYuMzkyIDc2LjI4NjMgMTA2LjQwOCA3NS42NTIzIDEwNi40MDhDNTUuNTI5IDEwNi40MDggMzkuMjE1IDkwLjcwMDYgMzkuMjE0OCA3MS4zMjUxQzM5LjIxNDkgNTEuOTQ5NiA1NS41MjkgMzYuMjQyMyA3NS42NTIzIDM2LjI0MjFDOTUuMzE1NiAzNi4yNDIzIDExMS4zMzggNTEuMjM5NSAxMTIuMDYxIDcwLjAwMTlIMTEyLjExN0MxMTIuODQgNTEuMjM5NSAxMjguODYzIDM2LjI0MjMgMTQ4LjUyNiAzNi4yNDIxWiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTk3LjM5ODQgOTAuMTcxTDExMi4wODggNzYuMjUzOEwxMjYuNzc4IDkwLjE3MUwxMTIuMDg4IDEwOC4yOTJMOTcuMzk4NCA5MC4xNzFaIiBmaWxsPSIjRkJFRDY4Ii8+CjxlbGxpcHNlIGN4PSI4MS43MDA1IiBjeT0iNzAuODkwNCIgcng9IjEzLjM5MzgiIHJ5PSIxMy40ODIyIiBmaWxsPSIjMjQyNzMxIi8+CjxlbGxpcHNlIGN4PSI3Ni4zODQxIiBjeT0iNjYuOTc4OSIgcng9IjQuNjAwOTMiIHJ5PSI0LjYzMTMiIGZpbGw9IndoaXRlIi8+CjxlbGxpcHNlIGN4PSIxNDIuNTk3IiBjeT0iNzAuODkwNCIgcng9IjEzLjM5MzgiIHJ5PSIxMy40ODIyIiBmaWxsPSIjMjQyNzMxIi8+CjxlbGxpcHNlIGN4PSIxMzcuMjgxIiBjeT0iNjYuOTc4OSIgcng9IjQuNjAwOTMiIHJ5PSI0LjYzMTMiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMjQuNDI5IDY0LjQwMDNMMTEyLjAwOSA3My4wMjA0QzEwOS4zNjEgNzAuODY1MyAxMDQuMDY0IDY2LjMzOTUgMTA0LjA2NCA2NS40Nzc0QzEwNC4wNjQgNjQuNjE0OCA5OS4xODc5IDQ5Ljk0NDIgOTguNjU4MiA0NC4xOTcyTDExMi4wMDkgNTMuMzE2M0wxMjcuMjkzIDQyLjc1NThMMTI0LjQyOSA2NC40MDAzWiIgZmlsbD0id2hpdGUiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQwX2xpbmVhcl8xOTk5XzQxMTQiIHgxPSIxMTIuMjMzIiB5MT0iMCIgeDI9IjExMi4yMzMiIHkyPSIyMzIuNTMyIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiM0OEMyODEiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMjI1QzUyIi8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQxX2xpbmVhcl8xOTk5XzQxMTQiIHgxPSI4Mi4yNjUzIiB5MT0iMjExLjg3NyIgeDI9IjgyLjI2NTMiIHkyPSIyNDUiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDJfbGluZWFyXzE5OTlfNDExNCIgeDE9IjE0NC4xMzQiIHkxPSIyMDcuODg5IiB4Mj0iMTQ0LjEzNCIgeTI9IjI0NS4wMDEiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDNfbGluZWFyXzE5OTlfNDExNCIgeDE9IjExMi4wNSIgeTE9IjExOC43ODciIHgyPSIxMTIuMDUiIHkyPSIyMzIuNDM1IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiNDRUUwQzUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOTVDRkE3Ii8+CjwvbGluZWFyR3JhZGllbnQ+CjxsaW5lYXJHcmFkaWVudCBpZD0icGFpbnQ0X2xpbmVhcl8xOTk5XzQxMTQiIHgxPSI0NS40NTY0IiB5MT0iMTAxLjUyNCIgeDI9IjI2LjM3MjYiIHkyPSIyMDIuOTQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDVfbGluZWFyXzE5OTlfNDExNCIgeDE9IjE3OS43OTciIHkxPSIxMDAuOTUxIiB4Mj0iMTk4Ljg4MSIgeTI9IjIwMi4zNjciIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzQ4QzI4MSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyMjVDNTIiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" alt="">
+    <a class="site" href="/guide/index.html">씨부엉 홈페이지 설명서</a>
+    <span class="who">운영진용</span>
+    <a class="home" href="/">홈페이지로</a>
+  </div>
+  <nav class="tabs"><div class="inner"><a href="/guide/index.html" class="">홈</a><span class="sep"></span><a href="/guide/01-시작하기.html" class="">시작하기</a><a href="/guide/02-커뮤니티.html" class="">커뮤니티</a><a href="/guide/03-네트워킹.html" class="">네트워킹</a><a href="/guide/04-알고리즘.html" class="">알고리즘</a><a href="/guide/05-아카이브.html" class="">아카이브</a><a href="/guide/06-마이페이지.html" class="">마이페이지</a><span class="sep"></span><a href="/guide/08-운영진-관리자페이지.html" class="on">운영진 · 관리자 페이지</a><a href="/guide/07-운영진-보고서.html" class="">운영진 · 보고서</a></div></nav>
+</header>
+<div class="wrap">
+  <h1 class="doc">관리자 페이지 (운영진)</h1>
+  <p class="lede">운영진 지정 · 모집과 심사 · 회원·그룹 승인 · 신고 처리 · 동아리 설정.</p>
+
+<div class="key"><strong>운영진은 상단 메뉴의 "관리자 페이지"에서 일합니다</strong>
+로그인하면 상단 오른쪽에 <strong>관리자 페이지</strong> 메뉴가 생깁니다. 왼쪽에 탭이 세로로 나오고, 직책에 따라 보이는 탭이 다릅니다. 보이지 않는 탭은 권한이 없는 것입니다.</div>
+
+<div class="flow">
+  <div class="step"><b>① 운영진 지정</b><span>직책별 운영진 등록</span></div>
+  <div class="step"><b>② 설정 점검</b><span>온보딩 링크 · 회비 · 대표자</span></div>
+  <div class="step"><b>③ 모집 → 심사 → 마감</b><span>신청서 조회</span></div>
+  <div class="step"><b>④ 회원·그룹 승인</b><span>회비 확인 · 스터디 승인</span></div>
+  <div class="step"><b>⑤ 보고서 수집</b><span>학기 말 일괄 다운로드</span></div>
+</div>
+
+  <div class="jump"><strong>이 문서 안에서</strong><ul><li><a href="#s0">직책별로 보이는 탭</a></li><li><a href="#s1">운영진 지정</a></li><li><a href="#s2">동아리 일정 설정</a></li><li><a href="#s3">신청서 조회 (모집·심사·마감)</a></li><li><a href="#s4">회원 관리</a></li><li><a href="#s5">그룹 관리</a></li><li><a href="#s6">신고 관리</a></li><li><a href="#s7">보고서 관리</a></li></ul></div>
+
+  <section id="s0"><h2>직책별로 보이는 탭</h2>
+<table class="matrix">
+  <tr><th>탭</th><th>회장·부회장</th><th>총무</th><th>인원 관리</th><th>서기</th><th>행사·홍보·일반 운영진</th></tr>
+  <tr><td>회원 관리</td><td class="yes">O</td><td class="yes">O</td><td class="yes">O</td><td class="no">·</td><td class="no">·</td></tr>
+  <tr><td>그룹 관리</td><td class="yes">O</td><td class="no">·</td><td class="yes">O</td><td class="no">·</td><td class="no">·</td></tr>
+  <tr><td>보고서 관리</td><td class="yes">O</td><td class="no">·</td><td class="no">·</td><td class="yes">O</td><td class="no">·</td></tr>
+  <tr><td>신고 관리</td><td class="yes">O</td><td class="no">·</td><td class="no">·</td><td class="no">·</td><td class="no">·</td></tr>
+  <tr><td>신청서 조회</td><td class="yes">O</td><td class="yes">O</td><td class="yes">O</td><td class="yes">O</td><td class="yes">O</td></tr>
+  <tr><td>운영진 지정</td><td class="yes">O</td><td class="no">·</td><td class="no">·</td><td class="no">·</td><td class="no">·</td></tr>
+  <tr><td>동아리 일정 설정</td><td class="yes">O</td><td class="yes">회비 안내만</td><td class="no">·</td><td class="no">·</td><td class="no">·</td></tr>
+</table>
+<p>신청서 조회는 모든 운영진이 보고 투표할 수 있습니다. 모집 시작·마감은 회장·부회장만 합니다.</p>
+</section>
+
+  <section id="s1"><h2>운영진 지정</h2>
+<p>직책 카드 8개(회장 · 부회장 · 총무 · 인원 관리 · 행사 관리 · 홍보 · 서기 · 일반 운영진)에 사람을 넣고 뺍니다.</p>
+<ol class="steps">
+  <li>카드 오른쪽 위 <strong>+</strong> → 이름이나 학번으로 검색 → 체크 → <strong>○○에 추가 (N)</strong></li>
+  <li>빼려면 이름 옆 <strong>X</strong>. 바로 일반 부원으로 돌아갑니다 (확인 창 없음)</li>
+</ol>
+<div class="warn"><strong>이미 직책이 있는 사람은 검색에 안 나옵니다</strong>
+직책을 바꾸려면 먼저 X 로 뺀 다음 새 카드에서 추가하세요. 회장·부회장 카드는 개발 관리자만 넣고 뺄 수 있어서, 회장 교체는 개발팀(cbumanage@gmail.com)에 요청합니다.</div>
+<div class="note"><strong>모집 시작 전에 끝내세요</strong>
+모집을 시작하는 순간의 운영진 수가 그 회차의 투표 인원으로 고정됩니다. 나중에 운영진을 추가해도 그 회차 투표 인원은 바뀌지 않습니다.</div>
+</section>
+
+  <section id="s2"><h2>동아리 일정 설정</h2>
+<p>네 묶음이 있고 각각 <strong>저장</strong> 버튼이 따로 있습니다. 바꾼 게 없으면 "변경 사항 없음"으로 잠겨 있습니다.</p>
+<table>
+  <tr><th>묶음</th><th>무엇</th><th>어디에 쓰임</th></tr>
+  <tr><td><strong>모집 관리</strong></td><td>기수, 모집 시작·종료 예정일, 합격 발표일. 진행 중이 아니면 "모집 시작" 버튼</td><td>지원 페이지(/apply) 열림 여부</td></tr>
+  <tr><td><strong>회비 안내</strong></td><td>은행명 · 계좌번호 · 예금주 · 회비 금액 · 감면 금액(휴학·졸업생) · 납부 마감일</td><td>합격자가 보는 회비 납부 안내 화면에 그대로</td></tr>
+  <tr><td><strong>온보딩 링크</strong></td><td>홈페이지 · 공지방 · 수다방 · 회비 확인 및 문의 방 · 디스코드</td><td>합격 안내·승인 메일과 승인 안내 화면</td></tr>
+  <tr><td><strong>대표자 정보</strong></td><td>회장 이름, 서명 이미지</td><td>활동 내역서(HWP) 맨 아래</td></tr>
+</table>
+<div class="warn"><strong>새 기수 받기 전에 세 가지를 확인하세요</strong>
+온보딩 링크가 지금 쓰는 방인지, 회비 금액·마감일이 이번 학기 것인지, 대표자가 현 회장인지. 링크는 http:// 또는 https:// 로 시작해야 저장됩니다.</div>
+<p>서명은 흰 배경에 검은 펜으로 쓴 사인 이미지를 올립니다. 올리지 않으면 기존 서명이 그대로 쓰입니다. 자세한 건 <a href="/guide/07-운영진-보고서.html#s4">보고서 관리 → 대표자 이름·서명</a>.</p>
+</section>
+
+  <section id="s3"><h2>신청서 조회 (모집·심사·마감)</h2>
+<h3>모집 시작</h3>
+<p>진행 중인 모집이 없으면 기수를 입력하고 <strong>모집 시작</strong>을 누릅니다 (회장·부회장). 동아리 일정 설정의 모집 관리에서 시작해도 같습니다. 시작하면 /apply 가 열리고 지원서가 들어옵니다.</p>
+<h3>지원서 질문</h3>
+<p>신청서 조회 탭 아래쪽 <strong>지원서 질문</strong>에서 서술형 문항을 넣습니다. 모집이 진행 중일 때만 편집됩니다.</p>
+<ul>
+  <li><strong>질문 추가</strong> → 질문 키(영문 대문자, 예: MOTIVATE) · 질문 본문 · 부가 설명 · 필수 여부</li>
+  <li>질문 키는 제출된 답변과 묶이는 값이라 만든 뒤에는 바꿀 수 없습니다. 지우면 그 키의 답변도 안 보입니다</li>
+  <li>노출 순서는 비워두면 마지막으로, 같은 번호는 둘이 쓸 수 없습니다</li>
+</ul>
+<h3>심사 (투표)</h3>
+<ol class="steps">
+  <li>목록에서 지원자 행을 누르면 신청서 상세가 열립니다 (인적 사항 · 문항별 답변 · 포트폴리오 링크)</li>
+  <li>오른쪽 <strong>내 투표</strong>에서 합격 / 불합격을 고르고 <strong>투표 저장</strong>. 불합격은 사유가 필수입니다</li>
+  <li>다시 열면 내 선택이 채워져 있어 고칠 수 있습니다. 목록의 "내 검토 여부"가 Y 가 되면 끝난 것입니다</li>
+</ol>
+<p>목록의 <strong>투표 결과</strong>는 찬성 수 / 투표 인원입니다. OT 참석 · 신환회 참석은 지원자가 지원서에 적은 값입니다.</p>
+<h3>마감과 합격자 결정</h3>
+<ol class="steps">
+  <li>목록의 <strong>최종 결정</strong> 칸을 합격 / 불합격으로 전부 정합니다. 보류가 한 명이라도 남아 있으면 마감 버튼이 잠깁니다</li>
+  <li>검색을 비운 상태에서 오른쪽 아래 <strong>모집 마감 및 합격자 결정</strong></li>
+  <li>확인 창에 합격 N명 · 불합격 N명이 나오고, 진행하면 합격자에게 메일이 갑니다</li>
+</ol>
+<div class="warn"><strong>최종 결정은 마감 버튼을 눌러야 저장됩니다</strong>
+표에서 바꾼 합격/불합격은 화면에만 있는 상태입니다. 페이지를 나가면 사라지니 한 번에 정해서 마감하세요. 마감은 되돌릴 수 없습니다.</div>
+</section>
+
+  <section id="s4"><h2>회원 관리</h2>
+<p>전체 회원을 기수와 이름으로 찾아봅니다. 표에는 기수 · 이름 · 운영진 여부 · 학번 · 학과 · 메일 · 회비 납부 · 활동 여부가 나옵니다.</p>
+<div class="note"><strong>지금은 조회만 됩니다</strong>
+회비 납부 처리(선택한 회원을 납부로 바꾸기, 학기 초 전원 미납 초기화)는 서버 쪽 작업이 끝나면 열립니다. 그때까지 회비 확인은 기존 방식(입금 내역 대조)대로 하고, 메일이 비어 있는 회원은 본인이 마이페이지에서 등록하도록 안내해 주세요.</div>
+</section>
+
+  <section id="s5"><h2>그룹 관리</h2>
+<p>부원이 만든 스터디·프로젝트 그룹을 승인합니다. 승인 전에는 그 그룹으로 보고서를 쓸 수 없습니다.</p>
+<ol class="steps">
+  <li>위쪽 <strong>승인 대기</strong> 필터로 좁힙니다 (재심사 요청도 여기에 포함)</li>
+  <li>그룹명을 누르면 팀장·팀원과 각자의 상태가 펼쳐집니다</li>
+  <li><strong>승인</strong>은 바로 처리됩니다. <strong>거절</strong>은 반려 사유를 적어야 <strong>반려</strong> 버튼이 켜집니다</li>
+</ol>
+<div class="note"><strong>모집 중인 그룹도 승인 대기에 보입니다</strong>
+팀장이 아직 모집을 마감하지 않았어도 승인은 할 수 있습니다. 반려된 팀이 고쳐서 다시 올리면 "재심사 요청"으로 돌아옵니다.</div>
+</section>
+
+  <section id="s6"><h2>신고 관리</h2>
+<p>부원이 신고한 게시글·댓글을 봅니다. <strong>게시글 신고</strong> / <strong>댓글 신고</strong> 탭이 따로 있습니다.</p>
+<ol class="steps">
+  <li><strong>상세 보기</strong> → 신고 사유, 신고자, 원문 내용 확인. 게시글은 <strong>원문 보기</strong>로 바로 이동할 수 있습니다</li>
+  <li>글 자체를 내려야 하면 작성자에게 삭제를 요청합니다. 운영진이 남의 글을 바로 지우는 기능은 보고서 외에는 없습니다</li>
+  <li><strong>처리 완료</strong> → 같은 글에 걸린 신고가 한꺼번에 목록에서 빠집니다. 글 자체는 지워지지 않습니다</li>
+</ol>
+<div class="note"><strong>익명 글도 상세에서는 작성자가 보입니다</strong>
+목록에는 "익명 (비공개)"로 나오지만 상세는 운영진 확인용이라 실명이 표시됩니다. 밖으로 옮기지 마세요.</div>
+</section>
+
+  <section id="s7"><h2>보고서 관리</h2>
+<p>부원이 쓴 활동 보고서를 보고, 학교 양식(HWP)으로 한 건씩 또는 기간을 걸어 한 번에 내려받습니다. 별도 문서 <a href="/guide/07-운영진-보고서.html">보고서 관리 (운영진)</a>에 정리되어 있습니다.</p>
+</section>
+  <div class="pager">
+    <span><a href="/guide/06-마이페이지.html">← 마이페이지와 계정</a></span>
+    <span><a href="/guide/07-운영진-보고서.html">보고서 관리 (운영진) →</a></span>
+  </div>
+  <footer><a href="/">← 씨부엉 홈페이지로 돌아가기</a><br>한국공학대학교 씨부엉 · 문의 cbumanage@gmail.com<br>
+  화면은 2026. 10. 11. 기준입니다.</footer>
+</div></body></html>
