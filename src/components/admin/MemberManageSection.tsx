@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { memberApi, type MemberInfo } from "@/api/member.api";
+import { type MemberInfo } from "@/api/member.api";
+import { useAllMembers } from "@/hooks/user";
 import PGN from "@/components/shared/Pagination";
 // TODO(BE 대기): 회비 관리 — 아래 엔드포인트 나오면 아래 주석들 복구.
 //   PATCH /members/dues/reset  (운영진 제외 전원 due=false / inactive) — 일괄 초기화
@@ -23,32 +23,7 @@ export default function MemberManageSection() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
-  const { data: allMembers = [], isLoading } = useQuery({
-    queryKey: ["admin", "members"],
-    queryFn: async () => {
-      const parseResponse = (raw: unknown): MemberInfo[] => {
-        if (Array.isArray(raw)) return raw as MemberInfo[];
-        const obj = raw as Record<string, unknown>;
-        const inner = obj?.data;
-        if (Array.isArray(inner)) return inner as MemberInfo[];
-        const paged = inner as { content?: MemberInfo[] } | undefined;
-        return paged?.content ?? [];
-      };
-
-      const all: MemberInfo[] = [];
-      let page = 0;
-
-      while (true) {
-        const res = await memberApi.getAll(page, PAGE_SIZE);
-        const content = parseResponse(res.data as unknown);
-        if (content.length === 0) break;
-        all.push(...content);
-        if (content.length < PAGE_SIZE) break;
-        page += 1;
-      }
-      return all;
-    },
-  });
+  const { data: allMembers = [], isLoading } = useAllMembers();
 
   /* TODO(BE 대기): 회비 일괄 처리 — dues/reset·due 토글 엔드포인트 나오면 복구.
      기존 approve-payment 는 신입 승인(환영메일 발송)이라 회비 토글로 쓰면 안 됨.

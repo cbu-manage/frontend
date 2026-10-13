@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { Plus, X } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Modal from "@/components/common/Modal";
 import SearchBar from "@/components/common/SearchBar";
 import Pagination from "@/components/shared/Pagination";
 import { useCan } from "@/hooks/auth";
+import { useAllMembers, ALL_MEMBERS_QUERY_KEY } from "@/hooks/user";
 import { memberApi, type MemberInfo, type MemberUpdateDTO } from "@/api";
 
 /**
@@ -17,7 +18,6 @@ import { memberApi, type MemberInfo, type MemberUpdateDTO } from "@/api";
  * 회원 검색 전용 API가 없어 전체 회원을 받아 클라에서 필터한다.
  */
 
-const PAGE_SIZE = 50;
 // 모달 목록 페이지당 인원 / 페이지 번호 최대 노출 개수
 const MODAL_PAGE_SIZE = 10;
 const MODAL_PAGE_WINDOW = 5;
@@ -72,49 +72,13 @@ export default function StaffAssignSection() {
   const [modalPage, setModalPage] = useState(1);
 
   // 전체 회원 (검색 전용 API 없음 → 전부 받아 클라 필터)
-  const {
-    data: members = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["admin", "members", "staff"],
-    queryFn: async () => {
-      // 서버 응답이 배열(ApiResponseListMemberDTO)·페이징 둘 다 존재해 방어적으로 파싱 (MemberManageSection과 동일)
-      const parseResponse = (raw: unknown): MemberInfo[] => {
-        if (Array.isArray(raw)) return raw as MemberInfo[];
-        const obj = raw as Record<string, unknown>;
-        const inner = obj?.data;
-        if (Array.isArray(inner)) return inner as MemberInfo[];
-        const paged = inner as { content?: MemberInfo[] } | undefined;
-        if (paged?.content) return paged.content;
-        // data 없이 최상위에 content가 오는 페이징 응답도 있다
-        const topLevel = obj as { content?: MemberInfo[] } | undefined;
-        return topLevel?.content ?? [];
-      };
-
-      // 서버가 size 파라미터를 무시하고 고정 크기(10명)로 반환 → length<size 종료 판정 불가.
-      // 빈 페이지가 나올 때까지 순회하되, page 무시(같은 목록 반복) 시 무한루프 방지로 id 중복이면 종료.
-      const all: MemberInfo[] = [];
-      const seen = new Set<number>();
-      let page = 0;
-      while (true) {
-        const res = await memberApi.getAll(page, PAGE_SIZE);
-        const content = parseResponse(res.data as unknown);
-        const fresh = content.filter((m) => !seen.has(m.id));
-        if (fresh.length === 0) break;
-        fresh.forEach((m) => seen.add(m.id));
-        all.push(...fresh);
-        page += 1;
-      }
-      return all;
-    },
-  });
+  const { data: members = [], isLoading, isError } = useAllMembers();
 
   const updateMutation = useMutation({
     mutationFn: (vars: { member: MemberInfo; role: string }) =>
       memberApi.update(toUpdateDTO(vars.member, vars.role)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "members"] });
+      queryClient.invalidateQueries({ queryKey: ALL_MEMBERS_QUERY_KEY });
     },
     onError: () => alert("처리 중 오류가 발생했습니다. 다시 시도해주세요."),
   });
