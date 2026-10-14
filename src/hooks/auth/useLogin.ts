@@ -57,7 +57,7 @@ export function useLogin(redirectUrl?: string) {
       // 서버는 학번(숫자)으로 찾으므로 검증 뒤 접두사를 떼서 보낸다.
       const match = /^cbu(\d{10})$/i.exec(String(studentId).trim());
       if (!match) {
-        throw new Error("아이디는 cbu+학번 10자리입니다. (예: cbu2026000000)");
+        throw new Error("아이디를 확인해주세요.");
       }
       const digits = match[1];
       const studentNumber = Number(digits);
