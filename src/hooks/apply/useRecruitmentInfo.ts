@@ -32,8 +32,12 @@ export function useRecruitmentInfo() {
     ? `${formatDot(data.announcementDate)} (개별 안내)`
     : null;
 
+  // 서버가 accepting 을 주면 그 값, 옛 서버(필드 없음)면 모집 정보가 있을 때 받는 것으로 본다
+  const accepting = data ? (data.accepting ?? true) : false;
+
   return {
     recruitment: data ?? null,
+    accepting,
     generationLabel,
     periodLabel,
     resultLabel,
