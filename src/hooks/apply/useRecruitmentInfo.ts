@@ -32,13 +32,16 @@ export function useRecruitmentInfo() {
     ? `${formatDot(data.announcementDate)} (개별 안내)`
     : null;
 
-  // 서버가 accepting: false 를 줄 때만 닫힌 것으로 본다.
-  // 로딩 중·조회 실패·옛 서버(필드 없음)는 예전처럼 열린 것으로 두고, 제출은 서버가 거른다.
-  const accepting = data?.accepting ?? true;
+  // 서버가 accepting 을 내려주면(OPEN 모집 + 모집 기간까지 판정) 그 값이 정답이다.
+  // 로딩 중·조회 실패·옛 서버(필드 없음)는 판정 없음 — 예전처럼 열린 것으로 두고, 제출은 서버가 거른다.
+  const hasServerVerdict = typeof data?.accepting === "boolean";
+  const accepting = hasServerVerdict ? data!.accepting! : true;
 
   return {
     recruitment: data ?? null,
     accepting,
+    /** accepting 이 서버 판정인지(true) 아니면 필드가 없어 열린 것으로 가정한 값인지(false) */
+    hasServerVerdict,
     generationLabel,
     periodLabel,
     resultLabel,
