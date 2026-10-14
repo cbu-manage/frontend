@@ -9,10 +9,11 @@ export function useMailUpdate(onSuccess?: () => void) {
   const updateEmail = useUserStore((s) => s.updateEmail);
 
   const mutation = useMutation({
-    mutationFn: (email: string) =>
-      mailApi.update({ studentNumber, email }),
+    // 서버(/mail/update)는 인증번호가 Redis 의 값과 맞아야 저장한다. 안 보내면 항상 401.
+    mutationFn: ({ email, authCode }: { email: string; authCode: string }) =>
+      mailApi.update({ studentNumber, email, authCode }),
     // TODO: react-query v6 onSuccess/onError/onSettled deprecation - 마이그레이션 검토
-    onSuccess: (_, email) => {
+    onSuccess: (_, { email }) => {
       updateEmail(email);
       alert("📩 이메일이 성공적으로 등록되었습니다!");
       onSuccess?.();
