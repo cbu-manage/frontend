@@ -32,8 +32,13 @@ export function useRecruitmentInfo() {
     ? `${formatDot(data.announcementDate)} (개별 안내)`
     : null;
 
+  // 서버가 accepting: false 를 줄 때만 닫힌 것으로 본다.
+  // 로딩 중·조회 실패·옛 서버(필드 없음)는 예전처럼 열린 것으로 두고, 제출은 서버가 거른다.
+  const accepting = data?.accepting ?? true;
+
   return {
     recruitment: data ?? null,
+    accepting,
     generationLabel,
     periodLabel,
     resultLabel,

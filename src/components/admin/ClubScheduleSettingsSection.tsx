@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AxiosError } from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  applicantApi,
   recruitmentApi,
   reportApi,
   settingsApi,
@@ -134,6 +135,36 @@ export default function ClubScheduleSettingsSection() {
     onError: () =>
       alert("모집 시작 중 오류가 발생했습니다. 다시 시도해주세요."),
   });
+
+  // 모집 중지 — 지원서 접수만 닫는다(합격자 결정·메일 없음). 합격자 결정은 신청서 조회 탭에서.
+  const stopMutation = useMutation({
+    mutationFn: (recruitmentUuid: string) =>
+      applicantApi.close(recruitmentUuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "recruitment", "current"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["applications", "generation", "current"],
+      });
+      alert("모집을 중지했습니다. 홈의 신청 버튼과 지원서 접수가 닫혀요.");
+    },
+    onError: () =>
+      alert("모집 중지 중 오류가 발생했습니다. 다시 시도해주세요."),
+  });
+
+  const handleStop = () => {
+    if (!recruitment) return;
+    if (
+      !window.confirm(
+        `${recruitment.generation}기 모집을 중지합니다.\n\n` +
+          `지원서 접수가 바로 닫히고 되돌릴 수 없어요(다시 받으려면 새 모집을 시작해야 합니다).\n` +
+          `합격자 결정·메일 발송은 하지 않습니다.\n계속하시겠습니까?`,
+      )
+    )
+      return;
+    stopMutation.mutate(recruitment.recruitmentUuid);
+  };
 
   const handleStart = () => {
     const generation = Number(newGeneration);
@@ -425,6 +456,14 @@ export default function ClubScheduleSettingsSection() {
                   <span className="text-gray-500">
                     투표 인원 {recruitment.voterCount}명
                   </span>
+                  <button
+                    type="button"
+                    onClick={handleStop}
+                    disabled={stopMutation.isPending}
+                    className="ml-auto px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 active:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {stopMutation.isPending ? "중지 중..." : "모집 중지"}
+                  </button>
                 </div>
 
                 {/* 기수·일정 수정 — 지원서 안내 문구에 그대로 노출되는 값 */}
