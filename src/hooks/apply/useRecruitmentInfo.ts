@@ -32,8 +32,9 @@ export function useRecruitmentInfo() {
     ? `${formatDot(data.announcementDate)} (개별 안내)`
     : null;
 
-  // 서버가 accepting 을 주면 그 값, 옛 서버(필드 없음)면 모집 정보가 있을 때 받는 것으로 본다
-  const accepting = data ? (data.accepting ?? true) : false;
+  // 서버가 accepting: false 를 줄 때만 닫힌 것으로 본다.
+  // 로딩 중·조회 실패·옛 서버(필드 없음)는 예전처럼 열린 것으로 두고, 제출은 서버가 거른다.
+  const accepting = data?.accepting ?? true;
 
   return {
     recruitment: data ?? null,
