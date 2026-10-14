@@ -17,22 +17,30 @@ function todayLocal(): string {
 
 export default function ApplyIntroPage() {
   // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
-  const { generationLabel, periodLabel, resultLabel, recruitment, accepting } =
-    useRecruitmentInfo();
+  const {
+    generationLabel,
+    periodLabel,
+    resultLabel,
+    recruitment,
+    accepting,
+    hasServerVerdict,
+  } = useRecruitmentInfo();
   const today = todayLocal();
   const startsAt = recruitment?.plannedStartDate ?? null;
   const endsAt = recruitment?.plannedEndDate ?? null;
   const isBeforeStart = !!startsAt && today < startsAt;
   const isAfterEnd = !!endsAt && today > endsAt;
-  // 서버가 OPEN 모집 유무까지 보고 accepting 을 준다(모집이 없어도 기수만 폴백으로 내려오므로
-  // recruitment 유무로는 판정할 수 없다). 날짜 비교는 서버와 같은 기준의 안내 문구용.
-  const isOpen = accepting && !isBeforeStart && !isAfterEnd;
-  const closedReason =
-    !accepting && !isBeforeStart && !isAfterEnd
-      ? "지금은 모집 기간이 아니에요"
-      : isBeforeStart
-        ? "아직 모집 시작 전이에요"
-        : "모집이 마감됐어요";
+  // 서버가 accepting 을 주면 그 판정을 그대로 쓴다(OPEN 모집 유무와 모집 기간을 서버 날짜로 본 값이라,
+  // 브라우저 시계로 다시 거르면 서버가 허용한 신청을 막을 수 있다).
+  // 필드가 없는 옛 서버에서만 recruitment 유무 + 로컬 날짜로 판정한다.
+  const isOpen = hasServerVerdict
+    ? accepting
+    : !!recruitment && !isBeforeStart && !isAfterEnd;
+  const closedReason = isBeforeStart
+    ? "아직 모집 시작 전이에요"
+    : isAfterEnd
+      ? "모집이 마감됐어요"
+      : "지금은 모집 기간이 아니에요";
   const router = useRouter();
   const [studentId, setStudentId] = useState("");
   const [nickname, setNickname] = useState("");
