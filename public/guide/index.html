@@ -91,10 +91,12 @@ footer{margin-top:42px;border-top:1px solid var(--line);padding-top:18px;color:v
   .jump ul{flex-direction:column;gap:4px}
   .cards{grid-template-columns:1fr}
   .pager{flex-direction:column;gap:8px}
-  table{font-size:13px;table-layout:fixed}
-  th,td{padding:7px 8px;word-break:normal;overflow-wrap:anywhere}
-  table.matrix{display:block;overflow-x:auto;white-space:nowrap;table-layout:auto;-webkit-overflow-scrolling:touch}
-  table.matrix th,table.matrix td{overflow-wrap:normal}
+  table{font-size:12px;line-height:1.5}
+  th,td{padding:6px 7px;word-break:keep-all;overflow-wrap:break-word}
+  table.matrix{font-size:11px}
+  table.matrix th,table.matrix td{padding:5px 4px}
+  table.matrix th{word-break:keep-all;overflow-wrap:normal}
+  table.matrix th:first-child,table.matrix td:first-child{white-space:nowrap}
   .flow .step{flex:1 1 calc(50% - 4px)}
 }
 @media print{
