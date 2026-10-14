@@ -14,6 +14,8 @@ type MailApiResponse = {
 export type MailUpdateRequest = {
   studentNumber: number;
   email: string;
+  /** 그 이메일로 받은 인증번호 — 서버가 소유 증명으로 요구한다(없으면 401) */
+  authCode: string;
 };
 
 export const mailApi = {
