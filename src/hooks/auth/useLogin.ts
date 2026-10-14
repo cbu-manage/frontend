@@ -53,11 +53,13 @@ export function useLogin(redirectUrl?: string) {
 
   const mutation = useMutation({
     mutationFn: async ({ studentId, password }: LoginParams) => {
-      // 회원가입 화면과 형식을 맞춘다. cbu 접두사는 붙여도 되고 안 붙여도 된다
-      const digits = String(studentId).trim().replace(/^cbu/i, "");
-      if (!/^\d{10}$/.test(digits)) {
-        throw new Error("학번은 10자리 숫자로 입력해주세요. (예: 2026000000)");
+      // 아이디는 소문자 cbu+학번 고정 — 접두사가 없거나 대문자면 거절한다.
+      // 서버는 학번(숫자)으로 찾으므로 검증 뒤 접두사를 떼서 보낸다.
+      const match = /^cbu(\d{10})$/.exec(String(studentId).trim());
+      if (!match) {
+        throw new Error("아이디를 확인해주세요.");
       }
+      const digits = match[1];
       const studentNumber = Number(digits);
       const res = await authApi.login({ studentNumber, password });
       return { data: res.data.data, studentNumber, password };

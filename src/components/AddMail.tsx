@@ -120,7 +120,9 @@ export default function AddMail({
               const fullEmail = `${email}@tukorea.ac.kr`;
               const res = await verifyCodeWithServer(fullEmail, code);
               if (res.success) {
-                mailUpdateMutation.mutate(fullEmail);
+                mailUpdateMutation.mutate({ email: fullEmail, authCode: code });
+              } else {
+                alert(res.responseMessage);
               }
             }}
           >

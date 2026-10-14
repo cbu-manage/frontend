@@ -58,6 +58,8 @@ export type CurrentGeneration = {
   plannedStartDate: string | null;
   plannedEndDate: string | null;
   announcementDate: string | null;
+  /** 지금 지원서를 받는지 — 서버가 OPEN 모집·모집 기간으로 판정. 옛 서버는 이 필드가 없다 */
+  accepting?: boolean;
 };
 
 /** 합격 안내 화면(`/apply/passed`)의 본인 확인 정보. 학번은 서버가 가운데를 가려서 준다 */

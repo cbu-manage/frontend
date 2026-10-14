@@ -14,7 +14,7 @@ const poppins = Poppins({
 
 export default function Home() {
   // 기수 표기는 진행 중인 모집을 따른다 (없으면 빈 문자열 → 문구에서 자연히 빠짐)
-  const { generationLabel } = useRecruitmentInfo();
+  const { generationLabel, accepting } = useRecruitmentInfo();
   const [selectedTab, setSelectedTab] = useState<"기획" | "개발" | "디자인">(
     "기획",
   );
@@ -114,7 +114,7 @@ export default function Home() {
       <div className="container-x">
         {/* 히어로: 가운데 부엉이, 호버 시 크기 확대 + owl-icon으로 전환 */}
         <div
-          className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] mb-40 sm:mb-24 relative"
+          className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] pb-28 mb-40 sm:mb-24 relative"
           onMouseEnter={() => setIsHeroHovered(true)}
           onMouseLeave={() => setIsHeroHovered(false)}
         >
@@ -295,9 +295,10 @@ export default function Home() {
               본 사이트는 한국공학대학교 프로그래밍 동아리 씨부엉의 효율적인
               회원관리를 위한 웹사이트입니다.
             </p>
-            <Link
-              href="/apply"
-              className="
+            {accepting && (
+              <Link
+                href="/apply"
+                className="
                 mt-4 inline-flex h-10 px-5 py-2
                 items-center justify-center gap-3
                 rounded-full bg-[#F2F2F2]
@@ -306,20 +307,21 @@ export default function Home() {
                 hover:bg-white hover:shadow-md
                 transition-colors transition-shadow
               "
-            >
-              {generationLabel && `${generationLabel} `}씨부엉 신청하기
-            </Link>
+              >
+                {generationLabel && `${generationLabel} `}씨부엉 신청하기
+              </Link>
+            )}
             <Link
               href="/guide"
-              className="
-                inline-flex h-10 px-5 py-2
+              className={`
+                ${accepting ? "" : "mt-4"} inline-flex h-10 px-5 py-2
                 items-center justify-center gap-3
                 rounded-full border border-[#F2F2F2]/60
                 text-sm sm:text-base font-semibold tracking-tight
                 text-[#F2F2F2]
                 hover:bg-white/10 hover:border-[#F2F2F2]
                 transition-colors
-              "
+              `}
             >
               홈페이지 사용 설명서
             </Link>
